@@ -1,10 +1,13 @@
-import { FileText, Upload, Video, Award } from "lucide-react";
+import step1 from "@/assets/step-1-solicitacao.jpg";
+import step2 from "@/assets/step-2-documentos.jpg";
+import step3 from "@/assets/step-3-videoconferencia.jpg";
+import step4 from "@/assets/step-4-emissao.jpg";
 
 const steps = [
-  { icon: FileText, title: "Passo 1", desc: "Solicitação" },
-  { icon: Upload, title: "Passo 2", desc: "Envio de documentos" },
-  { icon: Video, title: "Passo 3", desc: "Videoconferência" },
-  { icon: Award, title: "Passo 4", desc: "Emissão do certificado" },
+  { img: step1, title: "Passo 1", desc: "Solicitação" },
+  { img: step2, title: "Passo 2", desc: "Envio de documentos" },
+  { img: step3, title: "Passo 3", desc: "Videoconferência" },
+  { img: step4, title: "Passo 4", desc: "Emissão do certificado" },
 ];
 
 export const HowItWorksSection = () => {
@@ -16,12 +19,22 @@ export const HowItWorksSection = () => {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {steps.map((step, i) => (
-            <div key={i} className="flex flex-col items-center text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 mb-4">
-                <step.icon className="h-10 w-10 text-primary" />
+            <div key={i} className="rounded-xl overflow-hidden bg-deep shadow-md">
+              <div className="bg-primary px-4 py-3">
+                <p className="font-bold text-primary-foreground text-lg">{step.title}</p>
               </div>
-              <p className="font-bold text-card-foreground">{step.title}</p>
-              <p className="text-sm text-muted-foreground mt-1">{step.desc}</p>
+              <div className="aspect-square overflow-hidden">
+                <img
+                  src={step.img}
+                  alt={step.desc}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="px-4 py-3 flex items-center gap-2">
+                <span className="text-primary">▼</span>
+                <p className="text-sm font-medium text-deep-foreground">{step.desc}</p>
+              </div>
             </div>
           ))}
         </div>
