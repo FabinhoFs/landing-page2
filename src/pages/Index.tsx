@@ -1,12 +1,36 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { SocialProofSection } from "@/components/landing/SocialProofSection";
+import { FAQSection } from "@/components/landing/FAQSection";
+import { CTASection } from "@/components/landing/CTASection";
+import { Footer } from "@/components/landing/Footer";
+import { FloatingWhatsApp } from "@/components/landing/FloatingWhatsApp";
+import { ExitIntentPopup } from "@/components/landing/ExitIntentPopup";
+import { useEffect } from "react";
 
 const Index = () => {
+  const { city } = useGeolocation();
+
+  // Update document title dynamically for SEO
+  useEffect(() => {
+    document.title = `Certificado Digital em ${city} | Emissão Rápida e Segura`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", `Emita seu Certificado Digital em ${city}. Emissão rápida, 100% online, com suporte especializado. Certificação ICP-Brasil.`);
+    }
+  }, [city]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <HeroSection city={city} />
+      <BenefitsSection city={city} />
+      <SocialProofSection />
+      <FAQSection city={city} />
+      <CTASection city={city} />
+      <Footer />
+      <FloatingWhatsApp />
+      <ExitIntentPopup city={city} />
     </div>
   );
 };
