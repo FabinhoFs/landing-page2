@@ -1,4 +1,5 @@
 import { MessageCircle } from "lucide-react";
+import { logAccess } from "@/lib/logAccess";
 
 const WHATSAPP_NUMBER = "5524999999999";
 
@@ -10,6 +11,8 @@ export const FloatingWhatsApp = () => {
         button_id: "cta_floating",
       });
     }
+
+    logAccess("cta_floating");
 
     const msg = encodeURIComponent("Olá! Quero emitir meu Certificado Digital. (origem: cta_floating)");
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
