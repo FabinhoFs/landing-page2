@@ -1,68 +1,54 @@
-import { Clock, Users, MapPin, Shield, Zap, HeadphonesIcon } from "lucide-react";
-
-interface BenefitsSectionProps {
-  city: string;
-}
+import { Zap, Shield, Phone, Monitor } from "lucide-react";
+import heroPerson from "@/assets/hero-person.png";
 
 const benefits = [
   {
-    icon: Clock,
-    title: "Emissão Rápida",
-    description: "Seu certificado digital pronto em até 30 minutos. Sem burocracia.",
-  },
-  {
-    icon: Users,
-    title: "Atendimento Personalizado",
-    description: "Equipe especializada para te guiar em cada etapa do processo.",
-  },
-  {
-    icon: MapPin,
-    title: "Suporte Local",
-    description: "Atendimento próximo a você, com conhecimento da sua região.",
+    icon: Zap,
+    title: "Velocidade",
+    desc: "Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento.",
   },
   {
     icon: Shield,
-    title: "Segurança Garantida",
-    description: "Certificação dentro dos padrões ICP-Brasil com validade jurídica.",
+    title: "Confiança",
+    desc: "Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos.",
   },
   {
-    icon: Zap,
-    title: "100% Online",
-    description: "Emissão por videoconferência. Sem necessidade de deslocamento.",
+    icon: Phone,
+    title: "Atendimento Personalizado",
+    desc: "Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso.",
   },
   {
-    icon: HeadphonesIcon,
-    title: "Suporte Pós-Venda",
-    description: "Assistência completa mesmo após a emissão do seu certificado.",
+    icon: Monitor,
+    title: "Segurança",
+    desc: "Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo ITI, oferecendo soluções completas.",
   },
 ];
 
-export const BenefitsSection = ({ city }: BenefitsSectionProps) => {
+export const BenefitsSection = () => {
   return (
-    <section className="bg-background py-20 md:py-28">
+    <section className="bg-deep text-deep-foreground py-20">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-14 text-center">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            Por que emitir seu Certificado Digital em{" "}
-            <span className="text-primary">{city}</span>?
-          </h2>
-          <p className="mt-3 mx-auto max-w-2xl text-muted-foreground">
-            Oferecemos a melhor experiência para profissionais e empresas.
-          </p>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {benefits.map((benefit) => (
-            <div key={benefit.title} className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <benefit.icon className="h-5 w-5" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            {benefits.map((b, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20">
+                  <b.icon className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">{b.title}</h3>
+                  <p className="text-sm text-deep-foreground/70 mt-1 leading-relaxed">{b.desc}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-foreground">{benefit.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="hidden md:flex justify-center">
+            <img
+              src={heroPerson}
+              alt="Profissional com laptop"
+              className="max-h-[400px] object-contain rounded-2xl"
+            />
+          </div>
         </div>
       </div>
     </section>
