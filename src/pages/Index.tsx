@@ -1,12 +1,16 @@
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { StickyHeader } from "@/components/landing/StickyHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { SocialProofBar } from "@/components/landing/SocialProofBar";
+import { PricingSection } from "@/components/landing/PricingSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { SocialProofSection } from "@/components/landing/SocialProofSection";
+import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
 import { FloatingWhatsApp } from "@/components/landing/FloatingWhatsApp";
+import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { ExitIntentPopup } from "@/components/landing/ExitIntentPopup";
 import { useEffect } from "react";
 
@@ -23,14 +27,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <StickyHeader city={city} />
       <HeroSection city={city} />
-      <BenefitsSection city={city} />
+      <SocialProofBar />
+      <PricingSection city={city} />
       <HowItWorksSection />
-      <SocialProofSection />
+      <BenefitsSection />
+      <TestimonialsSection />
       <FAQSection city={city} />
       <CTASection city={city} />
       <Footer />
       <FloatingWhatsApp />
+      <StickyMobileCTA city={city} />
       <ExitIntentPopup city={city} />
     </div>
   );

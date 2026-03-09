@@ -1,75 +1,60 @@
-import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { WhatsAppButton } from "./WhatsAppButton";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+const fallbackFaqs = [
+  { question: "O que é um certificado digital?", answer: "O Certificado Digital é uma identidade eletrônica que permite assinar documentos com validade jurídica, acessar sistemas do governo e realizar transações seguras pela internet." },
+  { question: "Qual o prazo de validade de um Certificado Digital?", answer: "Os certificados digitais geralmente têm validade de 1 a 3 anos, dependendo do tipo escolhido." },
+  { question: "Em quanto tempo terei meu certificado digital pronto?", answer: "Com a Agis Digital, seu certificado pode ser emitido no mesmo dia após a validação por videoconferência." },
+  { question: "Quais os documentos necessários?", answer: "Para pessoa física (e-CPF): documento de identidade com foto, CPF e comprovante de residência. Para pessoa jurídica (e-CNPJ): documentos da empresa e do representante legal." },
+];
 
 interface FAQSectionProps {
   city: string;
 }
 
-interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-}
-
 export const FAQSection = ({ city }: FAQSectionProps) => {
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-
-  useEffect(() => {
-    const fetchFaqs = async () => {
+  const { data: dbFaqs } = useQuery({
+    queryKey: ["faqs"],
+    queryFn: async () => {
       const { data } = await supabase
         .from("faqs")
-        .select("id, question, answer")
+        .select("*")
         .eq("is_active", true)
-        .order("sort_order", { ascending: true });
-      if (data) setFaqs(data);
-    };
-    fetchFaqs();
-  }, []);
+        .order("sort_order");
+      return data;
+    },
+  });
+
+  const faqs = dbFaqs && dbFaqs.length > 0 ? dbFaqs : fallbackFaqs;
 
   return (
-    <section className="bg-background py-20 md:py-28">
+    <section className="bg-card py-20">
       <div className="mx-auto max-w-3xl px-6">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            Perguntas Frequentes
-          </h2>
-        </div>
-
-        <Accordion type="single" collapsible className="space-y-2">
-          {faqs.map((faq) => (
+        <h2 className="text-center text-3xl font-bold text-card-foreground md:text-4xl mb-12">
+          Perguntas Frequentes
+        </h2>
+        <Accordion type="single" collapsible className="space-y-3">
+          {faqs.map((faq, i) => (
             <AccordionItem
-              key={faq.id}
-              value={faq.id}
-              className="rounded-lg border border-border bg-card px-5"
+              key={i}
+              value={`faq-${i}`}
+              className="border border-border rounded-xl px-6 bg-background"
             >
               <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
+              <AccordionContent className="text-muted-foreground">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
-
-        <div className="mt-10 text-center">
-          <p className="mb-4 text-sm text-muted-foreground">
-            Ficou com alguma dúvida? Fale conosco!
-          </p>
-          <WhatsAppButton
-            buttonId="cta_faq"
-            message={`Olá! Tenho dúvidas sobre Certificado Digital em ${city}.`}
-          >
-            Tirar minhas dúvidas
-          </WhatsAppButton>
-        </div>
       </div>
     </section>
   );

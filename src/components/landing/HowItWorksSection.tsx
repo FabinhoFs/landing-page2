@@ -1,52 +1,27 @@
-import { ShoppingCart, FileText, Video, Mail } from "lucide-react";
+import { FileText, Upload, Video, Award } from "lucide-react";
 
 const steps = [
-  {
-    icon: ShoppingCart,
-    title: "Solicitação",
-    description: "Você efetua a compra do certificado digital do modelo desejado.",
-  },
-  {
-    icon: FileText,
-    title: "Envio de documentos",
-    description: "Envie os documentos necessários de acordo com o certificado escolhido.",
-  },
-  {
-    icon: Video,
-    title: "Videoconferência",
-    description: "Um Agente de Registro faz seu atendimento em menos de 3 minutos.",
-  },
-  {
-    icon: Mail,
-    title: "Emissão do certificado",
-    description: "Você recebe um e-mail com as instruções para instalação.",
-  },
+  { icon: FileText, title: "Passo 1", desc: "Solicitação" },
+  { icon: Upload, title: "Passo 2", desc: "Envio de documentos" },
+  { icon: Video, title: "Passo 3", desc: "Videoconferência" },
+  { icon: Award, title: "Passo 4", desc: "Emissão do certificado" },
 ];
 
 export const HowItWorksSection = () => {
   return (
-    <section className="bg-card py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-14 text-center">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            Passo a passo simples
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            Veja como é fácil emitir seu certificado digital.
-          </p>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="bg-card py-20">
+      <div className="mx-auto max-w-5xl px-6">
+        <h2 className="text-center text-3xl font-bold text-card-foreground md:text-4xl mb-12">
+          Veja o passo a passo simples para emitir seu certificado
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {steps.map((step, i) => (
-            <div key={i} className="flex flex-col items-center text-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <step.icon className="h-6 w-6" />
+            <div key={i} className="flex flex-col items-center text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 mb-4">
+                <step.icon className="h-10 w-10 text-primary" />
               </div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Passo {i + 1}
-              </span>
-              <h3 className="text-lg font-semibold text-foreground">{step.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+              <p className="font-bold text-card-foreground">{step.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">{step.desc}</p>
             </div>
           ))}
         </div>
