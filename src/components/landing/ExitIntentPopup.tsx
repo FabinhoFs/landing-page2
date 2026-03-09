@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { WhatsAppButton } from "./WhatsAppButton";
-import { AlertTriangle } from "lucide-react";
+import { Gift, Timer } from "lucide-react";
 
 interface ExitIntentPopupProps {
   city: string;
@@ -24,40 +24,54 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
         setOpen(true);
 
         if ((window as any).dataLayer) {
-          (window as any).dataLayer.push({ event: "exit_intent_popup" });
+          (window as any).dataLayer.push({
+            event: "exit_intent_popup",
+            city,
+          });
         }
       }
     };
 
     document.addEventListener("mouseleave", handleMouseLeave);
     return () => document.removeEventListener("mouseleave", handleMouseLeave);
-  }, [triggered]);
+  }, [triggered, city]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="border-primary/30 bg-card sm:max-w-md">
         <DialogHeader className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <AlertTriangle className="h-8 w-8 text-primary" />
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-secondary/20">
+            <Gift className="h-10 w-10 text-primary" />
           </div>
-          <DialogTitle className="text-center text-2xl font-bold text-card-foreground">
-            Aguarde! Não saia ainda.
+          <DialogTitle className="text-center text-2xl font-extrabold text-card-foreground">
+            🔥 Espere! Oferta exclusiva!
           </DialogTitle>
           <DialogDescription className="text-center text-base text-muted-foreground">
-            Garanta seu Certificado Digital em {city} com{" "}
-            <span className="font-bold text-primary">desconto especial</span>{" "}
-            exclusivo agora mesmo!
+            Só para você que está em{" "}
+            <span className="font-bold text-foreground">{city}</span>:
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-4 flex justify-center">
-          <WhatsAppButton
-            buttonId="cta_exit_popup"
-            message={`Olá! Vi o desconto especial para Certificado Digital em ${city}. Quero aproveitar!`}
-            className="w-full text-lg py-6"
-          >
-            Quero meu desconto agora!
-          </WhatsAppButton>
+
+        <div className="my-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+          <p className="text-sm font-medium text-muted-foreground">Desconto especial</p>
+          <p className="text-4xl font-black text-primary">20% OFF</p>
+          <p className="mt-1 text-sm text-muted-foreground">no seu Certificado Digital</p>
+          <div className="mt-3 flex items-center justify-center gap-1 text-xs text-destructive font-semibold">
+            <Timer className="h-3 w-3" /> Válido apenas agora
+          </div>
         </div>
+
+        <WhatsAppButton
+          buttonId="cta_exit_popup"
+          message={`Olá! Vi a oferta de 20% OFF para Certificado Digital em ${city}. Quero aproveitar!`}
+          className="w-full text-lg py-6"
+        >
+          Garantir meu desconto agora!
+        </WhatsAppButton>
+
+        <p className="text-center text-xs text-muted-foreground mt-2">
+          Sem compromisso. Fale com um especialista.
+        </p>
       </DialogContent>
     </Dialog>
   );

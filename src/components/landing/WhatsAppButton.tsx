@@ -1,5 +1,6 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logAccess } from "@/lib/logAccess";
 
 interface WhatsAppButtonProps {
   buttonId: string;
@@ -11,7 +12,7 @@ interface WhatsAppButtonProps {
   phone?: string;
 }
 
-const WHATSAPP_NUMBER = "5524999999999"; // Substituir pelo número real
+const WHATSAPP_NUMBER = "5524999999999";
 
 export const WhatsAppButton = ({
   buttonId,
@@ -21,14 +22,17 @@ export const WhatsAppButton = ({
   size = "lg",
   phone,
 }: WhatsAppButtonProps) => {
-  const handleClick = () => {
-    // DataLayer event for GTM
+  const handleClick = async () => {
+    // DataLayer for GTM
     if (typeof window !== "undefined" && (window as any).dataLayer) {
       (window as any).dataLayer.push({
         event: "conversion_whatsapp",
         button_id: buttonId,
       });
     }
+
+    // Log to Supabase (non-blocking)
+    logAccess(buttonId);
 
     const encodedMessage = encodeURIComponent(`${message} (origem: ${buttonId})`);
     const number = phone || WHATSAPP_NUMBER;

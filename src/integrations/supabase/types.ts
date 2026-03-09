@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          button_id: string
+          city: string | null
+          created_at: string
+          id: string
+          ip: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          button_id: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          button_id?: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       certificate_prices: {
         Row: {
           created_at: string
