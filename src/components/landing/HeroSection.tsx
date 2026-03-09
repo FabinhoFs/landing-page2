@@ -19,9 +19,6 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
       {/* Security texture background */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Subtle grid */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 59px, hsl(var(--deep-foreground)) 59px, hsl(var(--deep-foreground)) 60px), repeating-linear-gradient(90deg, transparent, transparent 59px, hsl(var(--deep-foreground)) 59px, hsl(var(--deep-foreground)) 60px)`,
-        }} />
         {/* Floating security icons */}
         <Shield className="absolute top-[15%] right-[10%] h-24 w-24 text-primary/[0.07] rotate-12" />
         <Lock className="absolute top-[60%] right-[20%] h-16 w-16 text-primary/[0.06] -rotate-12" />
