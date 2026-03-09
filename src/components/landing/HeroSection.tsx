@@ -1,6 +1,5 @@
 import { WhatsAppButton } from "./WhatsAppButton";
-import { Smartphone, CheckCircle, Lock, Video, Clock, Zap } from "lucide-react";
-import heroPerson from "@/assets/hero-person.png";
+import { Smartphone, CheckCircle, Lock, Video, Clock, Zap, Shield, KeyRound, ShieldCheck, Fingerprint } from "lucide-react";
 
 interface HeroSectionProps {
   city: string;
@@ -17,52 +16,62 @@ const features = [
 export const HeroSection = ({ city }: HeroSectionProps) => {
   return (
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
+      {/* Security texture background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Subtle grid */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 59px, hsl(var(--deep-foreground)) 59px, hsl(var(--deep-foreground)) 60px), repeating-linear-gradient(90deg, transparent, transparent 59px, hsl(var(--deep-foreground)) 59px, hsl(var(--deep-foreground)) 60px)`,
+        }} />
+        {/* Floating security icons */}
+        <Shield className="absolute top-[15%] right-[10%] h-24 w-24 text-primary/[0.07] rotate-12" />
+        <Lock className="absolute top-[60%] right-[20%] h-16 w-16 text-primary/[0.06] -rotate-12" />
+        <KeyRound className="absolute top-[30%] left-[5%] h-20 w-20 text-primary/[0.05] rotate-6" />
+        <ShieldCheck className="absolute bottom-[20%] right-[8%] h-28 w-28 text-primary/[0.06] -rotate-6" />
+        <Fingerprint className="absolute top-[10%] left-[40%] h-20 w-20 text-primary/[0.05] rotate-45" />
+        <Lock className="absolute bottom-[30%] left-[15%] h-14 w-14 text-primary/[0.07] rotate-12" />
+        <Shield className="absolute top-[50%] left-[50%] h-32 w-32 text-primary/[0.04]" />
+        {/* Radial glow */}
         <div className="absolute inset-0" style={{
-          backgroundImage: "radial-gradient(circle at 20% 50%, hsl(276 55% 33% / 0.4) 0%, transparent 50%), radial-gradient(circle at 80% 20%, hsl(276 48% 44% / 0.3) 0%, transparent 50%)"
+          background: "radial-gradient(ellipse at 30% 50%, hsl(276 55% 33% / 0.15) 0%, transparent 60%)"
         }} />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 py-16 md:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left */}
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-sm font-medium text-primary-foreground">
-              <Zap className="h-4 w-4" />
-              Atendimento imediato
-            </div>
-            <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
-              Seu Certificado Digital pronto no mesmo dia.
-            </h1>
-            <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-lg">
-              Emita seu e-CPF ou e-CNPJ de forma rápida, segura e totalmente online em {city}.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <WhatsAppButton
-                buttonId="cta_hero_primary"
-                message={`Olá! Quero emitir meu Certificado Digital em ${city}.`}
-                className="text-base px-8 py-5 font-bold"
-              >
-                Emitir Certificado Agora
-              </WhatsAppButton>
-              <WhatsAppButton
-                buttonId="cta_hero_secondary"
-                message={`Olá! Quero falar sobre Certificado Digital em ${city}.`}
-                className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
-              >
-                Falar no WhatsApp
-              </WhatsAppButton>
-            </div>
+      <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-32">
+        <div className="max-w-3xl mx-auto text-center space-y-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-sm font-medium text-primary-foreground">
+            <Zap className="h-4 w-4" />
+            Atendimento imediato
           </div>
 
-          {/* Right */}
-          <div className="hidden md:flex justify-center">
-            <img
-              src={heroPerson}
-              alt="Profissional com laptop"
-              className="max-h-[420px] object-contain drop-shadow-2xl"
-            />
+          <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
+            Seu Certificado Digital pronto no mesmo dia.
+          </h1>
+
+          <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto">
+            Emita seu e-CPF ou e-CNPJ de forma rápida, segura e totalmente online em {city}.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <WhatsAppButton
+              buttonId="cta_hero_primary"
+              message={`Olá! Quero emitir meu Certificado Digital em ${city}.`}
+              className="text-base px-8 py-5 font-bold"
+            >
+              Emitir Certificado Agora
+            </WhatsAppButton>
+            <WhatsAppButton
+              buttonId="cta_hero_secondary"
+              message={`Olá! Quero falar sobre Certificado Digital em ${city}.`}
+              className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
+            >
+              Falar no WhatsApp
+            </WhatsAppButton>
+          </div>
+
+          {/* Trust shield */}
+          <div className="flex items-center justify-center gap-2 text-sm text-deep-foreground/60 pt-4">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <span>Certificação ICP-Brasil • 100% seguro e homologado</span>
           </div>
         </div>
 
