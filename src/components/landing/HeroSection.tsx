@@ -77,9 +77,9 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
           {features.map((feat, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 rounded-xl bg-deep-foreground/10 backdrop-blur-sm px-4 py-3 text-sm text-deep-foreground"
+              className="flex flex-col items-center gap-3 rounded-xl bg-deep-foreground/10 backdrop-blur-sm px-4 py-6 text-sm text-deep-foreground text-center"
             >
-              <feat.icon className="h-5 w-5 shrink-0 text-primary" />
+              <feat.icon className="h-8 w-8 shrink-0 text-primary" />
               <span>{feat.label}</span>
             </div>
           ))}
