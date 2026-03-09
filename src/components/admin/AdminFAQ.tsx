@@ -64,7 +64,7 @@ export const AdminFAQ = () => {
         return;
       }
     } else {
-      const { error } = await supabase.from("faqs").insert([parsed.data]);
+      const { error } = await supabase.from("faqs").insert([{ question: parsed.data.question, answer: parsed.data.answer, sort_order: parsed.data.sort_order }]);
       if (error) {
         toast({ title: "Erro ao criar", description: error.message, variant: "destructive" });
         return;
