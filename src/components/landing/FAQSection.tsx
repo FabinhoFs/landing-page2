@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -5,45 +6,33 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { WhatsAppButton } from "./WhatsAppButton";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FAQSectionProps {
   city: string;
 }
 
-const faqs = [
-  {
-    id: "1",
-    question: "Como funciona a emissão do Certificado Digital?",
-    answer:
-      "O processo é simples: você escolhe o tipo de certificado, envia os documentos necessários e realiza a validação por videoconferência. Em poucos minutos, seu certificado estará pronto para uso.",
-  },
-  {
-    id: "2",
-    question: "Preciso ir presencialmente para emitir?",
-    answer:
-      "Não! A emissão pode ser feita 100% online, por videoconferência. Você não precisa sair de casa ou do escritório.",
-  },
-  {
-    id: "3",
-    question: "Quais documentos são necessários?",
-    answer:
-      "Para pessoa física (e-CPF): documento de identidade com foto e CPF. Para pessoa jurídica (e-CNPJ): contrato social, CNPJ e documento do responsável legal.",
-  },
-  {
-    id: "4",
-    question: "Qual a validade do Certificado Digital?",
-    answer:
-      "Os certificados possuem validade de 1 a 3 anos, dependendo do modelo escolhido. Certificados A1 têm validade de 1 ano e A3 de até 3 anos.",
-  },
-  {
-    id: "5",
-    question: "Posso usar o certificado para o eSocial e SPED?",
-    answer:
-      "Sim! Nossos certificados são homologados pela ICP-Brasil e compatíveis com todas as obrigações fiscais, incluindo eSocial, SPED, NFe e muito mais.",
-  },
-];
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+}
 
 export const FAQSection = ({ city }: FAQSectionProps) => {
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      const { data } = await supabase
+        .from("faqs")
+        .select("id, question, answer")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (data) setFaqs(data);
+    };
+    fetchFaqs();
+  }, []);
+
   return (
     <section className="bg-background py-20 md:py-28">
       <div className="mx-auto max-w-3xl px-6">
