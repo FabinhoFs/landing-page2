@@ -1,5 +1,4 @@
 import { Clock, Users, MapPin, Shield, Zap, HeadphonesIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface BenefitsSectionProps {
   city: string;
@@ -42,30 +41,27 @@ export const BenefitsSection = ({ city }: BenefitsSectionProps) => {
   return (
     <section className="bg-background py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+        <div className="mb-14 text-center">
+          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
             Por que emitir seu Certificado Digital em{" "}
-            <span className="text-primary">{city}</span> conosco?
+            <span className="text-primary">{city}</span>?
           </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
-            Oferecemos a melhor experiência para profissionais e empresas de {city} que precisam de certificação digital.
+          <p className="mt-3 mx-auto max-w-2xl text-muted-foreground">
+            Oferecemos a melhor experiência para profissionais e empresas.
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {benefits.map((benefit) => (
-            <Card
-              key={benefit.title}
-              className="group border-border/50 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
-            >
-              <CardContent className="flex flex-col items-start gap-4 p-8">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <benefit.icon className="h-6 w-6" />
-                </div>
-                <h3 className="text-lg font-semibold text-card-foreground">{benefit.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{benefit.description}</p>
-              </CardContent>
-            </Card>
+            <div key={benefit.title} className="flex gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <benefit.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">{benefit.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

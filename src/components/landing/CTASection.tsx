@@ -1,5 +1,4 @@
 import { WhatsAppButton } from "./WhatsAppButton";
-import { Shield } from "lucide-react";
 
 interface CTASectionProps {
   city: string;
@@ -7,20 +6,18 @@ interface CTASectionProps {
 
 export const CTASection = ({ city }: CTASectionProps) => {
   return (
-    <section className="bg-deep py-20 md:py-28">
-      <div className="mx-auto max-w-4xl px-6 text-center">
-        <Shield className="mx-auto mb-6 h-12 w-12 text-secondary" />
-        <h2 className="mb-4 text-3xl font-bold text-deep-foreground md:text-4xl">
-          Garanta seu Certificado Digital em {city} agora
+    <section className="bg-card border-t border-border py-20 md:py-28">
+      <div className="mx-auto max-w-3xl px-6 text-center">
+        <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+          Garanta seu Certificado Digital agora
         </h2>
-        <p className="mx-auto mb-8 max-w-xl text-deep-foreground/70">
-          Emissão rápida, segura e sem burocracia. Atendimento especializado
-          para você e sua empresa.
+        <p className="mt-4 mb-8 text-muted-foreground">
+          Emissão rápida, segura e sem burocracia em {city}.
         </p>
         <WhatsAppButton
           buttonId="cta_bottom"
           message={`Olá! Quero garantir meu Certificado Digital em ${city}.`}
-          className="text-lg px-10 py-6"
+          className="text-base px-8 py-5"
         >
           Solicitar meu Certificado agora
         </WhatsAppButton>
