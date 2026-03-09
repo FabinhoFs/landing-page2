@@ -55,11 +55,15 @@ const Admin = () => {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-8">
-        <Tabs defaultValue="faq">
+        <Tabs defaultValue="dashboard">
           <TabsList className="mb-6">
+            <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
             <TabsTrigger value="faq">FAQ</TabsTrigger>
             <TabsTrigger value="prices">Preços</TabsTrigger>
           </TabsList>
+          <TabsContent value="dashboard">
+            <AdminDashboard />
+          </TabsContent>
           <TabsContent value="faq">
             <AdminFAQ />
           </TabsContent>
