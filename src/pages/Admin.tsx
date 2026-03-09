@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut } from "lucide-react";
 import { AdminFAQ } from "@/components/admin/AdminFAQ";
 import { AdminPrices } from "@/components/admin/AdminPrices";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -54,11 +55,15 @@ const Admin = () => {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-8">
-        <Tabs defaultValue="faq">
+        <Tabs defaultValue="dashboard">
           <TabsList className="mb-6">
+            <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
             <TabsTrigger value="faq">FAQ</TabsTrigger>
             <TabsTrigger value="prices">Preços</TabsTrigger>
           </TabsList>
+          <TabsContent value="dashboard">
+            <AdminDashboard />
+          </TabsContent>
           <TabsContent value="faq">
             <AdminFAQ />
           </TabsContent>
