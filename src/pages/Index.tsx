@@ -1,6 +1,7 @@
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { CTASection } from "@/components/landing/CTASection";
@@ -12,7 +13,6 @@ import { useEffect } from "react";
 const Index = () => {
   const { city } = useGeolocation();
 
-  // Update document title dynamically for SEO
   useEffect(() => {
     document.title = `Certificado Digital em ${city} | Emissão Rápida e Segura`;
     const metaDesc = document.querySelector('meta[name="description"]');
@@ -25,6 +25,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <HeroSection city={city} />
       <BenefitsSection city={city} />
+      <HowItWorksSection />
       <SocialProofSection />
       <FAQSection city={city} />
       <CTASection city={city} />
