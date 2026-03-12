@@ -151,31 +151,40 @@ export const AdminSettings = () => {
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-1.5">
-            <Label>Título de Autoridade</Label>
+            <Label>Campo 1 — Experiência / Certificação</Label>
+            <Input
+              value={settings.social_experience_text || ""}
+              onChange={(e) => updateField("social_experience_text", e.target.value)}
+              placeholder="Emissão oficial ICP-Brasil"
+            />
+            <p className="text-xs text-muted-foreground">📍 Ícone: Escudo — 1ª coluna da barra</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Campo 2 — Autoridade / Rapidez</Label>
             <Input
               value={settings.social_authority_title || ""}
               onChange={(e) => updateField("social_authority_title", e.target.value)}
-              placeholder="Atendimento humanizado"
+              placeholder="Rapidez e Segurança"
             />
-            <p className="text-xs text-muted-foreground">📍 Aparece na barra de prova social</p>
+            <p className="text-xs text-muted-foreground">📍 Ícone: Raio — 2ª coluna da barra</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Frase de Prova Social</Label>
+            <Label>Campo 3 — Prova Social</Label>
             <Input
               value={settings.social_proof_text || ""}
               onChange={(e) => updateField("social_proof_text", e.target.value)}
               placeholder="Junte-se a centenas de clientes..."
             />
-            <p className="text-xs text-muted-foreground">📍 Aparece na barra de prova social</p>
+            <p className="text-xs text-muted-foreground">📍 Ícone: Pessoas — 3ª coluna da barra</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Texto de Destaque de Experiência</Label>
+            <Label>Campo 4 — Suporte Humanizado</Label>
             <Input
-              value={settings.social_experience_text || ""}
-              onChange={(e) => updateField("social_experience_text", e.target.value)}
-              placeholder="Milhares de certificados emitidos com segurança"
+              value={settings.social_support_text || ""}
+              onChange={(e) => updateField("social_support_text", e.target.value)}
+              placeholder="Suporte completo e humanizado..."
             />
-            <p className="text-xs text-muted-foreground">📍 Aparece na barra de prova social</p>
+            <p className="text-xs text-muted-foreground">📍 Ícone: Headset — 4ª coluna da barra</p>
           </div>
         </CardContent>
       </Card>
