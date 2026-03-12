@@ -32,9 +32,10 @@ const fallbackProducts = [
 
 interface PricingSectionProps {
   city: string;
+  detected?: boolean;
 }
 
-export const PricingSection = ({ city }: PricingSectionProps) => {
+export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
     queryFn: async () => {
