@@ -41,6 +41,41 @@ export type Database = {
         }
         Relationships: []
       }
+      certificate_features: {
+        Row: {
+          certificate_id: string
+          created_at: string
+          icon: string
+          id: string
+          sort_order: number
+          text: string
+        }
+        Insert: {
+          certificate_id: string
+          created_at?: string
+          icon?: string
+          id?: string
+          sort_order?: number
+          text?: string
+        }
+        Update: {
+          certificate_id?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          sort_order?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_features_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "certificate_prices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificate_prices: {
         Row: {
           created_at: string
