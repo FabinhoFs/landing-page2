@@ -190,9 +190,10 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
           })}
         </div>
 
-        <p className="mt-8 text-center text-sm text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
-          🎧 {settings.social_support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim."}
-        </p>
+        <div className="mt-10 flex items-center justify-center gap-2 text-base font-medium text-foreground">
+          <Headphones className="h-5 w-5 text-primary shrink-0" />
+          <span>{settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim."}</span>
+        </div>
       </div>
     </section>
   );
