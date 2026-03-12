@@ -161,7 +161,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                   {[product.feature_1, product.feature_2, product.feature_3, product.feature_4]
                     .filter(Boolean)
                     .map((feature, i, arr) => {
-                      const Icon = i === arr.length - 1 ? Headphones : Check;
+                      const Icon = i === arr.length - 1 ? Headphones : CheckSquare;
                       return (
                         <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
                           <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
