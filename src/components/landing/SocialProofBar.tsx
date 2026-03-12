@@ -1,20 +1,18 @@
-import { Award, Headphones, Video, Users } from "lucide-react";
+import { Award, HeartHandshake, Video, Users } from "lucide-react";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
-interface SocialProofBarProps {
-  city: string | null;
-  detected: boolean;
-}
+export const SocialProofBar = () => {
+  const { settings } = useCtaMessages();
 
-export const SocialProofBar = ({ city, detected }: SocialProofBarProps) => {
-  const socialText = detected
-    ? `Junte-se a centenas de clientes satisfeitos em ${city}`
-    : "Junte-se a milhares de clientes satisfeitos em todo o Brasil";
+  const authorityTitle = settings.social_authority_title || "Atendimento humanizado";
+  const proofText = settings.social_proof_text || "Junte-se a centenas de clientes que confiam em nossa emissão oficial.";
+  const experienceText = settings.social_experience_text || "Milhares de certificados emitidos com segurança";
 
   const indicators = [
-    { icon: Award, text: "+5000 certificados emitidos" },
-    { icon: Headphones, text: "Atendimento especializado" },
+    { icon: Award, text: experienceText },
+    { icon: HeartHandshake, text: authorityTitle },
     { icon: Video, text: "Validação por videoconferência" },
-    { icon: Users, text: socialText },
+    { icon: Users, text: proofText },
   ];
 
   return (
