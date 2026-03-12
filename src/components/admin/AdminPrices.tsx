@@ -110,13 +110,21 @@ export const AdminPrices = () => {
     toast({ title: "Frase adicionada!" });
   };
 
-  const updateFeature = async (featureId: string, field: string, value: string) => {
-    const { error } = await supabase.from("certificate_features" as any).update({ [field]: value } as any).eq("id", featureId);
+  const updateFeatureLocal = (featureId: string, field: string, value: string) => {
+    setFeatureEdits((prev) => ({ ...prev, [featureId]: { ...prev[featureId], [field]: value } }));
+  };
+
+  const saveFeature = async (feat: CertFeature) => {
+    const changes = featureEdits[feat.id];
+    if (!changes) return;
+    const { error } = await supabase.from("certificate_features" as any).update(changes as any).eq("id", feat.id);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
       return;
     }
+    setFeatureEdits((prev) => { const next = { ...prev }; delete next[feat.id]; return next; });
     fetchData();
+    toast({ title: "Frase salva!" });
   };
 
   const deleteFeature = async (featureId: string) => {
