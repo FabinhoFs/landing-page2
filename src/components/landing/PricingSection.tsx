@@ -157,11 +157,6 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                   ))}
                 </ul>
 
-                <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Certificação ICP-Brasil
-                </div>
-
                 <WhatsAppButton
                   buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
                   message={
