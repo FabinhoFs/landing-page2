@@ -158,6 +158,10 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                       <span>{feat}</span>
                     </li>
                   ))}
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Headphones className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                    <span>{supportText}</span>
+                  </li>
                 </ul>
 
                 <WhatsAppButton
