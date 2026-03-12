@@ -164,7 +164,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                   <Countdown expiresAt={product.promo_expires_at} />
                 )}
 
-                <ul className="mt-6 space-y-3 flex-1">
+                <ul className="mt-6 space-y-3 flex-1 mb-6">
                   {cardFeatures.map((feature, i) => {
                     const Icon = i === 3 ? Headphones : Check;
                     return (
@@ -195,7 +195,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
           })}
         </div>
 
-        <p className="mt-8 text-center text-sm text-muted-foreground">
+        <p className="mt-8 text-center text-sm text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
           🎧 {settings.social_support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim."}
         </p>
       </div>
