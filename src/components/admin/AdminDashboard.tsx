@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
   Download, Trash2, BarChart3, MapPin, MousePointerClick, TrendingUp,
-  Trophy, Target, Filter,
+  Trophy, Target, Filter, FileText, Smartphone, Monitor,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
+import { jsPDF } from "jspdf";
 
 type Period = "today" | "7d" | "30d";
 type ProductFilter = "all" | "cpf" | "cnpj";
@@ -20,15 +21,18 @@ interface LogEntry {
   button_id: string;
   ip: string | null;
   city: string | null;
+  region: string | null;
+  device: string | null;
   user_agent: string | null;
   created_at: string;
 }
 
-const COLORS = [
+const COLORS_GREEN = ["hsl(142, 70%, 35%)", "hsl(142, 60%, 45%)", "hsl(142, 50%, 55%)", "hsl(142, 40%, 65%)"];
+const COLORS_BLUE = ["hsl(200, 70%, 40%)", "hsl(200, 60%, 50%)", "hsl(200, 50%, 60%)", "hsl(200, 40%, 70%)"];
+const COLORS_MIXED = [
   "hsl(142, 70%, 40%)", "hsl(200, 60%, 50%)", "hsl(280, 54%, 33%)",
   "hsl(30, 80%, 55%)", "hsl(350, 65%, 50%)", "hsl(180, 50%, 45%)",
-  "hsl(60, 70%, 45%)", "hsl(310, 50%, 55%)", "hsl(220, 55%, 55%)",
-  "hsl(280, 46%, 46%)",
+  "hsl(60, 70%, 45%)", "hsl(310, 50%, 55%)",
 ];
 
 const periodLabel: Record<Period, string> = {
@@ -56,15 +60,17 @@ const CTA_LABELS: Record<string, string> = {
 
 const getCtaLabel = (id: string) => CTA_LABELS[id] || id;
 
+const getCtaColor = (id: string) => {
+  if (id.includes("cpf")) return "hsl(142, 70%, 40%)";
+  if (id.includes("cnpj")) return "hsl(200, 60%, 50%)";
+  return "hsl(280, 54%, 33%)";
+};
+
 const getStartDate = (period: Period) => {
   const now = new Date();
-  if (period === "today") {
-    now.setHours(0, 0, 0, 0);
-  } else if (period === "7d") {
-    now.setDate(now.getDate() - 7);
-  } else {
-    now.setDate(now.getDate() - 30);
-  }
+  if (period === "today") now.setHours(0, 0, 0, 0);
+  else if (period === "7d") now.setDate(now.getDate() - 7);
+  else now.setDate(now.getDate() - 30);
   return now.toISOString();
 };
 
@@ -93,7 +99,7 @@ export const AdminDashboard = () => {
     if (error) {
       toast({ title: "Erro ao carregar logs", description: error.message, variant: "destructive" });
     } else {
-      setAllLogs(data || []);
+      setAllLogs((data as LogEntry[]) || []);
     }
     setLoading(false);
   };
@@ -114,18 +120,24 @@ export const AdminDashboard = () => {
 
   const topCity = useMemo(() => {
     const map: Record<string, number> = {};
-    logs.forEach((l) => {
-      const city = l.city || "Desconhecida";
-      map[city] = (map[city] || 0) + 1;
-    });
+    logs.forEach((l) => { map[l.city || "Desconhecida"] = (map[l.city || "Desconhecida"] || 0) + 1; });
     const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]);
     return sorted.length > 0 ? { name: sorted[0][0], count: sorted[0][1] } : null;
   }, [logs]);
 
   const popupRate = useMemo(() => {
     if (logs.length === 0) return 0;
-    const popupClicks = logs.filter((l) => l.button_id === "cta_exit").length;
-    return Math.round((popupClicks / logs.length) * 100);
+    return Math.round((logs.filter((l) => l.button_id === "cta_exit").length / logs.length) * 100);
+  }, [logs]);
+
+  // --- Device stats ---
+  const deviceStats = useMemo(() => {
+    let mobile = 0, desktop = 0;
+    logs.forEach((l) => {
+      if (l.device === "Mobile") mobile++;
+      else desktop++;
+    });
+    return { mobile, desktop, total: mobile + desktop };
   }, [logs]);
 
   // --- Charts ---
@@ -137,58 +149,135 @@ export const AdminDashboard = () => {
         : new Date(l.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
       map[key] = (map[key] || 0) + 1;
     });
-    return Object.entries(map)
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => a.name.localeCompare(b.name));
   }, [logs, period]);
 
   const cityData = useMemo(() => {
     const map: Record<string, number> = {};
     logs.forEach((l) => {
-      const city = l.city || "Desconhecida";
-      map[city] = (map[city] || 0) + 1;
+      const label = [l.city, l.region].filter(Boolean).join("/") || "Desconhecida";
+      map[label] = (map[label] || 0) + 1;
     });
-    return Object.entries(map)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
   }, [logs]);
 
   const buttonData = useMemo(() => {
     const map: Record<string, number> = {};
     logs.forEach((l) => { map[l.button_id] = (map[l.button_id] || 0) + 1; });
-    return Object.entries(map)
-      .map(([id, total]) => ({ name: getCtaLabel(id), total }))
-      .sort((a, b) => b.total - a.total);
+    return Object.entries(map).map(([id, total]) => ({ id, name: getCtaLabel(id), total, fill: getCtaColor(id) })).sort((a, b) => b.total - a.total);
   }, [logs]);
 
+  // --- Export CSV ---
   const exportCSV = () => {
-    const header = "Data,CTA,Cidade,IP\n";
+    const header = "Data,CTA,Cidade,UF,Dispositivo,IP\n";
     const rows = logs.map((l) =>
-      `"${new Date(l.created_at).toLocaleString("pt-BR")}","${getCtaLabel(l.button_id)}","${l.city || ""}","${l.ip || ""}"`
+      `"${new Date(l.created_at).toLocaleString("pt-BR")}","${getCtaLabel(l.button_id)}","${l.city || ""}","${l.region || ""}","${l.device || ""}","${l.ip || ""}"`
     ).join("\n");
     const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `relatorio_${period}_${product}.csv`;
-    a.click();
+    const a = document.createElement("a"); a.href = url;
+    a.download = `relatorio_${period}_${product}.csv`; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // --- Export PDF ---
+  const exportPDF = () => {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const w = pdf.internal.pageSize.getWidth();
+    const m = 15;
+    let y = m;
+
+    // Title
+    pdf.setFontSize(18);
+    pdf.setTextColor(40, 40, 40);
+    pdf.text("Relatório de Performance", m, y + 8);
+    pdf.setFontSize(11);
+    pdf.setTextColor(100);
+    pdf.text("Certificado Digital - AGIS", m, y + 15);
+    y += 22;
+
+    // Period & filter
+    pdf.setFontSize(10);
+    pdf.setTextColor(80);
+    pdf.text(`Período: ${periodLabel[period]}  |  Produto: ${productLabel[product]}`, m, y);
+    pdf.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, w - m - 60, y);
+    y += 10;
+
+    // Line
+    pdf.setDrawColor(200); pdf.line(m, y, w - m, y); y += 8;
+
+    // Summary
+    pdf.setFontSize(12); pdf.setTextColor(40);
+    pdf.text("Resumo", m, y); y += 7;
+    pdf.setFontSize(10); pdf.setTextColor(60);
+    pdf.text(`Total de Cliques: ${totalClicks}`, m, y); y += 6;
+    pdf.text(`CTA Campeão: ${topCta?.name || "—"} (${topCta?.count || 0} cliques)`, m, y); y += 6;
+    pdf.text(`Cidade Top 1: ${topCity?.name || "—"} (${topCity?.count || 0} cliques)`, m, y); y += 6;
+    pdf.text(`Taxa Pop-up: ${popupRate}%`, m, y); y += 6;
+    pdf.text(`Mobile: ${deviceStats.mobile} (${deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%)  |  Desktop: ${deviceStats.desktop} (${deviceStats.total ? Math.round(deviceStats.desktop / deviceStats.total * 100) : 0}%)`, m, y);
+    y += 10;
+
+    // Line
+    pdf.setDrawColor(200); pdf.line(m, y, w - m, y); y += 8;
+
+    // Table header
+    pdf.setFontSize(11); pdf.setTextColor(40);
+    pdf.text("Detalhamento de Eventos", m, y); y += 7;
+
+    pdf.setFontSize(8); pdf.setTextColor(255, 255, 255);
+    pdf.setFillColor(60, 60, 60);
+    pdf.rect(m, y - 4, w - 2 * m, 7, "F");
+    const cols = [m, m + 35, m + 70, m + 100, m + 125];
+    pdf.text("Data/Hora", cols[0] + 1, y);
+    pdf.text("CTA", cols[1] + 1, y);
+    pdf.text("Cidade", cols[2] + 1, y);
+    pdf.text("UF", cols[3] + 1, y);
+    pdf.text("Dispositivo", cols[4] + 1, y);
+    y += 6;
+
+    // Table rows
+    pdf.setTextColor(50);
+    const pageH = pdf.internal.pageSize.getHeight();
+    const maxRows = logs.slice(0, 200); // limit for performance
+
+    maxRows.forEach((l, i) => {
+      if (y > pageH - 15) {
+        pdf.addPage(); y = m;
+        // Re-draw header
+        pdf.setFontSize(8); pdf.setTextColor(255, 255, 255);
+        pdf.setFillColor(60, 60, 60);
+        pdf.rect(m, y - 4, w - 2 * m, 7, "F");
+        pdf.text("Data/Hora", cols[0] + 1, y);
+        pdf.text("CTA", cols[1] + 1, y);
+        pdf.text("Cidade", cols[2] + 1, y);
+        pdf.text("UF", cols[3] + 1, y);
+        pdf.text("Dispositivo", cols[4] + 1, y);
+        y += 6;
+        pdf.setTextColor(50);
+      }
+      if (i % 2 === 0) {
+        pdf.setFillColor(245, 245, 245);
+        pdf.rect(m, y - 4, w - 2 * m, 6, "F");
+      }
+      pdf.setFontSize(7);
+      pdf.text(new Date(l.created_at).toLocaleString("pt-BR"), cols[0] + 1, y);
+      pdf.text(getCtaLabel(l.button_id), cols[1] + 1, y);
+      pdf.text(l.city || "—", cols[2] + 1, y);
+      pdf.text(l.region || "—", cols[3] + 1, y);
+      pdf.text(l.device || "—", cols[4] + 1, y);
+      y += 6;
+    });
+
+    pdf.save(`relatorio_${period}_${product}.pdf`);
+    toast({ title: "PDF gerado com sucesso!" });
   };
 
   const clearOldLogs = async () => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const { error } = await supabase
-      .from("access_logs")
-      .delete()
-      .lt("created_at", thirtyDaysAgo.toISOString());
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Logs antigos removidos!" });
-      fetchLogs();
-    }
+    const { error } = await supabase.from("access_logs").delete().lt("created_at", thirtyDaysAgo.toISOString());
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else { toast({ title: "Logs antigos removidos!" }); fetchLogs(); }
   };
 
   const tooltipStyle = {
@@ -205,12 +294,7 @@ export const AdminDashboard = () => {
         <h2 className="text-lg font-bold text-foreground">📊 Dashboard de Performance</h2>
         <div className="flex flex-wrap gap-2">
           {(["today", "7d", "30d"] as Period[]).map((p) => (
-            <Button
-              key={p}
-              size="sm"
-              variant={period === p ? "default" : "outline"}
-              onClick={() => setPeriod(p)}
-            >
+            <Button key={p} size="sm" variant={period === p ? "default" : "outline"} onClick={() => setPeriod(p)}>
               {periodLabel[p]}
             </Button>
           ))}
@@ -222,12 +306,7 @@ export const AdminDashboard = () => {
         <Filter className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Produto:</span>
         {(["all", "cpf", "cnpj"] as ProductFilter[]).map((p) => (
-          <Button
-            key={p}
-            size="sm"
-            variant={product === p ? "secondary" : "ghost"}
-            onClick={() => setProduct(p)}
-          >
+          <Button key={p} size="sm" variant={product === p ? "secondary" : "ghost"} onClick={() => setProduct(p)}>
             {productLabel[p]}
           </Button>
         ))}
@@ -284,7 +363,29 @@ export const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Line chart - Volume over time */}
+      {/* Device breakdown mini-cards */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardContent className="flex items-center gap-3 py-4">
+            <Smartphone className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-xl font-bold text-foreground">{deviceStats.mobile}</p>
+              <p className="text-sm text-muted-foreground">Mobile ({deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%)</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 py-4">
+            <Monitor className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-xl font-bold text-foreground">{deviceStats.desktop}</p>
+              <p className="text-sm text-muted-foreground">Desktop ({deviceStats.total ? Math.round(deviceStats.desktop / deviceStats.total * 100) : 0}%)</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Line chart */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -300,14 +401,7 @@ export const AdminDashboard = () => {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
                 <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Line
-                  type="monotone"
-                  dataKey="total"
-                  stroke="hsl(200, 60%, 50%)"
-                  strokeWidth={2}
-                  dot={{ fill: "hsl(200, 60%, 50%)", r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
+                <Line type="monotone" dataKey="total" stroke="hsl(200, 60%, 50%)" strokeWidth={2} dot={{ fill: "hsl(200, 60%, 50%)", r: 4 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -317,7 +411,7 @@ export const AdminDashboard = () => {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Performance by CTA - Bar chart */}
+        {/* CTA bar chart with per-bar colors */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -333,7 +427,11 @@ export const AdminDashboard = () => {
                   <XAxis type="number" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={130} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="total" fill="hsl(142, 70%, 40%)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                    {buttonData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -342,29 +440,21 @@ export const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Geographic origin - Pie chart */}
+        {/* Geographic pie chart */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <MapPin className="h-4 w-4" />
-              Origem Geográfica
+              Origem Geográfica (Cidade/UF)
             </CardTitle>
           </CardHeader>
           <CardContent>
             {cityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie
-                    data={cityData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  >
+                  <Pie data={cityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
                     {cityData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      <Cell key={i} fill={COLORS_MIXED[i % COLORS_MIXED.length]} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} />
@@ -379,8 +469,11 @@ export const AdminDashboard = () => {
 
       {/* Actions */}
       <div className="flex flex-wrap gap-3 border-t border-border pt-4">
-        <Button onClick={exportCSV} disabled={logs.length === 0} className="gap-2">
-          <Download className="h-4 w-4" /> Exportar Relatório
+        <Button onClick={exportPDF} disabled={logs.length === 0} className="gap-2">
+          <FileText className="h-4 w-4" /> Gerar Relatório em PDF
+        </Button>
+        <Button variant="outline" onClick={exportCSV} disabled={logs.length === 0} className="gap-2">
+          <Download className="h-4 w-4" /> Exportar CSV
         </Button>
         <Button variant="outline" onClick={clearOldLogs} className="gap-2">
           <Trash2 className="h-4 w-4" /> Limpar logs &gt; 30 dias
