@@ -113,7 +113,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
           Escolha a melhor modalidade de certificado para você
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
             const features = [product.feature_1, product.feature_2, product.feature_3, product.feature_4].filter(Boolean);
