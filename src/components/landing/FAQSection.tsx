@@ -1,9 +1,11 @@
 import { Plus } from "lucide-react";
-import { ShieldCheck, MessageCircle } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { cn } from "@/lib/utils";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,
@@ -50,49 +52,48 @@ interface FAQSectionProps {
   city: string;
 }
 
+const FALLBACK_FAQS = [
+  { id: "1", question: "O certificado tem validade jurídica em todo o Brasil?", answer: "Sim! Todos os nossos certificados são emitidos sob a infraestrutura da ICP-Brasil, garantindo validade jurídica em todo o território nacional." },
+  { id: "2", question: "Realmente não preciso sair de casa para emitir?", answer: "Exatamente. Todo o processo é feito via videoconferência. Você só precisa de um celular ou computador com câmera e seus documentos em mãos." },
+  { id: "3", question: "Quanto tempo demora para ficar pronto?", answer: "Após a videoconferência (que dura cerca de 10 a 15 minutos), seu certificado é liberado para emissão imediata." },
+];
+
 export const FAQSection = ({ city }: FAQSectionProps) => {
-  const faqs = [
-    {
-      question: "O certificado tem validade jurídica em todo o Brasil?",
-      answer: `Sim! Todos os nossos certificados são emitidos sob a infraestrutura da ICP-Brasil, garantindo validade jurídica em ${city} e em todo o território nacional para assinar documentos, acessar a Receita Federal e emitir notas fiscais em qualquer estado.`,
+  const { data: dbFaqs } = useQuery({
+    queryKey: ["faqs_landing"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("faqs")
+        .select("id, question, answer, sort_order")
+        .eq("is_active", true)
+        .order("sort_order");
+      return data || [];
     },
-    {
-      question: "Realmente não preciso sair de casa para emitir?",
-      answer: "Exatamente. Todo o processo é feito via videoconferência. Você só precisa de um celular ou computador com câmera e seus documentos em mãos. Rápido, seguro e 100% online.",
-    },
-    {
-      question: "E se eu tiver dificuldade para instalar?",
-      answer: "Não se preocupe. Temos um time de suporte especializado que pode te auxiliar passo a passo. Se preferir, fazemos a instalação remota para você. Seu certificado estará pronto para uso.",
-    },
-    {
-      question: "Quanto tempo demora para ficar pronto?",
-      answer: "Após a videoconferência (que dura cerca de 10 a 15 minutos), seu certificado é liberado para emissão imediata. É a solução mais rápida do mercado.",
-    },
-    {
-      question: "Quais documentos eu preciso?",
-      answer: "Para e-CPF: RG ou CNH original. Para e-CNPJ: Documento de constituição da empresa (Contrato Social) e os documentos dos representantes legais.",
-    },
-  ];
+    staleTime: 60000,
+  });
+
+  const faqs = (dbFaqs && dbFaqs.length > 0) ? dbFaqs : FALLBACK_FAQS;
 
   return (
-    <section id="faq" className="bg-card py-20">
+    <section id="faq" className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-3xl px-6">
         <h2 className="text-center text-3xl font-bold text-card-foreground md:text-4xl mb-12">
           Perguntas Frequentes
         </h2>
 
         <AccordionPrimitive.Root type="single" collapsible className="space-y-4">
-          {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`}>
-              <AccordionTrigger className="text-foreground hover:no-underline">
+          {faqs.map((faq) => (
+            <AccordionItem key={faq.id} value={`faq-${faq.id}`}>
+              <AccordionTrigger className="text-foreground hover:no-underline min-h-[48px]">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent>{faq.answer}</AccordionContent>
+              <AccordionContent>
+                {faq.answer.replace(/\{cidade\}/g, city)}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </AccordionPrimitive.Root>
 
-        {/* Garantia badge */}
         <div className="mt-12 flex flex-col items-center gap-6">
           <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-6 py-4">
             <ShieldCheck className="h-8 w-8 text-primary flex-shrink-0" />
@@ -102,10 +103,7 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
             </div>
           </div>
 
-          {/* CTA WhatsApp */}
-          <p className="text-muted-foreground text-sm">
-            Ainda tem dúvidas?
-          </p>
+          <p className="text-muted-foreground text-sm">Ainda tem dúvidas?</p>
           <WhatsAppButton
             buttonId="faq_duvidas"
             message={`Olá! Tenho dúvidas sobre Certificado Digital em ${city}.`}

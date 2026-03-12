@@ -1,35 +1,30 @@
-import { Zap, Shield, Phone, Lock, FastForward, HeadphonesIcon, ShieldCheck } from "lucide-react";
+import { Zap, Lock, FastForward, HeadphonesIcon, ShieldCheck } from "lucide-react";
 import benefitsHero from "@/assets/benefits-hero.jpg";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
-const benefits = [
-  {
-    icon: FastForward,
-    title: "Velocidade",
-    desc: "Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Confiança",
-    desc: "Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados.",
-  },
-  {
-    icon: HeadphonesIcon,
-    title: "Atendimento Personalizado",
-    desc: "Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo.",
-  },
-  {
-    icon: Lock,
-    title: "Segurança",
-    desc: "Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital.",
-  },
+const DEFAULT_BENEFITS = [
+  { icon: FastForward, title: "Velocidade", desc: "Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento." },
+  { icon: ShieldCheck, title: "Confiança", desc: "Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados." },
+  { icon: HeadphonesIcon, title: "Atendimento Personalizado", desc: "Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo." },
+  { icon: Lock, title: "Segurança", desc: "Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital." },
 ];
 
+const ICONS = [FastForward, ShieldCheck, HeadphonesIcon, Lock];
+
 export const BenefitsSection = () => {
+  const { settings } = useCtaMessages();
+
+  const benefits = DEFAULT_BENEFITS.map((b, i) => ({
+    icon: ICONS[i],
+    title: settings[`benefit_${i + 1}_title`] || b.title,
+    desc: settings[`benefit_${i + 1}_desc`] || b.desc,
+  }));
+
   return (
-    <section className="bg-deep text-deep-foreground py-20">
+    <section className="bg-deep text-deep-foreground py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4 md:gap-6">
             {benefits.map((b, i) => (
               <div
                 key={i}
@@ -50,6 +45,7 @@ export const BenefitsSection = () => {
               src={benefitsHero}
               alt="Segurança digital biometria"
               className="max-h-[500px] object-contain rounded-2xl"
+              loading="lazy"
             />
           </div>
         </div>
