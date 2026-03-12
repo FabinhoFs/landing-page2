@@ -16,8 +16,20 @@ const features = [
 ];
 
 export const HeroSection = ({ city, detected }: HeroSectionProps) => {
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
   const heroMsg = getMessage("cta_hero", city);
+
+  const title = settings.hero_title || "Seu Certificado Digital";
+  const highlight = settings.hero_highlight || "pronto no mesmo dia.";
+  const subtitleDetected = settings.hero_subtitle_detected || "Videoconferência em menos de 5 minutos para você de {cidade} e região. Sem filas e 100% online.";
+  const subtitleFallback = settings.hero_subtitle_fallback || "Emissão de certificados com validade jurídica e atendimento simplificado em todo o território nacional.";
+  const btnPrimary = settings.hero_button_primary || "Emitir em 5 minutos";
+  const btnSecondary = settings.hero_button_secondary || "Quero meu certificado agora";
+  const microText = settings.hero_micro_text || "✨ Atendimento imediato via videoconferência";
+
+  const subtitle = detected && city
+    ? subtitleDetected.replace(/\{cidade\}/g, city)
+    : subtitleFallback;
 
   return (
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
@@ -42,14 +54,12 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           </div>
 
           <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
-            Seu Certificado Digital{" "}
-            <span className="text-primary">pronto no mesmo dia.</span>
+            {title}{" "}
+            <span className="text-primary">{highlight}</span>
           </h1>
 
           <p className="text-base md:text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500 whitespace-normal" style={{ lineHeight: 1.6 }}>
-            {detected && city
-              ? <>Videoconferência em menos de 5 minutos para você de <span className="font-bold text-primary inline-block px-1">{city}</span> e região. Sem filas e 100% online.</>
-              : "Emissão de certificados com validade jurídica e atendimento simplificado em todo o território nacional."}
+            {subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -58,18 +68,18 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
               message={heroMsg}
               className="text-base px-8 py-5 font-bold"
             >
-              Emitir em 5 minutos
+              {btnPrimary}
             </WhatsAppButton>
             <WhatsAppButton
               buttonId="cta_hero_secondary"
               message={heroMsg}
               className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
             >
-              Quero meu certificado agora
+              {btnSecondary}
             </WhatsAppButton>
           </div>
 
-          <p className="text-sm text-deep-foreground/60">✨ Atendimento imediato via videoconferência</p>
+          <p className="text-sm text-deep-foreground/60">{microText}</p>
 
           <div className="flex items-center justify-center gap-2 text-sm text-deep-foreground/60 pt-4">
             <ShieldCheck className="h-5 w-5 text-primary" />
