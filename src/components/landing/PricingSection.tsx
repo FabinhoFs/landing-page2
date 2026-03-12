@@ -10,10 +10,10 @@ const fallbackProducts = [
     promotional_price: null as number | null,
     is_promotion_active: false,
     features: [
-      "Assinar documentos com validade jurídica",
-      "Relacionar-se com a Receita Federal do Brasil (RFB)",
-      "Acesso aos serviços oferecidos pelos governos estaduais e federal",
-      "Acesso ao programa Conectividade Social e muito mais",
+      "Assinar documentos de qualquer lugar com validade jurídica",
+      "Acesso total ao e-CAC e serviços da Receita Federal",
+      "Segurança garantida pelo padrão ICP-Brasil",
+      "Declaração de IR e consultas sem filas ou burocracia",
     ],
   },
   {
@@ -22,10 +22,10 @@ const fallbackProducts = [
     promotional_price: null as number | null,
     is_promotion_active: false,
     features: [
-      "Autenticação em sistemas públicos ou privados em nome da sua empresa",
-      "Assinar documentos com validade jurídica",
-      "Relacionar-se com a Receita Federal do Brasil (RFB) e acessar o programa Conectividade Social",
-      "Emitir a Nota Fiscal Eletrônica (NF-e) e a Nota Fiscal de Consumidor Eletrônica (NFC-e) e muito mais",
+      "Emissão de notas fiscais (NF-e/NFC-e) sem interrupções",
+      "Conformidade total com FGTS, e-Social e obrigações acessórias",
+      "Gestão segura de contratos e procurações digitais",
+      "Autenticação empresarial em sistemas públicos e privados",
     ],
   },
 ];
