@@ -44,15 +44,18 @@ export const AdminSettings = () => {
 
   const handleSave = async () => {
     setLoading(true);
-    const promises = Object.entries(settings).map(([key, value]) =>
-      supabase
-        .from("site_settings" as any)
-        .update({ value, updated_at: new Date().toISOString() } as any)
-        .eq("key", key)
-    );
 
-    const results = await Promise.all(promises);
-    const hasError = results.some((r) => r.error);
+    const payload = Object.entries(settings).map(([key, value]) => ({
+      key,
+      value,
+      updated_at: new Date().toISOString(),
+    }));
+
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .upsert(payload as any, { onConflict: "key" });
+
+    const hasError = Boolean(error);
 
     if (hasError) {
       toast({ title: "Erro ao salvar", description: "Verifique os campos e tente novamente.", variant: "destructive" });
