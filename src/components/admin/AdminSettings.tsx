@@ -96,6 +96,7 @@ export const AdminSettings = () => {
             <div key={field.key} className="space-y-1.5">
               <Label htmlFor={field.key} className="text-sm font-semibold">{field.label}</Label>
               <p className="text-xs text-muted-foreground">📍 {field.position}</p>
+              <p className="text-[11px] font-mono text-muted-foreground/60">Nome interno: <code className="bg-muted px-1 rounded">{field.key}</code></p>
               <Input
                 id={field.key}
                 value={settings[field.key] || ""}
