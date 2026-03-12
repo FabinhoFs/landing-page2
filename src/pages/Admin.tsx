@@ -61,6 +61,7 @@ const Admin = () => {
             <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
             <TabsTrigger value="faq">FAQ</TabsTrigger>
             <TabsTrigger value="prices">Preços</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
           <TabsContent value="dashboard">
             <AdminDashboard />
