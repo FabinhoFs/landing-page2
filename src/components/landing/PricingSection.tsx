@@ -18,30 +18,36 @@ interface DbPrice {
   feature_4: string;
 }
 
+const SHARED_FEATURES = [
+  "Assinar documentos de qualquer lugar com validade jurídica",
+  "Acesso total ao e-CAC e serviços da Receita Federal",
+  "Segurança garantida pelo padrão ICP-Brasil",
+];
+
 const fallbackProducts: DbPrice[] = [
   {
     id: "1",
     name: "e-CPF A1",
-    price: 139.9,
+    price: 139.90,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
-    feature_1: "Assinar documentos de qualquer lugar com validade jurídica",
-    feature_2: "Acesso total ao e-CAC e serviços da Receita Federal",
-    feature_3: "Segurança garantida pelo padrão ICP-Brasil",
-    feature_4: "Declaração de IR e consultas sem filas ou burocracia",
+    feature_1: SHARED_FEATURES[0],
+    feature_2: SHARED_FEATURES[1],
+    feature_3: SHARED_FEATURES[2],
+    feature_4: "",
   },
   {
     id: "2",
     name: "e-CNPJ A1",
-    price: 219.9,
+    price: 219.90,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
-    feature_1: "Emissão de notas fiscais (NF-e/NFC-e) sem interrupções",
-    feature_2: "Conformidade total com FGTS, e-Social e obrigações acessórias",
-    feature_3: "Gestão segura de contratos e procurações digitais",
-    feature_4: "Autenticação empresarial em sistemas públicos e privados",
+    feature_1: SHARED_FEATURES[0],
+    feature_2: SHARED_FEATURES[1],
+    feature_3: SHARED_FEATURES[2],
+    feature_4: "",
   },
 ];
 
