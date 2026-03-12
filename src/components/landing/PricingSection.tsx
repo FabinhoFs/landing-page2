@@ -165,16 +165,15 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1">
-                  {SHARED_FEATURES.map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <Headphones className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                    <span>{supportText}</span>
-                  </li>
+                  {cardFeatures.map((feature, i) => {
+                    const Icon = i === 3 ? Headphones : Check;
+                    return (
+                      <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
+                        <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <WhatsAppButton
