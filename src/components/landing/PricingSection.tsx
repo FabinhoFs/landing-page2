@@ -12,44 +12,15 @@ interface DbPrice {
   promotional_price: number | null;
   is_promotion_active: boolean;
   promo_expires_at: string | null;
-  feature_1: string;
-  feature_2: string;
-  feature_3: string;
-  feature_4: string;
 }
 
-const SHARED_FEATURES = [
-  "Assinar documentos de qualquer lugar com validade jurídica",
-  "Acesso total ao e-CAC e serviços da Receita Federal",
-  "Segurança garantida pelo padrão ICP-Brasil",
-];
-
-const fallbackProducts: DbPrice[] = [
-  {
-    id: "1",
-    name: "e-CPF A1",
-    price: 139.90,
-    promotional_price: null,
-    is_promotion_active: false,
-    promo_expires_at: null,
-    feature_1: SHARED_FEATURES[0],
-    feature_2: SHARED_FEATURES[1],
-    feature_3: SHARED_FEATURES[2],
-    feature_4: "",
-  },
-  {
-    id: "2",
-    name: "e-CNPJ A1",
-    price: 219.90,
-    promotional_price: null,
-    is_promotion_active: false,
-    promo_expires_at: null,
-    feature_1: SHARED_FEATURES[0],
-    feature_2: SHARED_FEATURES[1],
-    feature_3: SHARED_FEATURES[2],
-    feature_4: "",
-  },
-];
+interface DbFeature {
+  id: string;
+  certificate_id: string;
+  text: string;
+  icon: string;
+  sort_order: number;
+}
 
 function isPromoActive(item: DbPrice): boolean {
   if (!item.is_promotion_active || !item.promotional_price) return false;
@@ -99,22 +70,36 @@ interface PricingSectionProps {
   detected?: boolean;
 }
 
+const ICON_MAP: Record<string, typeof CheckSquare> = {
+  check: CheckSquare,
+  headphones: Headphones,
+};
+
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
-  const fallbackSupportText = "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
   const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
+
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
     queryFn: async () => {
-      const { data } = await supabase.from("certificate_prices").select("*");
+      const { data } = await supabase.from("certificate_prices").select("id, name, price, promotional_price, is_promotion_active, promo_expires_at");
       return data as unknown as DbPrice[] | null;
     },
     refetchInterval: 60000,
   });
 
+  const { data: features } = useQuery({
+    queryKey: ["certificate_features"],
+    queryFn: async () => {
+      const { data } = await supabase.from("certificate_features" as any).select("*").order("sort_order");
+      return data as unknown as DbFeature[] | null;
+    },
+    refetchInterval: 60000,
+  });
+
   const products = prices && prices.length > 0
-    ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
-    : fallbackProducts;
+    ? prices.filter((p) => p.name.includes("A1"))
+    : [];
 
   return (
     <section className="bg-background py-20">
@@ -126,6 +111,9 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto items-stretch">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
+            const productFeatures = (features || [])
+              .filter(f => f.certificate_id === product.id)
+              .sort((a, b) => a.sort_order - b.sort_order);
 
             return (
               <div
@@ -158,17 +146,15 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1 mb-6">
-                  {[product.feature_1, product.feature_2, product.feature_3, product.feature_4]
-                    .filter(Boolean)
-                    .map((feature, i, arr) => {
-                      const Icon = i === arr.length - 1 ? Headphones : CheckSquare;
-                      return (
-                        <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
-                          <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                          <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
-                        </li>
-                      );
-                    })}
+                  {productFeatures.map((feat) => {
+                    const Icon = ICON_MAP[feat.icon] || CheckSquare;
+                    return (
+                      <li key={feat.id} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                        <span>{feat.text}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <WhatsAppButton
