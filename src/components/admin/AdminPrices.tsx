@@ -35,7 +35,7 @@ interface CertFeature {
   sort_order: number;
 }
 
-const FEATURE_MAX_CHARS = 50;
+const FEATURE_MAX_CHARS = 80;
 
 export const AdminPrices = () => {
   const [prices, setPrices] = useState<CertPrice[]>([]);
