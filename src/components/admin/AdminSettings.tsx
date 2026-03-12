@@ -141,6 +141,45 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Social Proof & Authority */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="h-5 w-5 text-primary" />
+            Prova Social e Autoridade
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="space-y-1.5">
+            <Label>Título de Autoridade</Label>
+            <Input
+              value={settings.social_authority_title || ""}
+              onChange={(e) => updateField("social_authority_title", e.target.value)}
+              placeholder="Atendimento humanizado"
+            />
+            <p className="text-xs text-muted-foreground">📍 Aparece na barra de prova social</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Frase de Prova Social</Label>
+            <Input
+              value={settings.social_proof_text || ""}
+              onChange={(e) => updateField("social_proof_text", e.target.value)}
+              placeholder="Junte-se a centenas de clientes..."
+            />
+            <p className="text-xs text-muted-foreground">📍 Aparece na barra de prova social</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Texto de Destaque de Experiência</Label>
+            <Input
+              value={settings.social_experience_text || ""}
+              onChange={(e) => updateField("social_experience_text", e.target.value)}
+              placeholder="Milhares de certificados emitidos com segurança"
+            />
+            <p className="text-xs text-muted-foreground">📍 Aparece na barra de prova social</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Popup Settings */}
       <Card>
         <CardHeader>
