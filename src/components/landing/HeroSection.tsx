@@ -1,5 +1,5 @@
 import { WhatsAppButton } from "./WhatsAppButton";
-import { Smartphone, CheckCircle, Lock, Video, Clock, Zap, Shield, KeyRound, ShieldCheck, Fingerprint } from "lucide-react";
+import { Smartphone, CheckCircle, Lock, Video, Clock, Zap, Shield, KeyRound, ShieldCheck, Fingerprint, MapPin } from "lucide-react";
 
 interface HeroSectionProps {
   city: string;
@@ -18,8 +18,6 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
       {/* Security texture background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Subtle grid */}
-        {/* Floating security icons */}
         <Shield className="absolute top-[15%] right-[10%] h-24 w-24 text-primary/[0.07] rotate-12" />
         <Lock className="absolute top-[60%] right-[20%] h-16 w-16 text-primary/[0.06] -rotate-12" />
         <KeyRound className="absolute top-[30%] left-[5%] h-20 w-20 text-primary/[0.05] rotate-6" />
@@ -27,7 +25,6 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
         <Fingerprint className="absolute top-[10%] left-[40%] h-20 w-20 text-primary/[0.05] rotate-45" />
         <Lock className="absolute bottom-[30%] left-[15%] h-14 w-14 text-primary/[0.07] rotate-12" />
         <Shield className="absolute top-[50%] left-[50%] h-32 w-32 text-primary/[0.04]" />
-        {/* Radial glow */}
         <div className="absolute inset-0" style={{
           background: "radial-gradient(ellipse at 30% 50%, hsl(276 55% 33% / 0.15) 0%, transparent 60%)"
         }} />
@@ -41,11 +38,16 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
           </div>
 
           <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
-            Seu Certificado Digital pronto no mesmo dia.
+            O Certificado Digital mais rápido de{" "}
+            <span className="inline-flex items-center gap-1.5 text-primary">
+              <MapPin className="h-8 w-8 md:h-10 md:w-10 shrink-0" />
+              {city}
+            </span>{" "}
+            e região.
           </h1>
 
           <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto">
-            Emita seu e-CPF ou e-CNPJ de forma rápida, segura e totalmente online em {city}.
+            Emita seu e-CPF ou e-CNPJ 100% online em até 30 minutos. Sem burocracia, com validade jurídica e o suporte que você precisa.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -54,7 +56,7 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
               message={`Olá! Quero emitir meu Certificado Digital em ${city}.`}
               className="text-base px-8 py-5 font-bold"
             >
-              Emitir Certificado Agora
+              Emitir meu Certificado agora
             </WhatsAppButton>
             <WhatsAppButton
               buttonId="cta_hero_secondary"
