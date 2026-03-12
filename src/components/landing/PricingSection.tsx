@@ -162,9 +162,9 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 <WhatsAppButton
                   buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
                   message={
-                    detected
-                      ? `Olá! Vi o site e quero meu ${product.name}. Estou em ${city}, como iniciamos?`
-                      : `Olá! Vi o site e quero meu certificado agora. Como iniciamos?`
+                    product.name.toLowerCase().includes("cpf")
+                      ? getMessage("cta_ecpf", city)
+                      : getMessage("cta_ecnpj", city)
                   }
                   className="mt-4 w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
                 >
