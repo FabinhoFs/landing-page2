@@ -141,6 +141,29 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Pricing Section Title */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MessageCircle className="h-5 w-5 text-primary" />
+            Título da Seção de Preços
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>Título exibido acima dos cards de e-CPF e e-CNPJ</Label>
+            <Input
+              value={settings.pricing_section_title || ""}
+              onChange={(e) => updateField("pricing_section_title", e.target.value)}
+              placeholder="Escolha a melhor modalidade de certificado para você"
+            />
+            <p className="text-xs text-muted-foreground">
+              📍 Aparece como título principal da seção de preços na Landing Page
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Social Proof & Authority */}
       <Card>
         <CardHeader>
