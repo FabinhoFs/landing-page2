@@ -164,7 +164,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                   <Countdown expiresAt={product.promo_expires_at} />
                 )}
 
-                <ul className="mt-6 space-y-3 flex-1">
+                <ul className="mt-6 space-y-3 flex-1 mb-6">
                   {cardFeatures.map((feature, i) => {
                     const Icon = i === 3 ? Headphones : Check;
                     return (
