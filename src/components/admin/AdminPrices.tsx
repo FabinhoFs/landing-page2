@@ -43,6 +43,7 @@ interface CertFeature {
 export const AdminPrices = () => {
   const [prices, setPrices] = useState<CertPrice[]>([]);
   const [features, setFeatures] = useState<CertFeature[]>([]);
+  const [featureEdits, setFeatureEdits] = useState<Record<string, Partial<CertFeature>>>({});
   const [edits, setEdits] = useState<Record<string, Partial<CertPrice>>>({});
   const { toast } = useToast();
 
@@ -52,7 +53,10 @@ export const AdminPrices = () => {
       supabase.from("certificate_features" as any).select("*").order("sort_order"),
     ]);
     if (pricesData) setPrices(pricesData as unknown as CertPrice[]);
-    if (featuresData) setFeatures(featuresData as unknown as CertFeature[]);
+    if (featuresData) {
+      setFeatures(featuresData as unknown as CertFeature[]);
+      setFeatureEdits({});
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
