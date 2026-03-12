@@ -46,10 +46,10 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
             <span className="text-primary">pronto no mesmo dia.</span>
           </h1>
 
-          <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500">
-            {detected
-              ? `Videoconferência em menos de 5 minutos para você de ${city} e região. Sem filas e 100% online.`
-              : "Videoconferência em menos de 5 minutos com atendimento em todo o Brasil. Sem burocracia e 100% online."}
+          <p className="text-base md:text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500 whitespace-normal" style={{ lineHeight: 1.6 }}>
+            {detected && city
+              ? <>Videoconferência em menos de 5 minutos para você de <span className="font-bold text-primary inline-block px-1">{city}</span> e região. Sem filas e 100% online.</>
+              : "Líder em emissão expressa para todo o Brasil. Videoconferência em menos de 5 minutos, sem burocracia e 100% online."}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
