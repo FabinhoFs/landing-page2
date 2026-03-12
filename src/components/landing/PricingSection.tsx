@@ -102,6 +102,7 @@ interface PricingSectionProps {
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
   const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
+  const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
     queryFn: async () => {
@@ -118,8 +119,8 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
   return (
     <section className="bg-background py-20">
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl mb-12">
-          Escolha a melhor modalidade de certificado para você
+        <h2 className="text-center text-2xl font-bold text-foreground md:text-4xl mb-12 whitespace-nowrap md:whitespace-normal">
+          {sectionTitle}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto items-stretch">
