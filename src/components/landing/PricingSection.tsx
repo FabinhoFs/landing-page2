@@ -103,7 +103,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
   });
 
   const products = prices && prices.length > 0
-    ? prices.map((p) => ({ ...p }))
+    ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
     : fallbackProducts;
 
   return (
