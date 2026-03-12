@@ -23,6 +23,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   const discount = settings.popup_discount || "20";
   const title = settings.popup_title || "ESPERA! NÃO VÁ EMBORA.";
   const subtitle = settings.popup_subtitle || "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.";
+  const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
 
   const trigger = useCallback(() => {
     if (triggered || !popupEnabled) return;
