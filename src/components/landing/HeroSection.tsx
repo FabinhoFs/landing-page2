@@ -43,26 +43,14 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           </div>
 
           <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
-            {detected ? (
-              <>
-                <span className="transition-opacity duration-500">Certificado Digital em{" "}</span>
-                <span className="inline-flex items-center gap-1.5 text-primary transition-opacity duration-500">
-                  <MapPin className="h-8 w-8 md:h-10 md:w-10 shrink-0" />
-                  {city}
-                </span>
-                {" "}e região
-              </>
-            ) : (
-              <span className="transition-opacity duration-500">
-                Certificado Digital 100% Online com emissão hoje
-              </span>
-            )}
+            Seu Certificado Digital{" "}
+            <span className="text-primary">pronto no mesmo dia.</span>
           </h1>
 
           <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500">
             {detected
-              ? `Líder em emissão expressa para empresas de ${city}.`
-              : "Líder em emissão expressa com validade em todo o território nacional."}
+              ? `Videoconferência em menos de 5 minutos para você de ${city} e região. Sem filas e 100% online.`
+              : "Videoconferência em menos de 5 minutos com atendimento em todo o Brasil. Sem burocracia e 100% online."}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -71,16 +59,18 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
               message={whatsMsg}
               className="text-base px-8 py-5 font-bold"
             >
-              Emitir meu Certificado agora
+              Emitir em 5 minutos
             </WhatsAppButton>
             <WhatsAppButton
               buttonId="cta_hero_secondary"
               message={whatsMsg}
               className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
             >
-              Falar no WhatsApp
+              Quero meu certificado agora
             </WhatsAppButton>
           </div>
+
+          <p className="text-sm text-deep-foreground/60">✨ Atendimento imediato via videoconferência</p>
 
           {/* Trust shield */}
           <div className="flex items-center justify-center gap-2 text-sm text-deep-foreground/60 pt-4">
