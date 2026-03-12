@@ -97,9 +97,15 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
     refetchInterval: 60000,
   });
 
-  const products = prices && prices.length > 0
-    ? prices.filter((p) => p.name.includes("A1"))
-    : [];
+  // Fixed order: e-CPF first (left), e-CNPJ second (right)
+  const allProducts = prices?.filter((p) => p.name.includes("A1")) || [];
+  const cpfProduct = allProducts.find(p => p.name.toLowerCase().includes("cpf"));
+  const cnpjProduct = allProducts.find(p => p.name.toLowerCase().includes("cnpj"));
+  const products = [cpfProduct, cnpjProduct].filter(Boolean) as DbPrice[];
+
+  // Bestseller badge config
+  const bestsellerActive = settings.bestseller_active === "true";
+  const bestsellerProduct = settings.bestseller_product || "cnpj"; // "cpf" or "cnpj"
 
   return (
     <section className="bg-background py-20">
