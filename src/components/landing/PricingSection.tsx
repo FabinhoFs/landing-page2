@@ -20,8 +20,8 @@ interface DbPrice {
 const fallbackProducts: DbPrice[] = [
   {
     id: "1",
-    name: "e-CPF",
-    price: 127,
+    name: "e-CPF A1",
+    price: 139.9,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
@@ -32,8 +32,8 @@ const fallbackProducts: DbPrice[] = [
   },
   {
     id: "2",
-    name: "e-CNPJ",
-    price: 177,
+    name: "e-CNPJ A1",
+    price: 219.9,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
