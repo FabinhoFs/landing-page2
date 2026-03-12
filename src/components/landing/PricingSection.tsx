@@ -126,7 +126,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
   return (
     <section className="bg-background py-20">
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-2xl font-bold text-foreground md:text-4xl mb-12 whitespace-nowrap md:whitespace-normal">
+        <h2 className="mb-12 text-center text-xl font-bold text-foreground sm:text-2xl md:text-3xl lg:text-4xl whitespace-normal md:whitespace-nowrap">
           {sectionTitle}
         </h2>
 
