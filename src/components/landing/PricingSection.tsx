@@ -116,13 +116,6 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
     ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
     : fallbackProducts;
 
-  const cardFeatures = [
-    settings.card_feature_1 || "Assinaturas com validade jurídica em todo o Brasil",
-    settings.card_feature_2 || "Acesso pleno ao e-CAC e serviços da Receita Federal",
-    settings.card_feature_3 || "Segurança máxima garantida pelo padrão ICP-Brasil",
-    settings.card_feature_4 || settings.support_text || "Suporte completo e humanizado: conte conosco do início ao fim.",
-  ];
-
   return (
     <section className="bg-background py-20">
       <div className="mx-auto max-w-5xl px-6">
