@@ -1,4 +1,4 @@
-import { Check, Headphones } from "lucide-react";
+import { CheckSquare, Headphones } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
