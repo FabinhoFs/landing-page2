@@ -208,30 +208,39 @@ export const AdminPrices = () => {
                     </Button>
                   </div>
 
-                  {certFeatures.map((feat, idx) => (
-                    <div key={feat.id} className="flex items-start gap-2">
-                      <GripVertical className="h-4 w-4 mt-3 text-muted-foreground shrink-0" />
-                      <div className="flex-1 space-y-1">
-                        <Input
-                          value={feat.text}
-                          onChange={(e) => updateFeature(feat.id, "text", e.target.value)}
-                          placeholder={`Frase ${idx + 1}`}
-                        />
+                  {certFeatures.map((feat, idx) => {
+                    const currentFeat = { ...feat, ...featureEdits[feat.id] };
+                    const hasChanges = !!featureEdits[feat.id];
+                    return (
+                      <div key={feat.id} className="flex items-start gap-2">
+                        <GripVertical className="h-4 w-4 mt-3 text-muted-foreground shrink-0" />
+                        <div className="flex-1 space-y-1">
+                          <Input
+                            value={currentFeat.text}
+                            onChange={(e) => updateFeatureLocal(feat.id, "text", e.target.value)}
+                            placeholder={`Frase ${idx + 1}`}
+                          />
+                        </div>
+                        <Select value={currentFeat.icon} onValueChange={(v) => updateFeatureLocal(feat.id, "icon", v)}>
+                          <SelectTrigger className="w-32 shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="check">✅ Check</SelectItem>
+                            <SelectItem value="headphones">🎧 Suporte</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {hasChanges && (
+                          <Button size="icon" variant="outline" className="shrink-0" onClick={() => saveFeature(feat)}>
+                            <Save className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button size="icon" variant="ghost" className="shrink-0 text-destructive hover:text-destructive" onClick={() => deleteFeature(feat.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Select value={feat.icon} onValueChange={(v) => updateFeature(feat.id, "icon", v)}>
-                        <SelectTrigger className="w-32 shrink-0">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="check">✅ Check</SelectItem>
-                          <SelectItem value="headphones">🎧 Suporte</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button size="icon" variant="ghost" className="shrink-0 text-destructive hover:text-destructive" onClick={() => deleteFeature(feat.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {certFeatures.length === 0 && (
                     <p className="text-sm text-muted-foreground italic">Nenhuma frase cadastrada. Clique em "Adicionar frase".</p>
