@@ -101,7 +101,7 @@ interface PricingSectionProps {
 
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
-  const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
+  const fallbackSupportText = "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
   const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
@@ -116,10 +116,17 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
     ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
     : fallbackProducts;
 
+  const cardFeatures = [
+    settings.social_experience_text || "Emissão oficial ICP-Brasil",
+    settings.social_authority_title || "Rapidez e Segurança",
+    settings.social_proof_text || "Junte-se a quem confia em nossa emissão oficial.",
+    settings.social_support_text || settings.support_text || fallbackSupportText,
+  ];
+
   return (
     <section className="bg-background py-20">
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-2xl font-bold text-foreground md:text-4xl mb-12 whitespace-nowrap md:whitespace-normal">
+        <h2 className="mb-12 text-center text-xl font-bold text-foreground sm:text-2xl md:text-3xl lg:text-4xl whitespace-normal md:whitespace-nowrap">
           {sectionTitle}
         </h2>
 
@@ -158,16 +165,15 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1">
-                  {SHARED_FEATURES.map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <Headphones className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                    <span>{supportText}</span>
-                  </li>
+                  {cardFeatures.map((feature, i) => {
+                    const Icon = i === 3 ? Headphones : Check;
+                    return (
+                      <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
+                        <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <WhatsAppButton

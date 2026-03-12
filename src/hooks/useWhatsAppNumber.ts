@@ -11,11 +11,14 @@ export function useWhatsAppNumber() {
         .from("site_settings" as any)
         .select("value")
         .eq("key", "whatsapp_number")
-        .single();
-      return (data as any)?.value as string | null;
+        .maybeSingle();
+      return ((data as any)?.value as string | null)?.replace(/\D/g, "") || null;
     },
-    staleTime: 60000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   return data || FALLBACK;
 }
+
