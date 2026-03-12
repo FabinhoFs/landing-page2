@@ -116,13 +116,6 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
     ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
     : fallbackProducts;
 
-  const cardFeatures = [
-    settings.card_feature_1 || "Assinaturas com validade jurídica em todo o Brasil",
-    settings.card_feature_2 || "Acesso pleno ao e-CAC e serviços da Receita Federal",
-    settings.card_feature_3 || "Segurança máxima garantida pelo padrão ICP-Brasil",
-    settings.card_feature_4 || settings.support_text || "Suporte completo e humanizado: conte conosco do início ao fim.",
-  ];
-
   return (
     <section className="bg-background py-20">
       <div className="mx-auto max-w-5xl px-6">
@@ -165,15 +158,17 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1 mb-6">
-                  {cardFeatures.map((feature, i) => {
-                    const Icon = i === 3 ? Headphones : Check;
-                    return (
-                      <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
-                        <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
-                      </li>
-                    );
-                  })}
+                  {[product.feature_1, product.feature_2, product.feature_3, product.feature_4]
+                    .filter(Boolean)
+                    .map((feature, i, arr) => {
+                      const Icon = i === arr.length - 1 ? Headphones : Check;
+                      return (
+                        <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
+                          <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                          <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
+                        </li>
+                      );
+                    })}
                 </ul>
 
                 <WhatsAppButton
