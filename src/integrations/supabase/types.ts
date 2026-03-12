@@ -19,24 +19,30 @@ export type Database = {
           button_id: string
           city: string | null
           created_at: string
+          device: string | null
           id: string
           ip: string | null
+          region: string | null
           user_agent: string | null
         }
         Insert: {
           button_id: string
           city?: string | null
           created_at?: string
+          device?: string | null
           id?: string
           ip?: string | null
+          region?: string | null
           user_agent?: string | null
         }
         Update: {
           button_id?: string
           city?: string | null
           created_at?: string
+          device?: string | null
           id?: string
           ip?: string | null
+          region?: string | null
           user_agent?: string | null
         }
         Relationships: []
