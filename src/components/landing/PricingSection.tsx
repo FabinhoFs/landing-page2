@@ -121,11 +121,21 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
               .filter(f => f.certificate_id === product.id)
               .sort((a, b) => a.sort_order - b.sort_order);
 
+            const isBestseller = bestsellerActive && (
+              (bestsellerProduct === "cpf" && product.name.toLowerCase().includes("cpf")) ||
+              (bestsellerProduct === "cnpj" && product.name.toLowerCase().includes("cnpj"))
+            );
+
             return (
               <div
                 key={product.id}
-                className="rounded-2xl border border-border bg-card p-8 flex flex-col"
+                className="relative rounded-2xl border border-border bg-card p-8 flex flex-col"
               >
+                {isBestseller && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full shadow-md uppercase tracking-wide">
+                    ⭐ Mais Vendido
+                  </div>
+                )}
                 <h3 className="text-2xl font-bold text-card-foreground text-center">
                   {product.name}
                 </h3>
