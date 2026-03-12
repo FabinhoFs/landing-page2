@@ -7,11 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Save, Plus, Trash2, GripVertical } from "lucide-react";
 import { z } from "zod";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -192,18 +187,27 @@ export const AdminPrices = () => {
                     <span className="text-sm text-muted-foreground">Promoção Ativa</span>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Expiração da Promoção</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !expiresDate && "text-muted-foreground")}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {expiresDate ? format(expiresDate, "dd/MM/yyyy", { locale: ptBR }) : "Sem data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={expiresDate} onSelect={(date) => updateField(item.id, "promo_expires_at", date ? date.toISOString() : null)} initialFocus className={cn("p-3 pointer-events-auto")} />
-                      </PopoverContent>
-                    </Popover>
+                    <label className="text-xs text-muted-foreground">Expiração da Promoção (Horário de Brasília)</label>
+                    <Input
+                      type="datetime-local"
+                      value={current.promo_expires_at ? (() => {
+                        // Show in Brazil time (UTC-3)
+                        const d = new Date(current.promo_expires_at);
+                        const brTime = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+                        return brTime.toISOString().slice(0, 16);
+                      })() : ""}
+                      onChange={(e) => {
+                        if (!e.target.value) {
+                          updateField(item.id, "promo_expires_at", null);
+                          return;
+                        }
+                        // Convert Brazil time input to UTC for storage
+                        const localDate = new Date(e.target.value);
+                        const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                        updateField(item.id, "promo_expires_at", utcDate.toISOString());
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">Fuso: Brasília (UTC-3)</p>
                   </div>
                 </div>
 
