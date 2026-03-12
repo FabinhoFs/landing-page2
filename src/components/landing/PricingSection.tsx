@@ -101,7 +101,7 @@ interface PricingSectionProps {
 
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
-  const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
+  const fallbackSupportText = "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
   const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
@@ -115,6 +115,13 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
   const products = prices && prices.length > 0
     ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
     : fallbackProducts;
+
+  const cardFeatures = [
+    settings.social_experience_text || "Emissão oficial ICP-Brasil",
+    settings.social_authority_title || "Rapidez e Segurança",
+    settings.social_proof_text || "Junte-se a quem confia em nossa emissão oficial.",
+    settings.social_support_text || settings.support_text || fallbackSupportText,
+  ];
 
   return (
     <section className="bg-background py-20">
