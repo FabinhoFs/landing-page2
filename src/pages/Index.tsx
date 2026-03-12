@@ -40,7 +40,7 @@ const Index = () => {
       <StickyHeader city={cityDisplay} />
       <HeroSection city={city} detected={detected} />
       <SocialProofBar city={city} detected={detected} />
-      <PricingSection city={cityDisplay} />
+      <PricingSection city={cityDisplay} detected={detected} />
       <HowItWorksSection />
       <BenefitsSection />
       <TestimonialsSection />
