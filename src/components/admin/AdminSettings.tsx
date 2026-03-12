@@ -5,18 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Phone, MessageCircle, Bell, Headphones, Users } from "lucide-react";
+import { Save, Phone, MessageCircle, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 const CTA_FIELDS = [
-  { key: "cta_hero", label: "CTA 01 — Topo (Hero)", position: "Aparece no topo da página" },
-  { key: "cta_header", label: "CTA — Cabeçalho fixo", position: "Aparece no header ao rolar" },
-  { key: "cta_ecpf", label: "CTA 02 — Card e-CPF A1", position: "Aparece nos preços (e-CPF)" },
-  { key: "cta_ecnpj", label: "CTA 03 — Card e-CNPJ A1", position: "Aparece nos preços (e-CNPJ)" },
-  { key: "cta_floating", label: "CTA 04 — Flutuante", position: "Ícone fixo canto inferior direito" },
-  { key: "cta_sticky_mobile", label: "CTA — Mobile fixo", position: "Barra fixa no celular" },
-  { key: "cta_bottom", label: "CTA 05 — Rodapé", position: "Aparece no final da página" },
-  { key: "cta_exit_popup", label: "CTA — Pop-up de saída", position: "Aparece ao sair da página" },
+  { key: "cta_hero", label: "Mensagem — Topo (Hero)", position: "Enviada ao clicar nos botões do topo" },
+  { key: "cta_header", label: "Mensagem — Cabeçalho fixo", position: "Enviada ao clicar no botão do header ao rolar" },
+  { key: "cta_ecpf", label: "Mensagem — Card e-CPF", position: "Enviada ao clicar no botão do card e-CPF" },
+  { key: "cta_ecnpj", label: "Mensagem — Card e-CNPJ", position: "Enviada ao clicar no botão do card e-CNPJ" },
+  { key: "cta_floating", label: "Mensagem — Botão Flutuante", position: "Enviada ao clicar no ícone do WhatsApp fixo" },
+  { key: "cta_sticky_mobile", label: "Mensagem — Barra Mobile", position: "Enviada ao clicar na barra fixa do celular" },
+  { key: "cta_bottom", label: "Mensagem — Final da Página", position: "Enviada ao clicar no botão do final" },
+  { key: "cta_exit_popup", label: "Mensagem — Pop-up de Desconto", position: "Enviada ao clicar no pop-up de saída" },
 ];
 
 export const AdminSettings = () => {
@@ -26,9 +26,7 @@ export const AdminSettings = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase
-        .from("site_settings" as any)
-        .select("key, value");
+      const { data } = await supabase.from("site_settings" as any).select("key, value");
       if (data) {
         const map: Record<string, string> = {};
         (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
@@ -44,23 +42,14 @@ export const AdminSettings = () => {
 
   const handleSave = async () => {
     setLoading(true);
-
     const payload = Object.entries(settings).map(([key, value]) => ({
-      key,
-      value,
-      updated_at: new Date().toISOString(),
+      key, value, updated_at: new Date().toISOString(),
     }));
-
-    const { error } = await supabase
-      .from("site_settings" as any)
-      .upsert(payload as any, { onConflict: "key" });
-
-    const hasError = Boolean(error);
-
-    if (hasError) {
-      toast({ title: "Erro ao salvar", description: "Verifique os campos e tente novamente.", variant: "destructive" });
+    const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Configurações salvas!", description: "Todas as alterações já estão ativas na Landing Page." });
+      toast({ title: "Configurações salvas!", description: "Todas as alterações já estão ativas." });
     }
     setLoading(false);
   };
@@ -96,19 +85,16 @@ export const AdminSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <MessageCircle className="h-5 w-5 text-primary" />
-            Configuração de Conversão — Mensagens dos CTAs
+            Mensagens do WhatsApp por Botão
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <p className="text-xs text-muted-foreground">
-            Use <code className="bg-muted px-1 rounded">{"{cidade}"}</code> para inserir a cidade detectada automaticamente. O URL Encode é aplicado automaticamente.
+            Configure a mensagem que o cliente envia ao clicar em cada botão. Use <code className="bg-muted px-1 rounded">{"{cidade}"}</code> para inserir a cidade automaticamente.
           </p>
-
           {CTA_FIELDS.map((field) => (
             <div key={field.key} className="space-y-1.5">
-              <Label htmlFor={field.key} className="text-sm font-semibold">
-                {field.label}
-              </Label>
+              <Label htmlFor={field.key} className="text-sm font-semibold">{field.label}</Label>
               <p className="text-xs text-muted-foreground">📍 {field.position}</p>
               <Input
                 id={field.key}
@@ -121,53 +107,7 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Support Text */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Headphones className="h-5 w-5 text-primary" />
-            Texto de Suporte
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-1.5">
-            <Label>Frase de suporte (aparece nos cards de preço e no pop-up de saída)</Label>
-            <Input
-              value={settings.support_text || ""}
-              onChange={(e) => updateField("support_text", e.target.value)}
-              placeholder="Suporte completo e humanizado..."
-            />
-            <p className="text-xs text-muted-foreground">
-              📍 Aparece como último item nos cards e-CPF/e-CNPJ e no rodapé do Pop-up de saída
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Pricing Section Title */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            Título da Seção de Preços
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-1.5">
-            <Label>Título exibido acima dos cards de e-CPF e e-CNPJ</Label>
-            <Input
-              value={settings.pricing_section_title || ""}
-              onChange={(e) => updateField("pricing_section_title", e.target.value)}
-              placeholder="Escolha a melhor modalidade de certificado para você"
-            />
-            <p className="text-xs text-muted-foreground">
-              📍 Aparece como título principal da seção de preços na Landing Page
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Badge "Mais Vendido" */}
+      {/* Bestseller Badge */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -200,54 +140,32 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
-
-      {/* Social Proof & Authority (Diferenciais) */}
+      {/* Support Text */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="h-5 w-5 text-primary" />
-            Diferenciais da Empresa (Barra de Prova Social)
+            <MessageCircle className="h-5 w-5 text-primary" />
+            Textos Adicionais
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <p className="text-xs text-muted-foreground">
-            Estas frases aparecem na barra de ícones abaixo do Hero. NÃO afetam os cards de preço.
-          </p>
           <div className="space-y-1.5">
-            <Label>Campo 1 — Experiência / Certificação</Label>
+            <Label>Frase de Suporte</Label>
             <Input
-              value={settings.social_experience_text || ""}
-              onChange={(e) => updateField("social_experience_text", e.target.value)}
-              placeholder="Emissão oficial ICP-Brasil"
-            />
-            <p className="text-xs text-muted-foreground">📍 Ícone: Escudo — 1ª coluna da barra</p>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Campo 2 — Autoridade / Rapidez</Label>
-            <Input
-              value={settings.social_authority_title || ""}
-              onChange={(e) => updateField("social_authority_title", e.target.value)}
-              placeholder="Rapidez e Segurança"
-            />
-            <p className="text-xs text-muted-foreground">📍 Ícone: Raio — 2ª coluna da barra</p>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Campo 3 — Prova Social</Label>
-            <Input
-              value={settings.social_proof_text || ""}
-              onChange={(e) => updateField("social_proof_text", e.target.value)}
-              placeholder="Junte-se a centenas de clientes..."
-            />
-            <p className="text-xs text-muted-foreground">📍 Ícone: Pessoas — 3ª coluna da barra</p>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Campo 4 — Suporte Humanizado</Label>
-            <Input
-              value={settings.social_support_text || ""}
-              onChange={(e) => updateField("social_support_text", e.target.value)}
+              value={settings.support_text || ""}
+              onChange={(e) => updateField("support_text", e.target.value)}
               placeholder="Suporte completo e humanizado..."
             />
-            <p className="text-xs text-muted-foreground">📍 Ícone: Headset — 4ª coluna da barra</p>
+            <p className="text-xs text-muted-foreground">📍 Aparece nos cards de preço e no pop-up de saída</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Título da Seção de Preços</Label>
+            <Input
+              value={settings.pricing_section_title || ""}
+              onChange={(e) => updateField("pricing_section_title", e.target.value)}
+              placeholder="Escolha a melhor modalidade de certificado para você"
+            />
+            <p className="text-xs text-muted-foreground">📍 Título acima dos cards de preço</p>
           </div>
         </CardContent>
       </Card>
@@ -257,7 +175,7 @@ export const AdminSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Bell className="h-5 w-5 text-primary" />
-            Pop-up de Saída (Exit Intent)
+            Pop-up de Saída
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -271,48 +189,40 @@ export const AdminSettings = () => {
               onCheckedChange={(checked) => updateField("popup_enabled", checked ? "true" : "false")}
             />
           </div>
-
           <div className="space-y-1.5">
-            <Label htmlFor="popup_discount" className="text-sm font-semibold">Valor do Cupom (R$)</Label>
-            <p className="text-xs text-muted-foreground">Aparece como destaque no pop-up: "R$ [valor],00"</p>
+            <Label className="text-sm font-semibold">Valor do Cupom (R$)</Label>
             <Input
-              id="popup_discount"
               type="number"
               value={settings.popup_discount || ""}
               onChange={(e) => updateField("popup_discount", e.target.value.replace(/\D/g, ""))}
               placeholder="20"
             />
           </div>
-
           <div className="space-y-1.5">
-            <Label htmlFor="popup_title" className="text-sm font-semibold">Título do Pop-up</Label>
+            <Label className="text-sm font-semibold">Título do Pop-up</Label>
             <Input
-              id="popup_title"
               value={settings.popup_title || ""}
               onChange={(e) => updateField("popup_title", e.target.value)}
               placeholder="ESPERA! NÃO VÁ EMBORA."
             />
           </div>
-
           <div className="space-y-1.5">
-            <Label htmlFor="popup_subtitle" className="text-sm font-semibold">Subtítulo do Pop-up</Label>
+            <Label className="text-sm font-semibold">Subtítulo do Pop-up</Label>
             <Input
-              id="popup_subtitle"
               value={settings.popup_subtitle || ""}
               onChange={(e) => updateField("popup_subtitle", e.target.value)}
               placeholder="Garanta um desconto exclusivo..."
             />
           </div>
-
           <p className="text-xs text-muted-foreground">
-            💡 Na mensagem do CTA do pop-up, use <code className="bg-muted px-1 rounded">{"{valor}"}</code> para inserir o valor do cupom automaticamente.
+            💡 Use <code className="bg-muted px-1 rounded">{"{valor}"}</code> na mensagem do pop-up para inserir o valor do cupom.
           </p>
         </CardContent>
       </Card>
 
       <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
         <Save className="mr-2 h-4 w-4" />
-        {loading ? "Salvando..." : "Salvar todas as configurações"}
+        {loading ? "Salvando..." : "Salvar Configurações"}
       </Button>
     </div>
   );

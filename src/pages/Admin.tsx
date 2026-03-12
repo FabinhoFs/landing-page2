@@ -4,10 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut } from "lucide-react";
-import { AdminFAQ } from "@/components/admin/AdminFAQ";
+import { AdminHero } from "@/components/admin/AdminHero";
 import { AdminPrices } from "@/components/admin/AdminPrices";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { AdminDiferenciais } from "@/components/admin/AdminDiferenciais";
+import { AdminTestimonials } from "@/components/admin/AdminTestimonials";
+import { AdminFAQ } from "@/components/admin/AdminFAQ";
+import { AdminFooter } from "@/components/admin/AdminFooter";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -16,10 +20,7 @@ const Admin = () => {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/admin/login");
-        return;
-      }
+      if (!session) { navigate("/admin/login"); return; }
       setLoading(false);
     };
 
@@ -56,25 +57,25 @@ const Admin = () => {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-8">
-        <Tabs defaultValue="dashboard">
-          <TabsList className="mb-6">
-            <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
-            <TabsTrigger value="faq">FAQ</TabsTrigger>
+        <Tabs defaultValue="hero">
+          <TabsList className="mb-6 flex-wrap h-auto gap-1">
+            <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="prices">Preços</TabsTrigger>
+            <TabsTrigger value="diferenciais">Diferenciais</TabsTrigger>
+            <TabsTrigger value="testimonials">Depoimentos</TabsTrigger>
+            <TabsTrigger value="faq">FAQ</TabsTrigger>
+            <TabsTrigger value="footer">Rodapé</TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
+            <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
           </TabsList>
-          <TabsContent value="dashboard">
-            <AdminDashboard />
-          </TabsContent>
-          <TabsContent value="faq">
-            <AdminFAQ />
-          </TabsContent>
-          <TabsContent value="prices">
-            <AdminPrices />
-          </TabsContent>
-          <TabsContent value="settings">
-            <AdminSettings />
-          </TabsContent>
+          <TabsContent value="hero"><AdminHero /></TabsContent>
+          <TabsContent value="prices"><AdminPrices /></TabsContent>
+          <TabsContent value="diferenciais"><AdminDiferenciais /></TabsContent>
+          <TabsContent value="testimonials"><AdminTestimonials /></TabsContent>
+          <TabsContent value="faq"><AdminFAQ /></TabsContent>
+          <TabsContent value="footer"><AdminFooter /></TabsContent>
+          <TabsContent value="settings"><AdminSettings /></TabsContent>
+          <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
         </Tabs>
       </main>
     </div>
