@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Phone, MessageCircle } from "lucide-react";
+import { Save, Phone, MessageCircle, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const CTA_FIELDS = [
   { key: "cta_hero", label: "CTA 01 — Topo (Hero)", position: "Aparece no topo da página" },
