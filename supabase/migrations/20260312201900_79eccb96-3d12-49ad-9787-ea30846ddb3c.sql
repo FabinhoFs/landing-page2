@@ -1,0 +1,1 @@
+INSERT INTO public.site_settings (key, value) VALUES ('pricing_section_title', 'Escolha a melhor modalidade de certificado para você') ON CONFLICT (key) DO NOTHING;
