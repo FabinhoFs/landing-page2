@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,26 +17,63 @@ interface ExitIntentPopupProps {
 export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   const [open, setOpen] = useState(false);
   const [triggered, setTriggered] = useState(false);
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+
+  const popupEnabled = settings.popup_enabled === "true";
+  const discount = settings.popup_discount || "20";
+  const title = settings.popup_title || "ESPERA! NÃO VÁ EMBORA.";
+  const subtitle = settings.popup_subtitle || "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.";
+
+  const trigger = useCallback(() => {
+    if (triggered || !popupEnabled) return;
+    setTriggered(true);
+    setOpen(true);
+    if ((window as any).dataLayer) {
+      (window as any).dataLayer.push({ event: "exit_intent_popup", city });
+    }
+  }, [triggered, popupEnabled, city]);
 
   useEffect(() => {
+    if (!popupEnabled) return;
+
+    // Desktop: mouse leave
     const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !triggered) {
-        setTriggered(true);
-        setOpen(true);
-
-        if ((window as any).dataLayer) {
-          (window as any).dataLayer.push({
-            event: "exit_intent_popup",
-            city,
-          });
-        }
-      }
+      if (e.clientY <= 0) trigger();
     };
-
     document.addEventListener("mouseleave", handleMouseLeave);
-    return () => document.removeEventListener("mouseleave", handleMouseLeave);
-  }, [triggered, city]);
+
+    // Mobile: inactivity timer (20s)
+    let inactivityTimer = setTimeout(() => trigger(), 20000);
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => trigger(), 20000);
+    };
+    window.addEventListener("scroll", resetTimer);
+    window.addEventListener("touchstart", resetTimer);
+
+    // Mobile: rapid scroll up
+    let lastScrollY = window.scrollY;
+    const handleScroll = () => {
+      const delta = lastScrollY - window.scrollY;
+      if (delta > 200 && window.scrollY < 300) trigger();
+      lastScrollY = window.scrollY;
+    };
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      document.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("scroll", resetTimer);
+      window.removeEventListener("touchstart", resetTimer);
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(inactivityTimer);
+    };
+  }, [popupEnabled, trigger]);
+
+  // Don't render anything if disabled
+  if (!popupEnabled) return null;
+
+  const ctaMessage = (getMessage("cta_exit_popup", city) || `Olá! Vi o desconto de R$ ${discount},00 na página e quero aproveitar para emitir meu certificado.`)
+    .replace(/\{valor\}/g, discount);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -46,18 +83,17 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
             <Gift className="h-10 w-10 text-primary" />
           </div>
           <DialogTitle className="text-center text-2xl font-extrabold text-card-foreground">
-            🔥 Espere! Oferta exclusiva!
+            🔥 {title}
           </DialogTitle>
           <DialogDescription className="text-center text-base text-muted-foreground">
-            Só para você que está em{" "}
-            <span className="font-bold text-foreground">{city}</span>:
+            {subtitle}
           </DialogDescription>
         </DialogHeader>
 
         <div className="my-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
-          <p className="text-sm font-medium text-muted-foreground">Desconto especial</p>
-          <p className="text-4xl font-black text-primary">20% OFF</p>
-          <p className="mt-1 text-sm text-muted-foreground">no seu Certificado Digital</p>
+          <p className="text-sm font-medium text-muted-foreground">Ganhe agora</p>
+          <p className="text-5xl font-black text-primary">R$ {discount},00</p>
+          <p className="mt-1 text-sm text-muted-foreground">de desconto no seu Certificado Digital</p>
           <div className="mt-3 flex items-center justify-center gap-1 text-xs text-destructive font-semibold">
             <Timer className="h-3 w-3" /> Válido apenas agora
           </div>
@@ -65,7 +101,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
 
         <WhatsAppButton
           buttonId="cta_exit_popup"
-          message={getMessage("cta_exit_popup", city)}
+          message={ctaMessage}
           className="w-full text-lg py-6"
         >
           Garantir meu desconto agora!
