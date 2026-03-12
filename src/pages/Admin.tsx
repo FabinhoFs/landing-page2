@@ -7,6 +7,7 @@ import { LogOut } from "lucide-react";
 import { AdminFAQ } from "@/components/admin/AdminFAQ";
 import { AdminPrices } from "@/components/admin/AdminPrices";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
