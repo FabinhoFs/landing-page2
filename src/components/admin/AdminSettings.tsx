@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Phone, MessageCircle, Bell } from "lucide-react";
+import { Save, Phone, MessageCircle, Bell, Headphones } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 const CTA_FIELDS = [
@@ -115,6 +115,29 @@ export const AdminSettings = () => {
               />
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Support Text */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Headphones className="h-5 w-5 text-primary" />
+            Texto de Suporte
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>Frase de suporte (aparece nos cards de preço e no pop-up de saída)</Label>
+            <Input
+              value={settings.support_text || ""}
+              onChange={(e) => updateField("support_text", e.target.value)}
+              placeholder="Suporte completo e humanizado..."
+            />
+            <p className="text-xs text-muted-foreground">
+              📍 Aparece como último item nos cards e-CPF/e-CNPJ e no rodapé do Pop-up de saída
+            </p>
+          </div>
         </CardContent>
       </Card>
 

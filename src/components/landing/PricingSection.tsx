@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, Headphones } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,7 +94,8 @@ interface PricingSectionProps {
 }
 
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+  const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
     queryFn: async () => {
@@ -123,7 +124,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
             return (
               <div
                 key={product.id}
-                className="rounded-2xl border border-border bg-card p-8 flex flex-col"
+                className="rounded-2xl border border-border bg-card p-8 flex flex-col min-h-[520px]"
               >
                 <h3 className="text-2xl font-bold text-card-foreground text-center">
                   {product.name}
@@ -157,6 +158,10 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                       <span>{feat}</span>
                     </li>
                   ))}
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Headphones className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                    <span>{supportText}</span>
+                  </li>
                 </ul>
 
                 <WhatsAppButton

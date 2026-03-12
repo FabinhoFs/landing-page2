@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { WhatsAppButton } from "./WhatsAppButton";
-import { Gift, Timer } from "lucide-react";
+import { Gift, Timer, Headphones } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface ExitIntentPopupProps {
@@ -23,6 +23,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   const discount = settings.popup_discount || "20";
   const title = settings.popup_title || "ESPERA! NÃO VÁ EMBORA.";
   const subtitle = settings.popup_subtitle || "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.";
+  const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
 
   const trigger = useCallback(() => {
     if (triggered || !popupEnabled) return;
@@ -107,9 +108,10 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
           Garantir meu desconto agora!
         </WhatsAppButton>
 
-        <p className="text-center text-xs text-muted-foreground mt-2">
-          Sem compromisso. Fale com um especialista.
-        </p>
+        <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-2">
+          <Headphones className="h-3.5 w-3.5 text-primary" />
+          <span>{supportText}</span>
+        </div>
       </DialogContent>
     </Dialog>
   );

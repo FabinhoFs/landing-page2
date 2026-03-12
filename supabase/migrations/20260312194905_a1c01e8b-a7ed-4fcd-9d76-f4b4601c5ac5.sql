@@ -1,0 +1,1 @@
+INSERT INTO public.site_settings (key, value) VALUES ('support_text', 'Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.') ON CONFLICT (key) DO NOTHING;
