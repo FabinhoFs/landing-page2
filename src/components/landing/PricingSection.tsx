@@ -3,6 +3,7 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface DbPrice {
   id: string;
