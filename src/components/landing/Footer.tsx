@@ -13,9 +13,9 @@ export const Footer = () => {
   const hasSocial = instagram || facebook || linkedin;
 
   return (
-    <footer className="bg-deep text-deep-foreground/60 py-10 border-t border-deep-foreground/10">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex flex-col items-center text-center md:items-start md:text-left gap-4">
+    <footer className="bg-deep text-deep-foreground/60 py-10 md:py-12 border-t border-deep-foreground/10">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex flex-col items-center text-center md:items-start md:text-left gap-3 md:gap-4">
           <p className="font-semibold text-deep-foreground/80 text-base">{companyName}</p>
 
           {cnpj && <p className="text-sm">CNPJ: {cnpj}</p>}

@@ -11,7 +11,7 @@ const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 >(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Item ref={ref} className={cn("border border-border rounded-2xl px-6 bg-background", className)} {...props} />
+  <AccordionPrimitive.Item ref={ref} className={cn("border border-border rounded-2xl px-4 md:px-6 bg-background", className)} {...props} />
 ));
 
 const AccordionTrigger = React.forwardRef<
@@ -22,13 +22,13 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-center justify-between py-5 font-semibold text-base transition-all text-left [&[data-state=open]>span>svg]:rotate-45",
+        "flex flex-1 items-center justify-between py-4 md:py-5 font-semibold text-sm md:text-base transition-all text-left [&[data-state=open]>span>svg]:rotate-45 min-h-[48px]",
         className,
       )}
       {...props}
     >
       {children}
-      <span className="ml-4 flex-shrink-0 rounded-full bg-primary/10 p-1">
+      <span className="ml-3 md:ml-4 flex-shrink-0 rounded-full bg-primary/10 p-1">
         <Plus className="h-5 w-5 text-primary transition-transform duration-300" />
       </span>
     </AccordionPrimitive.Trigger>
@@ -44,7 +44,7 @@ const AccordionContent = React.forwardRef<
     className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
-    <div className={cn("pb-5 pt-0 text-muted-foreground leading-relaxed", className)}>{children}</div>
+    <div className={cn("pb-4 md:pb-5 pt-0 text-muted-foreground leading-relaxed", className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 
@@ -76,15 +76,15 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
 
   return (
     <section id="faq" className="bg-card py-16 md:py-20">
-      <div className="mx-auto max-w-3xl px-6">
-        <h2 className="text-center text-3xl font-bold text-card-foreground md:text-4xl mb-12">
+      <div className="mx-auto max-w-3xl px-4 md:px-6">
+        <h2 className="text-center text-2xl font-bold text-card-foreground md:text-4xl mb-10 md:mb-12">
           Perguntas Frequentes
         </h2>
 
-        <AccordionPrimitive.Root type="single" collapsible className="space-y-4">
+        <AccordionPrimitive.Root type="single" collapsible className="space-y-3 md:space-y-4">
           {faqs.map((faq) => (
             <AccordionItem key={faq.id} value={`faq-${faq.id}`}>
-              <AccordionTrigger className="text-foreground hover:no-underline min-h-[48px]">
+              <AccordionTrigger className="text-foreground hover:no-underline">
                 {faq.question}
               </AccordionTrigger>
               <AccordionContent>
@@ -94,9 +94,9 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
           ))}
         </AccordionPrimitive.Root>
 
-        <div className="mt-12 flex flex-col items-center gap-6">
-          <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-6 py-4">
-            <ShieldCheck className="h-8 w-8 text-primary flex-shrink-0" />
+        <div className="mt-10 md:mt-12 flex flex-col items-center gap-5 md:gap-6">
+          <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-5 md:px-6 py-4">
+            <ShieldCheck className="h-7 w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
             <div>
               <p className="font-bold text-foreground text-sm">Garantia de Satisfação</p>
               <p className="text-xs text-muted-foreground">Satisfação garantida ou seu dinheiro de volta.</p>

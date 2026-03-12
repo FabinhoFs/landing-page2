@@ -1,13 +1,10 @@
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { StickyHeader } from "@/components/landing/StickyHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { SocialProofBar } from "@/components/landing/SocialProofBar";
 import { PricingSection } from "@/components/landing/PricingSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { BenefitsSection } from "@/components/landing/BenefitsSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { FAQSection } from "@/components/landing/FAQSection";
-import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
 import { FloatingWhatsApp } from "@/components/landing/FloatingWhatsApp";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
@@ -16,8 +13,6 @@ import { useEffect } from "react";
 
 const Index = () => {
   const { city, detected } = useGeolocation();
-
-  // Fallback string for components that expect a non-null city
   const cityDisplay = city || "Brasil";
 
   useEffect(() => {
@@ -38,15 +33,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <StickyHeader city={cityDisplay} />
+
+      {/* 1ª Dobra — Hero */}
       <HeroSection city={city} detected={detected} />
-      <SocialProofBar />
+
+      {/* 2ª Dobra — Preços */}
       <PricingSection city={cityDisplay} detected={detected} />
-      <HowItWorksSection />
+
+      {/* 3ª Dobra — Diferenciais / Prova Social */}
       <BenefitsSection />
+
+      {/* 4ª Dobra — Depoimentos */}
       <TestimonialsSection />
+
+      {/* 5ª Dobra — FAQ */}
       <FAQSection city={cityDisplay} />
-      <CTASection city={cityDisplay} />
+
+      {/* 6ª Dobra — Rodapé */}
       <Footer />
+
+      {/* Overlays */}
       <FloatingWhatsApp />
       <StickyMobileCTA city={cityDisplay} />
       <ExitIntentPopup city={cityDisplay} />
