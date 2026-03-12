@@ -167,35 +167,7 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Card Features (Vantagens do Certificado) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            Vantagens do Certificado (Cards de Preço)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <p className="text-xs text-muted-foreground">
-            Estas frases aparecem dentro dos cards de e-CPF e e-CNPJ na seção de preços.
-          </p>
-          {[
-            { key: "card_feature_1", label: "Frase 1", placeholder: "Assinaturas com validade jurídica em todo o Brasil" },
-            { key: "card_feature_2", label: "Frase 2", placeholder: "Acesso pleno ao e-CAC e serviços da Receita Federal" },
-            { key: "card_feature_3", label: "Frase 3", placeholder: "Segurança máxima garantida pelo padrão ICP-Brasil" },
-            { key: "card_feature_4", label: "Frase 4 (Suporte)", placeholder: "Suporte completo e humanizado: conte conosco do início ao fim." },
-          ].map((field) => (
-            <div key={field.key} className="space-y-1.5">
-              <Label>{field.label}</Label>
-              <Input
-                value={settings[field.key] || ""}
-                onChange={(e) => updateField(field.key, e.target.value)}
-                placeholder={field.placeholder}
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      {/* Vantagens do Certificado — agora gerenciadas dinamicamente na aba Preços */}
 
       {/* Social Proof & Authority (Diferenciais) */}
       <Card>
