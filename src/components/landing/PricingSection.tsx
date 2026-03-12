@@ -128,19 +128,18 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 </h3>
 
                 <div className="mt-4 text-center">
-                  <p className="text-sm text-muted-foreground">A partir de</p>
                   {promoActive ? (
                     <div>
                       <span className="text-lg text-muted-foreground line-through">
-                        R$ {product.price}
+                        R$ {product.price.toFixed(2).replace(".", ",")}
                       </span>
                       <p className="text-4xl font-black text-primary">
-                        R$ {product.promotional_price}
+                        R$ {product.promotional_price!.toFixed(2).replace(".", ",")}
                       </p>
                     </div>
                   ) : (
                     <p className="text-4xl font-black text-primary">
-                      R$ {product.price}
+                      R$ {product.price.toFixed(2).replace(".", ",")}
                     </p>
                   )}
                 </div>
