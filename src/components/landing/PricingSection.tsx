@@ -158,15 +158,17 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1 mb-6">
-                  {cardFeatures.map((feature, i) => {
-                    const Icon = i === 3 ? Headphones : Check;
-                    return (
-                      <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
-                        <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
-                      </li>
-                    );
-                  })}
+                  {[product.feature_1, product.feature_2, product.feature_3, product.feature_4]
+                    .filter(Boolean)
+                    .map((feature, i, arr) => {
+                      const Icon = i === arr.length - 1 ? Headphones : Check;
+                      return (
+                        <li key={i} className="flex items-start gap-2 text-[11px] md:text-xs text-muted-foreground">
+                          <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                          <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{feature}</span>
+                        </li>
+                      );
+                    })}
                 </ul>
 
                 <WhatsAppButton
