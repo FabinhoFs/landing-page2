@@ -75,7 +75,6 @@ const Admin = () => {
           <TabsContent value="settings">
             <AdminSettings />
           </TabsContent>
-          </TabsContent>
         </Tabs>
       </main>
     </div>
