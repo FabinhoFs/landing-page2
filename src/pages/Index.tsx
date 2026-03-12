@@ -39,7 +39,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <StickyHeader city={cityDisplay} />
       <HeroSection city={city} detected={detected} />
-      <SocialProofBar city={city} detected={detected} />
+      <SocialProofBar />
       <PricingSection city={cityDisplay} detected={detected} />
       <HowItWorksSection />
       <BenefitsSection />
