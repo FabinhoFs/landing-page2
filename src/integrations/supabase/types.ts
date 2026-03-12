@@ -44,28 +44,43 @@ export type Database = {
       certificate_prices: {
         Row: {
           created_at: string
+          feature_1: string
+          feature_2: string
+          feature_3: string
+          feature_4: string
           id: string
           is_promotion_active: boolean
           name: string
           price: number
+          promo_expires_at: string | null
           promotional_price: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          feature_1?: string
+          feature_2?: string
+          feature_3?: string
+          feature_4?: string
           id?: string
           is_promotion_active?: boolean
           name: string
           price: number
+          promo_expires_at?: string | null
           promotional_price?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          feature_1?: string
+          feature_2?: string
+          feature_3?: string
+          feature_4?: string
           id?: string
           is_promotion_active?: boolean
           name?: string
           price?: number
+          promo_expires_at?: string | null
           promotional_price?: number | null
           updated_at?: string
         }
