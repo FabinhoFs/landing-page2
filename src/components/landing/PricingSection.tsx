@@ -94,7 +94,8 @@ interface PricingSectionProps {
 }
 
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+  const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
     queryFn: async () => {
