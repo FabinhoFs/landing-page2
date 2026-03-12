@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { WhatsAppButton } from "./WhatsAppButton";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 import agisLogo from "@/assets/agis-logo.png";
 
 export const StickyHeader = ({ city }: { city: string }) => {
   const [scrolled, setScrolled] = useState(false);
+  const { getMessage } = useCtaMessages();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -23,7 +25,7 @@ export const StickyHeader = ({ city }: { city: string }) => {
         <img src={agisLogo} alt="Agis Digital" className="h-10 w-auto" />
         <WhatsAppButton
           buttonId="cta_header"
-          message={`Olá! Quero emitir meu Certificado Digital em ${city}.`}
+          message={getMessage("cta_header", city)}
           size="sm"
           className="text-sm px-4 py-2"
         >

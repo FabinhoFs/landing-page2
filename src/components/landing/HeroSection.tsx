@@ -1,5 +1,6 @@
 import { WhatsAppButton } from "./WhatsAppButton";
-import { Smartphone, CheckCircle, Lock, Video, Clock, Zap, Shield, KeyRound, ShieldCheck, Fingerprint, MapPin } from "lucide-react";
+import { Smartphone, CheckCircle, Lock, Video, Clock, Zap, Shield, KeyRound, ShieldCheck, Fingerprint } from "lucide-react";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface HeroSectionProps {
   city: string | null;
@@ -15,13 +16,11 @@ const features = [
 ];
 
 export const HeroSection = ({ city, detected }: HeroSectionProps) => {
-  const whatsMsg = detected
-    ? `Olá! Quero emitir meu Certificado Digital em ${city}.`
-    : "Olá! Quero emitir meu Certificado Digital.";
+  const { getMessage } = useCtaMessages();
+  const heroMsg = getMessage("cta_hero", city);
 
   return (
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
-      {/* Security texture background */}
       <div className="absolute inset-0 overflow-hidden">
         <Shield className="absolute top-[15%] right-[10%] h-24 w-24 text-primary/[0.07] rotate-12" />
         <Lock className="absolute top-[60%] right-[20%] h-16 w-16 text-primary/[0.06] -rotate-12" />
@@ -56,14 +55,14 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <WhatsAppButton
               buttonId="cta_hero_primary"
-              message={whatsMsg}
+              message={heroMsg}
               className="text-base px-8 py-5 font-bold"
             >
               Emitir em 5 minutos
             </WhatsAppButton>
             <WhatsAppButton
               buttonId="cta_hero_secondary"
-              message={whatsMsg}
+              message={heroMsg}
               className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
             >
               Quero meu certificado agora
@@ -72,14 +71,12 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
 
           <p className="text-sm text-deep-foreground/60">✨ Atendimento imediato via videoconferência</p>
 
-          {/* Trust shield */}
           <div className="flex items-center justify-center gap-2 text-sm text-deep-foreground/60 pt-4">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <span>Certificação ICP-Brasil • 100% seguro e homologado</span>
           </div>
         </div>
 
-        {/* Feature pills */}
         <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {features.map((feat, i) => (
             <div

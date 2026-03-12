@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { Gift, Timer } from "lucide-react";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface ExitIntentPopupProps {
   city: string;
@@ -16,6 +17,7 @@ interface ExitIntentPopupProps {
 export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   const [open, setOpen] = useState(false);
   const [triggered, setTriggered] = useState(false);
+  const { getMessage } = useCtaMessages();
 
   useEffect(() => {
     const handleMouseLeave = (e: MouseEvent) => {
@@ -63,7 +65,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
 
         <WhatsAppButton
           buttonId="cta_exit_popup"
-          message={`Olá! Vi a oferta de 20% OFF para Certificado Digital em ${city}. Quero aproveitar!`}
+          message={getMessage("cta_exit_popup", city)}
           className="w-full text-lg py-6"
         >
           Garantir meu desconto agora!
