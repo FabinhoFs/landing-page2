@@ -117,10 +117,10 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
     : fallbackProducts;
 
   const cardFeatures = [
-    settings.social_experience_text || "Emissão oficial ICP-Brasil",
-    settings.social_authority_title || "Rapidez e Segurança",
-    settings.social_proof_text || "Junte-se a quem confia em nossa emissão oficial.",
-    settings.social_support_text || settings.support_text || fallbackSupportText,
+    settings.card_feature_1 || "Assinaturas com validade jurídica em todo o Brasil",
+    settings.card_feature_2 || "Acesso pleno ao e-CAC e serviços da Receita Federal",
+    settings.card_feature_3 || "Segurança máxima garantida pelo padrão ICP-Brasil",
+    settings.card_feature_4 || settings.support_text || "Suporte completo e humanizado: conte conosco do início ao fim.",
   ];
 
   return (
