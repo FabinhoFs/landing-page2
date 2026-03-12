@@ -1,4 +1,4 @@
-import { Check, ShieldCheck } from "lucide-react";
+import { Check } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,8 +20,8 @@ interface DbPrice {
 const fallbackProducts: DbPrice[] = [
   {
     id: "1",
-    name: "e-CPF",
-    price: 127,
+    name: "e-CPF A1",
+    price: 139.9,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
@@ -32,8 +32,8 @@ const fallbackProducts: DbPrice[] = [
   },
   {
     id: "2",
-    name: "e-CNPJ",
-    price: 177,
+    name: "e-CNPJ A1",
+    price: 219.9,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
@@ -103,7 +103,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
   });
 
   const products = prices && prices.length > 0
-    ? prices.map((p) => ({ ...p }))
+    ? prices.filter((p) => p.name.includes("A1")).map((p) => ({ ...p }))
     : fallbackProducts;
 
   return (
@@ -113,7 +113,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
           Escolha a melhor modalidade de certificado para você
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
             const features = [product.feature_1, product.feature_2, product.feature_3, product.feature_4].filter(Boolean);
@@ -128,19 +128,18 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 </h3>
 
                 <div className="mt-4 text-center">
-                  <p className="text-sm text-muted-foreground">A partir de</p>
                   {promoActive ? (
                     <div>
                       <span className="text-lg text-muted-foreground line-through">
-                        R$ {product.price}
+                        R$ {product.price.toFixed(2).replace(".", ",")}
                       </span>
                       <p className="text-4xl font-black text-primary">
-                        R$ {product.promotional_price}
+                        R$ {product.promotional_price!.toFixed(2).replace(".", ",")}
                       </p>
                     </div>
                   ) : (
                     <p className="text-4xl font-black text-primary">
-                      R$ {product.price}
+                      R$ {product.price.toFixed(2).replace(".", ",")}
                     </p>
                   )}
                 </div>
@@ -157,11 +156,6 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                     </li>
                   ))}
                 </ul>
-
-                <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Certificação ICP-Brasil
-                </div>
 
                 <WhatsAppButton
                   buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
