@@ -2,7 +2,8 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { Smartphone, CheckCircle, Lock, Video, Clock, Zap, Shield, KeyRound, ShieldCheck, Fingerprint, MapPin } from "lucide-react";
 
 interface HeroSectionProps {
-  city: string;
+  city: string | null;
+  detected: boolean;
 }
 
 const features = [
@@ -13,7 +14,11 @@ const features = [
   { icon: Clock, label: "Sem perder tempo" },
 ];
 
-export const HeroSection = ({ city }: HeroSectionProps) => {
+export const HeroSection = ({ city, detected }: HeroSectionProps) => {
+  const whatsMsg = detected
+    ? `Olá! Quero emitir meu Certificado Digital em ${city}.`
+    : "Olá! Quero emitir meu Certificado Digital.";
+
   return (
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
       {/* Security texture background */}
@@ -38,29 +43,39 @@ export const HeroSection = ({ city }: HeroSectionProps) => {
           </div>
 
           <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
-            O Certificado Digital mais rápido de{" "}
-            <span className="inline-flex items-center gap-1.5 text-primary">
-              <MapPin className="h-8 w-8 md:h-10 md:w-10 shrink-0" />
-              {city}
-            </span>{" "}
-            e região.
+            {detected ? (
+              <>
+                <span className="transition-opacity duration-500">Certificado Digital em{" "}</span>
+                <span className="inline-flex items-center gap-1.5 text-primary transition-opacity duration-500">
+                  <MapPin className="h-8 w-8 md:h-10 md:w-10 shrink-0" />
+                  {city}
+                </span>
+                {" "}e região
+              </>
+            ) : (
+              <span className="transition-opacity duration-500">
+                Certificado Digital 100% Online com emissão hoje
+              </span>
+            )}
           </h1>
 
-          <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto">
-            Emita seu e-CPF ou e-CNPJ 100% online em até 30 minutos. Sem burocracia, com validade jurídica e o suporte que você precisa.
+          <p className="text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500">
+            {detected
+              ? `Líder em emissão expressa para empresas de ${city}.`
+              : "Líder em emissão expressa com validade em todo o território nacional."}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <WhatsAppButton
               buttonId="cta_hero_primary"
-              message={`Olá! Quero emitir meu Certificado Digital em ${city}.`}
+              message={whatsMsg}
               className="text-base px-8 py-5 font-bold"
             >
               Emitir meu Certificado agora
             </WhatsAppButton>
             <WhatsAppButton
               buttonId="cta_hero_secondary"
-              message={`Olá! Quero falar sobre Certificado Digital em ${city}.`}
+              message={whatsMsg}
               className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
             >
               Falar no WhatsApp
