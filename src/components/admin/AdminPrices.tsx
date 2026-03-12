@@ -222,40 +222,47 @@ export const AdminPrices = () => {
 
                   {certFeatures.map((feat, idx) => {
                     const currentFeat = { ...feat, ...featureEdits[feat.id] };
-                    const hasChanges = !!featureEdits[feat.id];
+                    const charCount = currentFeat.text.length;
                     return (
-                      <div key={feat.id} className="flex items-start gap-2">
-                        <GripVertical className="h-4 w-4 mt-3 text-muted-foreground shrink-0" />
-                        <div className="flex-1 space-y-1">
-                          <Input
-                            value={currentFeat.text}
-                            onChange={(e) => updateFeatureLocal(feat.id, "text", e.target.value)}
-                            placeholder={`Frase ${idx + 1}`}
-                          />
-                        </div>
-                        <Select value={currentFeat.icon} onValueChange={(v) => updateFeatureLocal(feat.id, "icon", v)}>
-                          <SelectTrigger className="w-32 shrink-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="check">✅ Check</SelectItem>
-                            <SelectItem value="headphones">🎧 Suporte</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {hasChanges && (
-                          <Button size="icon" variant="outline" className="shrink-0" onClick={() => saveFeature(feat)}>
-                            <Save className="h-4 w-4" />
+                      <div key={feat.id} className="space-y-1">
+                        <div className="flex items-start gap-2">
+                          <GripVertical className="h-4 w-4 mt-3 text-muted-foreground shrink-0" />
+                          <div className="flex-1 space-y-1">
+                            <Input
+                              value={currentFeat.text}
+                              onChange={(e) => updateFeatureLocal(feat.id, "text", e.target.value)}
+                              placeholder={`Frase ${idx + 1}`}
+                              maxLength={FEATURE_MAX_CHARS}
+                            />
+                            <p className={cn("text-xs", charCount >= FEATURE_MAX_CHARS ? "text-destructive" : "text-muted-foreground")}>
+                              {charCount}/{FEATURE_MAX_CHARS} caracteres
+                            </p>
+                          </div>
+                          <Select value={currentFeat.icon} onValueChange={(v) => updateFeatureLocal(feat.id, "icon", v)}>
+                            <SelectTrigger className="w-32 shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="check">✅ Check</SelectItem>
+                              <SelectItem value="headphones">🎧 Suporte</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button size="icon" variant="ghost" className="shrink-0 text-destructive hover:text-destructive" onClick={() => deleteFeature(feat.id)}>
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button size="icon" variant="ghost" className="shrink-0 text-destructive hover:text-destructive" onClick={() => deleteFeature(feat.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        </div>
                       </div>
                     );
                   })}
 
                   {certFeatures.length === 0 && (
                     <p className="text-sm text-muted-foreground italic">Nenhuma frase cadastrada. Clique em "Adicionar frase".</p>
+                  )}
+
+                  {certFeatures.some(f => featureEdits[f.id]) && (
+                    <Button size="sm" onClick={() => saveAllFeatures(item.id)} className="w-full sm:w-auto">
+                      <Save className="mr-2 h-4 w-4" /> Salvar Frases
+                    </Button>
                   )}
                 </div>
               </CardContent>
