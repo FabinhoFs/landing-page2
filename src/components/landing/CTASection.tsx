@@ -1,10 +1,13 @@
 import { WhatsAppButton } from "./WhatsAppButton";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface CTASectionProps {
   city: string;
 }
 
 export const CTASection = ({ city }: CTASectionProps) => {
+  const { getMessage } = useCtaMessages();
+
   return (
     <section className="bg-deep text-deep-foreground py-20">
       <div className="mx-auto max-w-3xl px-6 text-center">
@@ -16,7 +19,7 @@ export const CTASection = ({ city }: CTASectionProps) => {
         </p>
         <WhatsAppButton
           buttonId="cta_bottom"
-          message={`Olá! Quero garantir meu Certificado Digital em ${city}.`}
+          message={getMessage("cta_bottom", city)}
           className="text-base px-8 py-5 font-bold"
         >
           FALE CONOSCO

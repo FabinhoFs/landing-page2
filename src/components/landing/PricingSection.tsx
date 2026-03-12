@@ -3,6 +3,7 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface DbPrice {
   id: string;
@@ -93,6 +94,7 @@ interface PricingSectionProps {
 }
 
 export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
+  const { getMessage } = useCtaMessages();
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
     queryFn: async () => {
@@ -160,9 +162,9 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 <WhatsAppButton
                   buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
                   message={
-                    detected
-                      ? `Olá! Vi o site e quero meu ${product.name}. Estou em ${city}, como iniciamos?`
-                      : `Olá! Vi o site e quero meu certificado agora. Como iniciamos?`
+                    product.name.toLowerCase().includes("cpf")
+                      ? getMessage("cta_ecpf", city)
+                      : getMessage("cta_ecnpj", city)
                   }
                   className="mt-4 w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
                 >

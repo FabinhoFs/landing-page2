@@ -1,9 +1,11 @@
 import { MessageCircle } from "lucide-react";
 import { logAccess } from "@/lib/logAccess";
 import { useWhatsAppNumber } from "@/hooks/useWhatsAppNumber";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 export const FloatingWhatsApp = () => {
   const phone = useWhatsAppNumber();
+  const { getMessage } = useCtaMessages();
 
   const handleClick = () => {
     if (typeof window !== "undefined" && (window as any).dataLayer) {
@@ -15,7 +17,7 @@ export const FloatingWhatsApp = () => {
 
     logAccess("cta_floating");
 
-    const msg = encodeURIComponent("Olá! Quero emitir meu Certificado Digital. (origem: cta_floating)");
+    const msg = encodeURIComponent(getMessage("cta_floating") + " (origem: cta_floating)");
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
