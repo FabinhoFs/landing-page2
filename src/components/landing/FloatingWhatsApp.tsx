@@ -1,9 +1,10 @@
 import { MessageCircle } from "lucide-react";
 import { logAccess } from "@/lib/logAccess";
-
-const WHATSAPP_NUMBER = "5524999999999";
+import { useWhatsAppNumber } from "@/hooks/useWhatsAppNumber";
 
 export const FloatingWhatsApp = () => {
+  const phone = useWhatsAppNumber();
+
   const handleClick = () => {
     if (typeof window !== "undefined" && (window as any).dataLayer) {
       (window as any).dataLayer.push({
@@ -15,7 +16,7 @@ export const FloatingWhatsApp = () => {
     logAccess("cta_floating");
 
     const msg = encodeURIComponent("Olá! Quero emitir meu Certificado Digital. (origem: cta_floating)");
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
+    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
   return (

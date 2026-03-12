@@ -7,6 +7,7 @@ import { LogOut } from "lucide-react";
 import { AdminFAQ } from "@/components/admin/AdminFAQ";
 import { AdminPrices } from "@/components/admin/AdminPrices";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,7 @@ const Admin = () => {
             <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
             <TabsTrigger value="faq">FAQ</TabsTrigger>
             <TabsTrigger value="prices">Preços</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
           <TabsContent value="dashboard">
             <AdminDashboard />
@@ -69,6 +71,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="prices">
             <AdminPrices />
+          </TabsContent>
+          <TabsContent value="settings">
+            <AdminSettings />
           </TabsContent>
         </Tabs>
       </main>
