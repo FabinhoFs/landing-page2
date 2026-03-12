@@ -15,31 +15,41 @@ import { ExitIntentPopup } from "@/components/landing/ExitIntentPopup";
 import { useEffect } from "react";
 
 const Index = () => {
-  const { city } = useGeolocation();
+  const { city, detected } = useGeolocation();
+
+  // Fallback string for components that expect a non-null city
+  const cityDisplay = city || "Brasil";
 
   useEffect(() => {
-    document.title = `Certificado Digital em ${city} | Emissão Rápida e Segura`;
+    document.title = detected
+      ? `Certificado Digital em ${city} - Agis Digital`
+      : "Certificado Digital Online - Agis Digital";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute("content", `Emita seu Certificado Digital em ${city}. Emissão rápida, 100% online, com suporte especializado. Certificação ICP-Brasil.`);
+      metaDesc.setAttribute(
+        "content",
+        detected
+          ? `Emita seu Certificado Digital em ${city}. Emissão rápida, 100% online, com suporte especializado.`
+          : "Emita seu Certificado Digital 100% online. Emissão rápida com suporte especializado. Certificação ICP-Brasil."
+      );
     }
-  }, [city]);
+  }, [city, detected]);
 
   return (
     <div className="min-h-screen bg-background">
-      <StickyHeader city={city} />
-      <HeroSection city={city} />
-      <SocialProofBar />
-      <PricingSection city={city} />
+      <StickyHeader city={cityDisplay} />
+      <HeroSection city={city} detected={detected} />
+      <SocialProofBar city={city} detected={detected} />
+      <PricingSection city={cityDisplay} />
       <HowItWorksSection />
       <BenefitsSection />
       <TestimonialsSection />
-      <FAQSection city={city} />
-      <CTASection city={city} />
+      <FAQSection city={cityDisplay} />
+      <CTASection city={cityDisplay} />
       <Footer />
       <FloatingWhatsApp />
-      <StickyMobileCTA city={city} />
-      <ExitIntentPopup city={city} />
+      <StickyMobileCTA city={cityDisplay} />
+      <ExitIntentPopup city={cityDisplay} />
     </div>
   );
 };
