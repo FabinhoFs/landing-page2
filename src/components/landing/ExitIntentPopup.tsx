@@ -108,9 +108,10 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
           Garantir meu desconto agora!
         </WhatsAppButton>
 
-        <p className="text-center text-xs text-muted-foreground mt-2">
-          Sem compromisso. Fale com um especialista.
-        </p>
+        <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-2">
+          <Headphones className="h-3.5 w-3.5 text-primary" />
+          <span>{supportText}</span>
+        </div>
       </DialogContent>
     </Dialog>
   );

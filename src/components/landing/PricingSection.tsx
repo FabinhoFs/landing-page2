@@ -124,7 +124,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
             return (
               <div
                 key={product.id}
-                className="rounded-2xl border border-border bg-card p-8 flex flex-col"
+                className="rounded-2xl border border-border bg-card p-8 flex flex-col min-h-[520px]"
               >
                 <h3 className="text-2xl font-bold text-card-foreground text-center">
                   {product.name}
