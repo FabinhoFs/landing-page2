@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { WhatsAppButton } from "./WhatsAppButton";
-import { Gift, Timer } from "lucide-react";
+import { Gift, Timer, Headphones } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 interface ExitIntentPopupProps {
