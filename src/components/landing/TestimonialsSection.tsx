@@ -45,8 +45,8 @@ export const TestimonialsSection = () => {
 
   return (
     <section className="bg-background py-16 md:py-20">
-      <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-bold text-foreground md:text-4xl mb-12">
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        <h2 className="text-center text-2xl font-bold text-foreground md:text-4xl mb-10 md:mb-12">
           O que dizem nossos clientes
         </h2>
 
@@ -61,16 +61,15 @@ export const TestimonialsSection = () => {
         <div className="md:hidden">
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
           >
             {items.map((t) => (
-              <div key={t.id} className="min-w-[85vw] snap-center">
+              <div key={t.id} className="min-w-[calc(100vw-3rem)] snap-center">
                 <TestimonialCard testimonial={t} />
               </div>
             ))}
           </div>
-          {/* Dots */}
           {items.length > 1 && (
             <div className="flex justify-center gap-2 mt-4">
               {items.map((_, i) => (
@@ -89,12 +88,12 @@ export const TestimonialsSection = () => {
 
 function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 flex flex-col h-full">
-      <Quote className="h-8 w-8 text-primary/30 mb-4" />
+    <div className="rounded-2xl border border-border bg-card p-5 md:p-6 flex flex-col h-full">
+      <Quote className="h-7 w-7 md:h-8 md:w-8 text-primary/30 mb-3 md:mb-4" />
       <p className="text-sm text-muted-foreground leading-relaxed flex-1">
         "{t.text}"
       </p>
-      <div className="mt-4 flex items-center gap-1 mb-3">
+      <div className="mt-3 md:mt-4 flex items-center gap-1 mb-2 md:mb-3">
         {[...Array(5)].map((_, j) => (
           <Star key={j} className={`h-4 w-4 ${j < t.rating ? "fill-primary text-primary" : "text-muted-foreground/30"}`} />
         ))}

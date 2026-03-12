@@ -22,20 +22,24 @@ export const BenefitsSection = () => {
 
   return (
     <section className="bg-deep text-deep-foreground py-16 md:py-20">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4 md:gap-6">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
+          Por que escolher a Agis Digital
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+          {/* Mobile: grid 2x2, Desktop: single column */}
+          <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-6">
             {benefits.map((b, i) => (
               <div
                 key={i}
-                className="flex gap-4 rounded-xl bg-deep-foreground/5 border border-deep-foreground/10 p-5"
+                className="flex flex-col md:flex-row gap-3 md:gap-4 rounded-xl bg-deep-foreground/5 border border-deep-foreground/10 p-4 md:p-5"
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20">
-                  <b.icon className="h-6 w-6 text-primary" />
+                <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 mx-auto md:mx-0">
+                  <b.icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-primary">{b.title}</h3>
-                  <p className="text-sm text-deep-foreground/70 mt-1 leading-relaxed">{b.desc}</p>
+                <div className="text-center md:text-left">
+                  <h3 className="text-sm md:text-lg font-bold text-primary">{b.title}</h3>
+                  <p className="text-xs md:text-sm text-deep-foreground/70 mt-1 leading-relaxed hidden md:block">{b.desc}</p>
                 </div>
               </div>
             ))}

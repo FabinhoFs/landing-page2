@@ -97,19 +97,17 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
     refetchInterval: 60000,
   });
 
-  // Fixed order: e-CPF first (left), e-CNPJ second (right)
   const allProducts = prices?.filter((p) => p.name.includes("A1")) || [];
   const cpfProduct = allProducts.find(p => p.name.toLowerCase().includes("cpf"));
   const cnpjProduct = allProducts.find(p => p.name.toLowerCase().includes("cnpj"));
   const products = [cpfProduct, cnpjProduct].filter(Boolean) as DbPrice[];
 
-  // Bestseller badge config
   const bestsellerActive = settings.bestseller_active === "true";
-  const bestsellerProduct = settings.bestseller_product || "cnpj"; // "cpf" or "cnpj"
+  const bestsellerProduct = settings.bestseller_product || "cnpj";
 
   return (
-    <section className="bg-background py-20">
-        <div className="mx-auto max-w-6xl px-6">
+    <section className="bg-background py-16 md:py-20">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
         <h2 className="mb-12 text-center text-xl font-bold text-foreground sm:text-2xl md:text-3xl lg:text-4xl whitespace-normal md:whitespace-nowrap">
           {sectionTitle}
         </h2>
@@ -129,10 +127,10 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
             return (
               <div
                 key={product.id}
-                className="relative rounded-2xl border border-border bg-card p-8 flex flex-col"
+                className={`relative rounded-2xl border bg-card p-6 md:p-8 flex flex-col ${isBestseller ? "border-primary shadow-lg" : "border-border"}`}
               >
                 {isBestseller && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full shadow-md uppercase tracking-wide">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full shadow-md uppercase tracking-wide whitespace-nowrap">
                     ⭐ Mais Vendido
                   </div>
                 )}
@@ -161,38 +159,40 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                   <Countdown expiresAt={product.promo_expires_at} />
                 )}
 
-                <ul className="mt-6 space-y-3 flex-1 mb-6">
+                <ul className="mt-6 space-y-3 flex-1">
                   {productFeatures.map((feat) => {
                     const Icon = ICON_MAP[feat.icon] || CheckSquare;
                     return (
                       <li key={feat.id} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                        <span>{feat.text}</span>
+                        <span className="whitespace-nowrap">{feat.text}</span>
                       </li>
                     );
                   })}
                 </ul>
 
-                <WhatsAppButton
-                  buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
-                  message={
-                    product.name.toLowerCase().includes("cpf")
-                      ? getMessage("cta_ecpf", city)
-                      : getMessage("cta_ecnpj", city)
-                  }
-                  className="mt-auto w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
-                >
-                  Quero meu {product.name}
-                </WhatsAppButton>
-                <p className="mt-2 text-center text-xs text-muted-foreground">
-                  Clique para iniciar via WhatsApp • Atendimento imediato
-                </p>
+                <div className="pt-6">
+                  <WhatsAppButton
+                    buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
+                    message={
+                      product.name.toLowerCase().includes("cpf")
+                        ? getMessage("cta_ecpf", city)
+                        : getMessage("cta_ecnpj", city)
+                    }
+                    className="w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+                  >
+                    Quero meu {product.name}
+                  </WhatsAppButton>
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    Clique para iniciar via WhatsApp • Atendimento imediato
+                  </p>
+                </div>
               </div>
             );
           })}
         </div>
 
-        <div className="mt-10 flex items-center justify-center gap-2 text-base font-medium text-foreground">
+        <div className="mt-10 flex items-center justify-center gap-2 text-sm md:text-base font-medium text-foreground text-center">
           <Headphones className="h-5 w-5 text-primary shrink-0" />
           <span>{settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim."}</span>
         </div>

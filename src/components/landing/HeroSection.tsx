@@ -46,54 +46,54 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
         }} />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-32">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-16 md:py-32">
+        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-sm font-medium text-primary-foreground">
             <Zap className="h-4 w-4" />
             Atendimento imediato
           </div>
 
-          <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
             {title}{" "}
             <span className="text-primary">{highlight}</span>
           </h1>
 
-          <p className="text-base md:text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500 whitespace-normal" style={{ lineHeight: 1.6 }}>
+          <p className="text-sm md:text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto">
             {subtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
             <WhatsAppButton
               buttonId="cta_hero_primary"
               message={heroMsg}
-              className="text-base px-8 py-5 font-bold"
+              className="text-base px-6 md:px-8 py-4 md:py-5 font-bold"
             >
               {btnPrimary}
             </WhatsAppButton>
             <WhatsAppButton
               buttonId="cta_hero_secondary"
               message={heroMsg}
-              className="text-base px-8 py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
+              className="text-base px-6 md:px-8 py-4 md:py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
             >
               {btnSecondary}
             </WhatsAppButton>
           </div>
 
-          <p className="text-sm text-deep-foreground/60">{microText}</p>
+          <p className="text-xs md:text-sm text-deep-foreground/60">{microText}</p>
 
-          <div className="flex items-center justify-center gap-2 text-sm text-deep-foreground/60 pt-4">
-            <ShieldCheck className="h-5 w-5 text-primary" />
+          <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-deep-foreground/60 pt-2 md:pt-4">
+            <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             <span>Certificação ICP-Brasil • 100% seguro e homologado</span>
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="mt-12 md:mt-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
           {features.map((feat, i) => (
             <div
               key={i}
-              className="flex flex-col items-center gap-3 rounded-xl bg-deep-foreground/10 backdrop-blur-sm px-4 py-6 text-sm text-deep-foreground text-center"
+              className="flex flex-col items-center gap-2 md:gap-3 rounded-xl bg-deep-foreground/10 backdrop-blur-sm px-3 md:px-4 py-4 md:py-6 text-xs md:text-sm text-deep-foreground text-center"
             >
-              <feat.icon className="h-8 w-8 shrink-0 text-primary" />
+              <feat.icon className="h-6 w-6 md:h-8 md:w-8 shrink-0 text-primary" />
               <span>{feat.label}</span>
             </div>
           ))}
