@@ -167,7 +167,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                     return (
                       <li key={feat.id} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                        <span>{feat.text}</span>
+                        <span className="truncate">{feat.text}</span>
                       </li>
                     );
                   })}
