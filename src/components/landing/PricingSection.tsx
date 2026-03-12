@@ -105,14 +105,25 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
 
               <WhatsAppButton
                 buttonId={`cta_pricing_${product.name.toLowerCase().replace("-", "")}`}
-                message={`Olá! Quero emitir meu ${product.name} em ${city}.`}
-                className="mt-4 w-full text-base py-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                message={
+                  detected
+                    ? `Olá! Vi o site e quero meu ${product.name}. Estou em ${city}, como iniciamos?`
+                    : `Olá! Vi o site e quero meu certificado agora. Como iniciamos?`
+                }
+                className="mt-4 w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
               >
-                QUERO MEU {product.name.toUpperCase()}
+                Quero meu {product.name}
               </WhatsAppButton>
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                Clique para iniciar via WhatsApp • Atendimento imediato
+              </p>
             </div>
           ))}
         </div>
+
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          🛠️ Suporte completo desde a validação até a instalação no seu computador
+        </p>
       </div>
     </section>
   );
