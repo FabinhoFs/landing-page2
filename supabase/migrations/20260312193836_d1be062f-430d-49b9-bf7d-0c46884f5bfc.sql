@@ -1,0 +1,1 @@
+UPDATE public.site_settings SET value = 'Olá! Vi o desconto de R$ {valor},00 na página e quero aproveitar para emitir meu certificado.' WHERE key = 'cta_exit_popup';

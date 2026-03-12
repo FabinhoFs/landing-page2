@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Phone, MessageCircle } from "lucide-react";
+import { Save, Phone, MessageCircle, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const CTA_FIELDS = [
   { key: "cta_hero", label: "CTA 01 — Topo (Hero)", position: "Aparece no topo da página" },
@@ -114,6 +115,64 @@ export const AdminSettings = () => {
               />
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Popup Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Bell className="h-5 w-5 text-primary" />
+            Pop-up de Saída (Exit Intent)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-semibold">Status do Pop-up</Label>
+              <p className="text-xs text-muted-foreground">Ativar ou desativar globalmente</p>
+            </div>
+            <Switch
+              checked={settings.popup_enabled === "true"}
+              onCheckedChange={(checked) => updateField("popup_enabled", checked ? "true" : "false")}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="popup_discount" className="text-sm font-semibold">Valor do Cupom (R$)</Label>
+            <p className="text-xs text-muted-foreground">Aparece como destaque no pop-up: "R$ [valor],00"</p>
+            <Input
+              id="popup_discount"
+              type="number"
+              value={settings.popup_discount || ""}
+              onChange={(e) => updateField("popup_discount", e.target.value.replace(/\D/g, ""))}
+              placeholder="20"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="popup_title" className="text-sm font-semibold">Título do Pop-up</Label>
+            <Input
+              id="popup_title"
+              value={settings.popup_title || ""}
+              onChange={(e) => updateField("popup_title", e.target.value)}
+              placeholder="ESPERA! NÃO VÁ EMBORA."
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="popup_subtitle" className="text-sm font-semibold">Subtítulo do Pop-up</Label>
+            <Input
+              id="popup_subtitle"
+              value={settings.popup_subtitle || ""}
+              onChange={(e) => updateField("popup_subtitle", e.target.value)}
+              placeholder="Garanta um desconto exclusivo..."
+            />
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            💡 Na mensagem do CTA do pop-up, use <code className="bg-muted px-1 rounded">{"{valor}"}</code> para inserir o valor do cupom automaticamente.
+          </p>
         </CardContent>
       </Card>
 
