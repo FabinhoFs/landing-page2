@@ -109,12 +109,12 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
 
   return (
     <section className="bg-background py-20">
-      <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-6xl px-6">
         <h2 className="mb-12 text-center text-xl font-bold text-foreground sm:text-2xl md:text-3xl lg:text-4xl whitespace-normal md:whitespace-nowrap">
           {sectionTitle}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
             const productFeatures = (features || [])
