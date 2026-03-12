@@ -1,6 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logAccess } from "@/lib/logAccess";
+import { useWhatsAppNumber } from "@/hooks/useWhatsAppNumber";
 
 interface WhatsAppButtonProps {
   buttonId: string;
@@ -9,10 +10,7 @@ interface WhatsAppButtonProps {
   className?: string;
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "default" | "outline" | "ghost";
-  phone?: string;
 }
-
-const WHATSAPP_NUMBER = "5524999999999";
 
 export const WhatsAppButton = ({
   buttonId,
@@ -20,10 +18,10 @@ export const WhatsAppButton = ({
   children,
   className = "",
   size = "lg",
-  phone,
 }: WhatsAppButtonProps) => {
+  const phone = useWhatsAppNumber();
+
   const handleClick = async () => {
-    // DataLayer for GTM
     if (typeof window !== "undefined" && (window as any).dataLayer) {
       (window as any).dataLayer.push({
         event: "conversion_whatsapp",
@@ -31,12 +29,10 @@ export const WhatsAppButton = ({
       });
     }
 
-    // Log to Supabase (non-blocking)
     logAccess(buttonId);
 
     const encodedMessage = encodeURIComponent(`${message} (origem: ${buttonId})`);
-    const number = phone || WHATSAPP_NUMBER;
-    window.open(`https://wa.me/${number}?text=${encodedMessage}`, "_blank");
+    window.open(`https://wa.me/${phone}?text=${encodedMessage}`, "_blank");
   };
 
   return (
