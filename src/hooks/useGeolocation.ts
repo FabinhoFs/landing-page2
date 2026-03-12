@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 export const useGeolocation = () => {
-  const [city, setCity] = useState<string>("sua região");
+  const [city, setCity] = useState<string>("Brasil");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
