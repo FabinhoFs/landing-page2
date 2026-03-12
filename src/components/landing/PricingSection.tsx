@@ -122,15 +122,14 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
           Escolha a melhor modalidade de certificado para você
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto items-stretch">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
-            const features = [product.feature_1, product.feature_2, product.feature_3, product.feature_4].filter(Boolean);
 
             return (
               <div
                 key={product.id}
-                className="rounded-2xl border border-border bg-card p-8 flex flex-col min-h-[520px]"
+                className="rounded-2xl border border-border bg-card p-8 flex flex-col"
               >
                 <h3 className="text-2xl font-bold text-card-foreground text-center">
                   {product.name}
@@ -158,7 +157,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1">
-                  {features.map((feat, i) => (
+                  {SHARED_FEATURES.map((feat, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                       <span>{feat}</span>
@@ -177,7 +176,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                       ? getMessage("cta_ecpf", city)
                       : getMessage("cta_ecnpj", city)
                   }
-                  className="mt-4 w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+                  className="mt-auto w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
                 >
                   Quero meu {product.name}
                 </WhatsAppButton>
