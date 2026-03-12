@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Save, Plus, Trash2, GripVertical } from "lucide-react";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const priceSchema = z.object({
