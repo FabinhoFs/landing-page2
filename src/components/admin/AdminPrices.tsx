@@ -192,45 +192,27 @@ export const AdminPrices = () => {
                     <span className="text-sm text-muted-foreground">Promoção Ativa</span>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Expiração da Promoção (Data e Hora — Horário de Brasília)</label>
-                    <div className="flex gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className={cn("flex-1 justify-start text-left font-normal", !expiresDate && "text-muted-foreground")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {expiresDate ? format(expiresDate, "dd/MM/yyyy", { locale: ptBR }) : "Sem data"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={expiresDate} onSelect={(date) => {
-                            if (!date) {
-                              updateField(item.id, "promo_expires_at", null);
-                              return;
-                            }
-                            // Preserve existing time or default to 23:59
-                            const existing = expiresDate || new Date();
-                            date.setHours(existing.getHours() || 23, existing.getMinutes() || 59, 0, 0);
-                            // Store as Brazil time (UTC-3)
-                            const brDate = new Date(date.getTime() + 3 * 60 * 60 * 1000);
-                            updateField(item.id, "promo_expires_at", brDate.toISOString());
-                          }} initialFocus className={cn("p-3 pointer-events-auto")} />
-                        </PopoverContent>
-                      </Popover>
-                      <Input
-                        type="time"
-                        className="w-28 shrink-0"
-                        value={expiresDate ? `${String(expiresDate.getHours()).padStart(2, "0")}:${String(expiresDate.getMinutes()).padStart(2, "0")}` : ""}
-                        onChange={(e) => {
-                          if (!expiresDate || !e.target.value) return;
-                          const [h, m] = e.target.value.split(":").map(Number);
-                          const newDate = new Date(expiresDate);
-                          newDate.setHours(h, m, 0, 0);
-                          const brDate = new Date(newDate.getTime() + 3 * 60 * 60 * 1000);
-                          updateField(item.id, "promo_expires_at", brDate.toISOString());
-                        }}
-                        placeholder="HH:MM"
-                      />
-                    </div>
+                    <label className="text-xs text-muted-foreground">Expiração da Promoção (Horário de Brasília)</label>
+                    <Input
+                      type="datetime-local"
+                      value={current.promo_expires_at ? (() => {
+                        // Show in Brazil time (UTC-3)
+                        const d = new Date(current.promo_expires_at);
+                        const brTime = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+                        return brTime.toISOString().slice(0, 16);
+                      })() : ""}
+                      onChange={(e) => {
+                        if (!e.target.value) {
+                          updateField(item.id, "promo_expires_at", null);
+                          return;
+                        }
+                        // Convert Brazil time input to UTC for storage
+                        const localDate = new Date(e.target.value);
+                        const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                        updateField(item.id, "promo_expires_at", utcDate.toISOString());
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">Fuso: Brasília (UTC-3)</p>
                   </div>
                 </div>
 
