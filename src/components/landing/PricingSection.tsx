@@ -18,30 +18,36 @@ interface DbPrice {
   feature_4: string;
 }
 
+const SHARED_FEATURES = [
+  "Assinar documentos de qualquer lugar com validade jurídica",
+  "Acesso total ao e-CAC e serviços da Receita Federal",
+  "Segurança garantida pelo padrão ICP-Brasil",
+];
+
 const fallbackProducts: DbPrice[] = [
   {
     id: "1",
     name: "e-CPF A1",
-    price: 139.9,
+    price: 139.90,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
-    feature_1: "Assinar documentos de qualquer lugar com validade jurídica",
-    feature_2: "Acesso total ao e-CAC e serviços da Receita Federal",
-    feature_3: "Segurança garantida pelo padrão ICP-Brasil",
-    feature_4: "Declaração de IR e consultas sem filas ou burocracia",
+    feature_1: SHARED_FEATURES[0],
+    feature_2: SHARED_FEATURES[1],
+    feature_3: SHARED_FEATURES[2],
+    feature_4: "",
   },
   {
     id: "2",
     name: "e-CNPJ A1",
-    price: 219.9,
+    price: 219.90,
     promotional_price: null,
     is_promotion_active: false,
     promo_expires_at: null,
-    feature_1: "Emissão de notas fiscais (NF-e/NFC-e) sem interrupções",
-    feature_2: "Conformidade total com FGTS, e-Social e obrigações acessórias",
-    feature_3: "Gestão segura de contratos e procurações digitais",
-    feature_4: "Autenticação empresarial em sistemas públicos e privados",
+    feature_1: SHARED_FEATURES[0],
+    feature_2: SHARED_FEATURES[1],
+    feature_3: SHARED_FEATURES[2],
+    feature_4: "",
   },
 ];
 
@@ -116,15 +122,14 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
           Escolha a melhor modalidade de certificado para você
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto items-stretch">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
-            const features = [product.feature_1, product.feature_2, product.feature_3, product.feature_4].filter(Boolean);
 
             return (
               <div
                 key={product.id}
-                className="rounded-2xl border border-border bg-card p-8 flex flex-col min-h-[520px]"
+                className="rounded-2xl border border-border bg-card p-8 flex flex-col"
               >
                 <h3 className="text-2xl font-bold text-card-foreground text-center">
                   {product.name}
@@ -152,7 +157,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                 )}
 
                 <ul className="mt-6 space-y-3 flex-1">
-                  {features.map((feat, i) => (
+                  {SHARED_FEATURES.map((feat, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                       <span>{feat}</span>
@@ -171,7 +176,7 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                       ? getMessage("cta_ecpf", city)
                       : getMessage("cta_ecnpj", city)
                   }
-                  className="mt-4 w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+                  className="mt-auto w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
                 >
                   Quero meu {product.name}
                 </WhatsAppButton>

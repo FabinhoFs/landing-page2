@@ -49,7 +49,7 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           <p className="text-base md:text-lg text-deep-foreground/80 leading-relaxed max-w-xl mx-auto transition-opacity duration-500 whitespace-normal" style={{ lineHeight: 1.6 }}>
             {detected && city
               ? <>Videoconferência em menos de 5 minutos para você de <span className="font-bold text-primary inline-block px-1">{city}</span> e região. Sem filas e 100% online.</>
-              : "Líder em emissão expressa para todo o Brasil. Videoconferência em menos de 5 minutos, sem burocracia e 100% online."}
+              : "Emissão de certificados com validade jurídica e atendimento simplificado em todo o território nacional."}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
