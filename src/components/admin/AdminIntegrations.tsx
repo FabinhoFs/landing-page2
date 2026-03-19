@@ -79,8 +79,23 @@ export const AdminIntegrations = () => {
 
   const set = (key: ConfigKeys, val: string) => setValues((prev) => ({ ...prev, [key]: val }));
 
+  if (authorized === null) {
+    return <div className="flex items-center justify-center py-12 text-muted-foreground">Verificando permissões...</div>;
+  }
+
+  if (!authorized) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="flex flex-col items-center gap-3 py-12">
+          <ShieldAlert className="h-10 w-10 text-destructive" />
+          <p className="text-lg font-semibold text-destructive">Acesso Negado</p>
+          <p className="text-sm text-muted-foreground">Você precisa estar autenticado como administrador para acessar esta seção.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
