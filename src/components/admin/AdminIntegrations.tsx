@@ -70,8 +70,7 @@ export const AdminIntegrations = () => {
 
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
-    } catch (err) {
-      console.error("Erro ao salvar integrações:", err);
+    } catch {
       toast.error("Erro ao salvar integrações.");
     } finally {
       setSaving(false);
