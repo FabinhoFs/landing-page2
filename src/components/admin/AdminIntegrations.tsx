@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Save, Globe, ShoppingCart, Facebook } from "lucide-react";
+import { Save, Globe, ShoppingCart, Facebook, ShieldAlert } from "lucide-react";
 
 const KEYS = [
   "g_tag_id",
@@ -24,6 +24,7 @@ export const AdminIntegrations = () => {
     g_tag_manager_id: "",
   });
   const [saving, setSaving] = useState(false);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     const load = async () => {
