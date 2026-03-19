@@ -183,6 +183,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          is_google_review: boolean
           name: string
           rating: number
           role: string
@@ -194,6 +195,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_google_review?: boolean
           name: string
           rating?: number
           role?: string
@@ -205,6 +207,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_google_review?: boolean
           name?: string
           rating?: number
           role?: string
