@@ -70,9 +70,9 @@ export const TestimonialsSection = () => {
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-deep-alt py-20 md:py-28">
+    <section className="bg-deep py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
-        <h2 className="text-center text-2xl font-bold text-deep-alt-foreground md:text-4xl mb-10 md:mb-12">
+        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
           O que dizem nossos clientes
         </h2>
 
@@ -98,8 +98,8 @@ export const TestimonialsSection = () => {
             ))}
           </CarouselContent>
 
-          <CarouselPrevious className="-left-4 md:-left-5 bg-white/10 border-white/20 text-deep-alt-foreground hover:bg-white/20" />
-          <CarouselNext className="-right-4 md:-right-5 bg-white/10 border-white/20 text-deep-alt-foreground hover:bg-white/20" />
+          <CarouselPrevious className="-left-4 md:-left-5 bg-white/10 border-primary/30 text-deep-foreground hover:bg-white/20" />
+          <CarouselNext className="-right-4 md:-right-5 bg-white/10 border-primary/30 text-deep-foreground hover:bg-white/20" />
         </Carousel>
 
         {/* Dots */}
@@ -110,7 +110,7 @@ export const TestimonialsSection = () => {
                 key={i}
                 onClick={() => api?.scrollTo(i)}
                 className={`h-2 w-2 rounded-full transition-colors ${
-                  i === current ? "bg-primary" : "bg-deep-alt-foreground/30"
+                  i === current ? "bg-primary" : "bg-deep-foreground/30"
                 }`}
               />
             ))}
@@ -123,7 +123,7 @@ export const TestimonialsSection = () => {
 
 function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-lg shadow-black/20 p-5 md:p-6 flex flex-col h-full">
+    <div className="rounded-2xl border border-primary/20 bg-white/5 backdrop-blur-lg shadow-lg shadow-primary/10 p-5 md:p-6 flex flex-col h-full">
       {/* Header: stars left, Google icon right */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-0.5">
@@ -133,7 +133,7 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
               className={`h-4 w-4 ${
                  j < t.rating
                    ? "fill-[#FBBC05] text-[#FBBC05]"
-                   : "text-deep-alt-foreground/30"
+                   : "text-deep-foreground/30"
               }`}
             />
           ))}
@@ -142,7 +142,7 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
       </div>
 
       {/* Text */}
-      <p className="text-sm text-deep-alt-foreground/80 leading-relaxed flex-1">
+      <p className="text-sm text-deep-foreground/80 leading-relaxed flex-1">
         "{t.text}"
       </p>
 
@@ -150,13 +150,13 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
       <div className="mt-4 flex items-center gap-2">
         <div>
           <div className="flex items-center gap-1.5">
-            <p className="font-bold text-deep-alt-foreground text-sm">{t.name}</p>
+            <p className="font-bold text-deep-foreground text-sm">{t.name}</p>
             {t.is_google_review && (
               <BadgeCheck className="h-4 w-4 text-primary" />
             )}
           </div>
           {t.role && (
-            <p className="text-xs text-deep-alt-foreground/60">{t.role}</p>
+            <p className="text-xs text-deep-foreground/60">{t.role}</p>
           )}
         </div>
       </div>
