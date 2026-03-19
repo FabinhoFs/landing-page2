@@ -28,15 +28,17 @@ export const AdminIntegrations = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setAuthorized(false);
+        return;
+      }
+      setAuthorized(true);
+
+      const { data } = await supabase
         .from("site_settings")
         .select("key, value")
         .in("key", [...KEYS]);
-
-      if (error) {
-        console.error("Erro ao carregar integrações:", error);
-        return;
-      }
 
       const loaded: Partial<Record<ConfigKeys, string>> = {};
       data?.forEach((r) => {
