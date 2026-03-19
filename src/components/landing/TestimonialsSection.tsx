@@ -98,8 +98,8 @@ export const TestimonialsSection = () => {
             ))}
           </CarouselContent>
 
-          <CarouselPrevious className="-left-4 md:-left-5 bg-deep-foreground/10 border-deep-foreground/20 text-deep-foreground hover:bg-deep-foreground/20" />
-          <CarouselNext className="-right-4 md:-right-5 bg-deep-foreground/10 border-deep-foreground/20 text-deep-foreground hover:bg-deep-foreground/20" />
+          <CarouselPrevious className="-left-4 md:-left-5 bg-white/10 border-white/20 text-deep-alt-foreground hover:bg-white/20" />
+          <CarouselNext className="-right-4 md:-right-5 bg-white/10 border-white/20 text-deep-alt-foreground hover:bg-white/20" />
         </Carousel>
 
         {/* Dots */}
