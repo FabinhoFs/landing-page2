@@ -96,6 +96,7 @@ export const AdminIntegrations = () => {
   }
 
   return (
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
