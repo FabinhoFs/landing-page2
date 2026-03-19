@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  agis-lp:
+    image: agis-lp:latest
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        VITE_SUPABASE_URL: "${VITE_SUPABASE_URL}"
+        VITE_SUPABASE_PUBLISHABLE_KEY: "${VITE_SUPABASE_PUBLISHABLE_KEY}"
+    networks:
+      - traefik-public
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.agis-lp.rule=Host(`seudominio.com.br`)"
+        - "traefik.http.routers.agis-lp.entrypoints=websecure"
+        - "traefik.http.routers.agis-lp.tls.certresolver=letsencrypt"
+        - "traefik.http.services.agis-lp.loadbalancer.server.port=80"
+
+networks:
+  traefik-public:
+    external: true
