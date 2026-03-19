@@ -9,18 +9,28 @@ interface Testimonial {
   role: string;
   text: string;
   rating: number;
+  is_google_review: boolean;
 }
+
+const GoogleIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+);
 
 export const TestimonialsSection = () => {
   const { data: testimonials } = useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("testimonials" as any)
-        .select("id, name, role, text, rating, sort_order")
+        .from("testimonials")
+        .select("id, name, role, text, rating, sort_order, is_google_review")
         .eq("is_active", true)
         .order("sort_order");
-      return (data as any as Testimonial[]) || [];
+      return (data as Testimonial[]) || [];
     },
     staleTime: 60000,
   });
@@ -88,16 +98,37 @@ export const TestimonialsSection = () => {
 
 function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 md:p-6 flex flex-col h-full">
-      <Quote className="h-7 w-7 md:h-8 md:w-8 text-primary/30 mb-3 md:mb-4" />
+    <div className="rounded-2xl border border-border bg-card p-5 md:p-6 flex flex-col h-full shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        {t.is_google_review ? (
+          <GoogleIcon className="h-6 w-6" />
+        ) : (
+          <Quote className="h-7 w-7 md:h-8 md:w-8 text-primary/30" />
+        )}
+        {t.is_google_review && (
+          <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+            Avaliação Verificada
+          </span>
+        )}
+      </div>
+
       <p className="text-sm text-muted-foreground leading-relaxed flex-1">
         "{t.text}"
       </p>
-      <div className="mt-3 md:mt-4 flex items-center gap-1 mb-2 md:mb-3">
-        {[...Array(5)].map((_, j) => (
-          <Star key={j} className={`h-4 w-4 ${j < t.rating ? "fill-primary text-primary" : "text-muted-foreground/30"}`} />
-        ))}
+
+      {/* Stars */}
+      <div className="mt-3 md:mt-4 flex items-center gap-2 mb-2 md:mb-3">
+        <div className="flex gap-0.5">
+          {[...Array(5)].map((_, j) => (
+            <Star key={j} className={`h-4 w-4 ${j < t.rating ? "fill-[#FBBC05] text-[#FBBC05]" : "text-muted-foreground/30"}`} />
+          ))}
+        </div>
+        {t.is_google_review && (
+          <span className="text-[10px] text-muted-foreground">via Google Maps</span>
+        )}
       </div>
+
       <div>
         <p className="font-bold text-card-foreground text-sm">{t.name}</p>
         {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
