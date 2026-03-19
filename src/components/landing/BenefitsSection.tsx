@@ -35,7 +35,7 @@ export const BenefitsSection = () => {
   });
 
   return (
-    <section className="bg-deep text-deep-foreground py-16 md:py-20">
+    <section className="bg-deep text-deep-foreground py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
           Por que escolher a Agis Digital

@@ -45,6 +45,9 @@ const Index = () => {
       {/* 3ª Dobra — Diferenciais / Prova Social */}
       <BenefitsSection />
 
+      {/* Divisória sutil */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
       {/* 4ª Dobra — Depoimentos */}
       <TestimonialsSection />
 

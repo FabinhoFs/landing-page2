@@ -51,6 +51,10 @@ export default {
             DEFAULT: "hsl(var(--deep))",
             foreground: "hsl(var(--deep-foreground))",
           },
+          "deep-alt": {
+            DEFAULT: "hsl(var(--deep-alt))",
+            foreground: "hsl(var(--deep-alt-foreground))",
+          },
           whatsapp: {
             DEFAULT: "hsl(var(--whatsapp))",
             foreground: "hsl(var(--whatsapp-foreground))",
