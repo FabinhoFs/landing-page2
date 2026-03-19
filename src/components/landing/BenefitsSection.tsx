@@ -1,24 +1,38 @@
-import { Zap, Lock, FastForward, HeadphonesIcon, ShieldCheck } from "lucide-react";
+import {
+  Zap, Lock, FastForward, HeadphonesIcon, ShieldCheck,
+  Headphones, Clock, Target, Rocket, Star, Heart,
+  CheckCircle, Globe, Eye, Sparkles, Shield,
+  Award, Fingerprint, FileCheck, UserCheck,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import benefitsHero from "@/assets/benefits-hero.jpg";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 
-const DEFAULT_BENEFITS = [
-  { icon: FastForward, title: "Velocidade", desc: "Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento." },
-  { icon: ShieldCheck, title: "Confiança", desc: "Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados." },
-  { icon: HeadphonesIcon, title: "Atendimento Personalizado", desc: "Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo." },
-  { icon: Lock, title: "Segurança", desc: "Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital." },
-];
+const ICON_MAP: Record<string, LucideIcon> = {
+  FastForward, ShieldCheck, Headphones, HeadphonesIcon, Lock,
+  Clock, Zap, Target, Rocket, Star, Heart, CheckCircle,
+  Globe, Eye, Sparkles, Shield, Award, Fingerprint, FileCheck, UserCheck,
+};
 
-const ICONS = [FastForward, ShieldCheck, HeadphonesIcon, Lock];
+const DEFAULT_BENEFITS = [
+  { iconName: "FastForward", title: "Velocidade", desc: "Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento." },
+  { iconName: "ShieldCheck", title: "Confiança", desc: "Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados." },
+  { iconName: "HeadphonesIcon", title: "Atendimento Personalizado", desc: "Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo." },
+  { iconName: "Lock", title: "Segurança", desc: "Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital." },
+];
 
 export const BenefitsSection = () => {
   const { settings } = useCtaMessages();
 
-  const benefits = DEFAULT_BENEFITS.map((b, i) => ({
-    icon: ICONS[i],
-    title: settings[`benefit_${i + 1}_title`] || b.title,
-    desc: settings[`benefit_${i + 1}_desc`] || b.desc,
-  }));
+  const benefits = DEFAULT_BENEFITS.map((b, i) => {
+    const iconName = settings[`diff_${i + 1}_icon`] || b.iconName;
+    const IconComponent = ICON_MAP[iconName] || ICON_MAP[b.iconName] || FastForward;
+    return {
+      icon: IconComponent,
+      title: settings[`benefit_${i + 1}_title`] || b.title,
+      desc: settings[`benefit_${i + 1}_desc`] || b.desc,
+    };
+  });
 
   return (
     <section className="bg-deep text-deep-foreground py-16 md:py-20">
@@ -27,7 +41,6 @@ export const BenefitsSection = () => {
           Por que escolher a Agis Digital
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-          {/* Mobile: grid 2x2, Desktop: single column */}
           <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-6">
             {benefits.map((b, i) => (
               <div
