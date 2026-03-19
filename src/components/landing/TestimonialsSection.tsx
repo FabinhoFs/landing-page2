@@ -70,7 +70,7 @@ export const TestimonialsSection = () => {
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-deep-alt py-20 md:py-28">
+    <section className="bg-deep py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <h2 className="text-center text-2xl font-bold text-deep-alt-foreground md:text-4xl mb-10 md:mb-12">
           O que dizem nossos clientes
