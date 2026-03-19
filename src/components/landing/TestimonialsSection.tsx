@@ -156,7 +156,7 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
             )}
           </div>
           {t.role && (
-            <p className="text-xs text-deep-foreground/60">{t.role}</p>
+            <p className="text-xs text-deep-alt-foreground/60">{t.role}</p>
           )}
         </div>
       </div>
