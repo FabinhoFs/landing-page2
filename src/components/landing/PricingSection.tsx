@@ -68,6 +68,7 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
 interface PricingSectionProps {
   city: string;
   detected?: boolean;
+  onTrackPurchase?: (value: number, productName: string) => void;
 }
 
 const ICON_MAP: Record<string, typeof CheckSquare> = {
