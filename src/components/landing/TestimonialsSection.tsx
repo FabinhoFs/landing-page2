@@ -131,9 +131,9 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
             <Star
               key={j}
               className={`h-4 w-4 ${
-                j < t.rating
-                  ? "fill-[#FBBC05] text-[#FBBC05]"
-                  : "text-deep-foreground/30"
+                 j < t.rating
+                   ? "fill-[#FBBC05] text-[#FBBC05]"
+                   : "text-deep-alt-foreground/30"
               }`}
             />
           ))}
