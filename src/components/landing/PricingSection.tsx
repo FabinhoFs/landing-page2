@@ -68,6 +68,7 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
 interface PricingSectionProps {
   city: string;
   detected?: boolean;
+  onTrackPurchase?: (value: number, productName: string) => void;
 }
 
 const ICON_MAP: Record<string, typeof CheckSquare> = {
@@ -75,7 +76,7 @@ const ICON_MAP: Record<string, typeof CheckSquare> = {
   headphones: Headphones,
 };
 
-export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
+export const PricingSection = ({ city, detected = false, onTrackPurchase }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
   const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
 
@@ -180,6 +181,10 @@ export const PricingSection = ({ city, detected = false }: PricingSectionProps) 
                         : getMessage("cta_ecnpj", city)
                     }
                     className="w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+                    onBeforeNavigate={() => {
+                      const price = promoActive ? product.promotional_price! : product.price;
+                      onTrackPurchase?.(price, product.name);
+                    }}
                   >
                     Quero meu {product.name}
                   </WhatsAppButton>

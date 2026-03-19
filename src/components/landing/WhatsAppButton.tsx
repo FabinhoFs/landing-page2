@@ -10,6 +10,7 @@ interface WhatsAppButtonProps {
   className?: string;
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "default" | "outline" | "ghost";
+  onBeforeNavigate?: () => void;
 }
 
 export const WhatsAppButton = ({
@@ -18,6 +19,7 @@ export const WhatsAppButton = ({
   children,
   className = "",
   size = "lg",
+  onBeforeNavigate,
 }: WhatsAppButtonProps) => {
   const phone = useWhatsAppNumber();
 
@@ -29,6 +31,7 @@ export const WhatsAppButton = ({
       });
     }
 
+    onBeforeNavigate?.();
     logAccess(buttonId);
 
     const encodedMessage = encodeURIComponent(`${message} (origem: ${buttonId})`);

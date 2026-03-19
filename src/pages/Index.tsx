@@ -10,9 +10,11 @@ import { FloatingWhatsApp } from "@/components/landing/FloatingWhatsApp";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { ExitIntentPopup } from "@/components/landing/ExitIntentPopup";
 import { useEffect } from "react";
+import { useTracking } from "@/hooks/useTracking";
 
 const Index = () => {
   const { city, detected } = useGeolocation();
+  const { trackPurchase } = useTracking();
   const cityDisplay = city || "Brasil";
 
   useEffect(() => {
@@ -38,7 +40,7 @@ const Index = () => {
       <HeroSection city={city} detected={detected} />
 
       {/* 2ª Dobra — Preços */}
-      <PricingSection city={cityDisplay} detected={detected} />
+      <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
 
       {/* 3ª Dobra — Diferenciais / Prova Social */}
       <BenefitsSection />
