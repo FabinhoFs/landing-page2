@@ -12,6 +12,7 @@ import { AdminFAQ } from "@/components/admin/AdminFAQ";
 import { AdminFooter } from "@/components/admin/AdminFooter";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { AdminIntegrations } from "@/components/admin/AdminIntegrations";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
