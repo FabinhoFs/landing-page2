@@ -27,40 +27,48 @@ export const AdminIntegrations = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("site_settings")
         .select("key, value")
         .in("key", [...KEYS]);
-      if (data) {
-        const map: any = { ...values };
-        data.forEach((r) => {
-          if (KEYS.includes(r.key as ConfigKeys)) map[r.key] = r.value;
-        });
-        setValues(map);
+
+      if (error) {
+        console.error("Erro ao carregar integrações:", error);
+        return;
       }
+
+      const loaded: Partial<Record<ConfigKeys, string>> = {};
+      data?.forEach((r) => {
+        if (KEYS.includes(r.key as ConfigKeys)) loaded[r.key as ConfigKeys] = r.value;
+      });
+
+      setValues((prev) => ({
+        g_tag_id: loaded.g_tag_id ?? prev.g_tag_id ?? "",
+        g_ads_purchase_label: loaded.g_ads_purchase_label ?? prev.g_ads_purchase_label ?? "",
+        meta_pixel_id: loaded.meta_pixel_id ?? prev.meta_pixel_id ?? "",
+        g_tag_manager_id: loaded.g_tag_manager_id ?? prev.g_tag_manager_id ?? "",
+      }));
     };
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      for (const key of KEYS) {
-        const { data: existing } = await supabase
-          .from("site_settings")
-          .select("id")
-          .eq("key", key)
-          .maybeSingle();
+      const rows = KEYS.map((key) => ({
+        key,
+        value: values[key],
+        updated_at: new Date().toISOString(),
+      }));
 
-        if (existing) {
-          await supabase.from("site_settings").update({ value: values[key], updated_at: new Date().toISOString() }).eq("key", key);
-        } else {
-          await supabase.from("site_settings").insert({ key, value: values[key] });
-        }
-      }
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert(rows, { onConflict: "key" });
+
+      if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
-    } catch {
+    } catch (err) {
+      console.error("Erro ao salvar integrações:", err);
       toast.error("Erro ao salvar integrações.");
     } finally {
       setSaving(false);
