@@ -10,6 +10,7 @@ interface WhatsAppButtonProps {
   className?: string;
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "default" | "outline" | "ghost";
+  onBeforeNavigate?: () => void;
 }
 
 export const WhatsAppButton = ({
