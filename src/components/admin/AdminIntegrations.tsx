@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Save, Globe, ShoppingCart, Facebook } from "lucide-react";
+import { Save, Globe, ShoppingCart, Facebook, ShieldAlert } from "lucide-react";
 
 const KEYS = [
   "g_tag_id",
@@ -24,18 +24,21 @@ export const AdminIntegrations = () => {
     g_tag_manager_id: "",
   });
   const [saving, setSaving] = useState(false);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setAuthorized(false);
+        return;
+      }
+      setAuthorized(true);
+
+      const { data } = await supabase
         .from("site_settings")
         .select("key, value")
         .in("key", [...KEYS]);
-
-      if (error) {
-        console.error("Erro ao carregar integrações:", error);
-        return;
-      }
 
       const loaded: Partial<Record<ConfigKeys, string>> = {};
       data?.forEach((r) => {
@@ -67,8 +70,7 @@ export const AdminIntegrations = () => {
 
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
-    } catch (err) {
-      console.error("Erro ao salvar integrações:", err);
+    } catch {
       toast.error("Erro ao salvar integrações.");
     } finally {
       setSaving(false);
@@ -76,6 +78,22 @@ export const AdminIntegrations = () => {
   };
 
   const set = (key: ConfigKeys, val: string) => setValues((prev) => ({ ...prev, [key]: val }));
+
+  if (authorized === null) {
+    return <div className="flex items-center justify-center py-12 text-muted-foreground">Verificando permissões...</div>;
+  }
+
+  if (!authorized) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="flex flex-col items-center gap-3 py-12">
+          <ShieldAlert className="h-10 w-10 text-destructive" />
+          <p className="text-lg font-semibold text-destructive">Acesso Negado</p>
+          <p className="text-sm text-muted-foreground">Você precisa estar autenticado como administrador para acessar esta seção.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
