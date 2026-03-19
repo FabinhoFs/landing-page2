@@ -1,0 +1,1 @@
+ALTER TABLE public.testimonials ADD COLUMN is_google_review boolean NOT NULL DEFAULT false;
