@@ -110,7 +110,7 @@ export const TestimonialsSection = () => {
                 key={i}
                 onClick={() => api?.scrollTo(i)}
                 className={`h-2 w-2 rounded-full transition-colors ${
-                  i === current ? "bg-primary" : "bg-deep-alt-foreground/30"
+                  i === current ? "bg-primary" : "bg-deep-foreground/30"
                 }`}
               />
             ))}
