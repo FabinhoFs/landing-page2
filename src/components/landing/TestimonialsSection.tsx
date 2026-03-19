@@ -150,7 +150,7 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
       <div className="mt-4 flex items-center gap-2">
         <div>
           <div className="flex items-center gap-1.5">
-            <p className="font-bold text-deep-foreground text-sm">{t.name}</p>
+            <p className="font-bold text-deep-alt-foreground text-sm">{t.name}</p>
             {t.is_google_review && (
               <BadgeCheck className="h-4 w-4 text-primary" />
             )}
