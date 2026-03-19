@@ -123,7 +123,7 @@ export const TestimonialsSection = () => {
 
 function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-lg shadow-black/20 p-5 md:p-6 flex flex-col h-full">
+    <div className="rounded-2xl border border-primary/20 bg-white/5 backdrop-blur-lg shadow-lg shadow-primary/10 p-5 md:p-6 flex flex-col h-full">
       {/* Header: stars left, Google icon right */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-0.5">
