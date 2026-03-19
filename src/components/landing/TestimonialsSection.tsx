@@ -1,7 +1,16 @@
-import { Star, Quote } from "lucide-react";
+import { Star, BadgeCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Autoplay from "embla-carousel-autoplay";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 interface Testimonial {
   id: string;
@@ -22,6 +31,10 @@ const GoogleIcon = ({ className }: { className?: string }) => (
 );
 
 export const TestimonialsSection = () => {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
   const { data: testimonials } = useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
@@ -36,61 +49,73 @@ export const TestimonialsSection = () => {
   });
 
   const items = testimonials || [];
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!api) return;
+    setCurrent(api.selectedScrollSnap());
+    setCount(api.scrollSnapList().length);
+  }, [api]);
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const handleScroll = () => {
-      const scrollLeft = el.scrollLeft;
-      const cardWidth = el.firstElementChild ? (el.firstElementChild as HTMLElement).offsetWidth + 16 : 1;
-      setActiveIndex(Math.round(scrollLeft / cardWidth));
+    if (!api) return;
+    onSelect();
+    api.on("select", onSelect);
+    api.on("reInit", onSelect);
+    return () => {
+      api.off("select", onSelect);
+      api.off("reInit", onSelect);
     };
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [items.length]);
+  }, [api, onSelect]);
 
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-background py-16 md:py-20">
-      <div className="mx-auto max-w-5xl px-4 md:px-6">
-        <h2 className="text-center text-2xl font-bold text-foreground md:text-4xl mb-10 md:mb-12">
+    <section className="bg-deep py-16 md:py-20">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
           O que dizem nossos clientes
         </h2>
 
-        {/* Desktop grid */}
-        <div className="hidden md:grid md:grid-cols-3 gap-6">
-          {items.map((t) => (
-            <TestimonialCard key={t.id} testimonial={t} />
-          ))}
-        </div>
-
-        {/* Mobile carousel */}
-        <div className="md:hidden">
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
-          >
+        <Carousel
+          setApi={setApi}
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[
+            Autoplay({ delay: 5000, stopOnInteraction: true }),
+          ]}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
             {items.map((t) => (
-              <div key={t.id} className="min-w-[calc(100vw-3rem)] snap-center">
+              <CarouselItem
+                key={t.id}
+                className="pl-4 basis-full md:basis-1/2 lg:basis-1/3"
+              >
                 <TestimonialCard testimonial={t} />
-              </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+
+          <CarouselPrevious className="-left-4 md:-left-5 bg-deep-foreground/10 border-deep-foreground/20 text-deep-foreground hover:bg-deep-foreground/20" />
+          <CarouselNext className="-right-4 md:-right-5 bg-deep-foreground/10 border-deep-foreground/20 text-deep-foreground hover:bg-deep-foreground/20" />
+        </Carousel>
+
+        {/* Dots */}
+        {count > 1 && (
+          <div className="flex justify-center gap-2 mt-6">
+            {Array.from({ length: count }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => api?.scrollTo(i)}
+                className={`h-2 w-2 rounded-full transition-colors ${
+                  i === current ? "bg-primary" : "bg-deep-foreground/30"
+                }`}
+              />
             ))}
           </div>
-          {items.length > 1 && (
-            <div className="flex justify-center gap-2 mt-4">
-              {items.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 w-2 rounded-full transition-colors ${i === activeIndex ? "bg-primary" : "bg-muted-foreground/30"}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </section>
   );
@@ -98,40 +123,42 @@ export const TestimonialsSection = () => {
 
 function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 md:p-6 flex flex-col h-full shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3 md:mb-4">
-        {t.is_google_review ? (
-          <GoogleIcon className="h-6 w-6" />
-        ) : (
-          <Quote className="h-7 w-7 md:h-8 md:w-8 text-primary/30" />
-        )}
-        {t.is_google_review && (
-          <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            Avaliação Verificada
-          </span>
-        )}
+    <div className="rounded-2xl border border-deep-foreground/10 bg-deep-foreground/5 backdrop-blur-sm p-5 md:p-6 flex flex-col h-full">
+      {/* Header: stars left, Google icon right */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex gap-0.5">
+          {[...Array(5)].map((_, j) => (
+            <Star
+              key={j}
+              className={`h-4 w-4 ${
+                j < t.rating
+                  ? "fill-[#FBBC05] text-[#FBBC05]"
+                  : "text-deep-foreground/30"
+              }`}
+            />
+          ))}
+        </div>
+        {t.is_google_review && <GoogleIcon className="h-5 w-5" />}
       </div>
 
-      <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+      {/* Text */}
+      <p className="text-sm text-deep-foreground/80 leading-relaxed flex-1">
         "{t.text}"
       </p>
 
-      {/* Stars */}
-      <div className="mt-3 md:mt-4 flex items-center gap-2 mb-2 md:mb-3">
-        <div className="flex gap-0.5">
-          {[...Array(5)].map((_, j) => (
-            <Star key={j} className={`h-4 w-4 ${j < t.rating ? "fill-[#FBBC05] text-[#FBBC05]" : "text-muted-foreground/30"}`} />
-          ))}
+      {/* Author */}
+      <div className="mt-4 flex items-center gap-2">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <p className="font-bold text-deep-foreground text-sm">{t.name}</p>
+            {t.is_google_review && (
+              <BadgeCheck className="h-4 w-4 text-primary" />
+            )}
+          </div>
+          {t.role && (
+            <p className="text-xs text-deep-foreground/60">{t.role}</p>
+          )}
         </div>
-        {t.is_google_review && (
-          <span className="text-[10px] text-muted-foreground">via Google Maps</span>
-        )}
-      </div>
-
-      <div>
-        <p className="font-bold text-card-foreground text-sm">{t.name}</p>
-        {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
       </div>
     </div>
   );
