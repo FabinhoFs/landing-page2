@@ -76,7 +76,7 @@ const ICON_MAP: Record<string, typeof CheckSquare> = {
   headphones: Headphones,
 };
 
-export const PricingSection = ({ city, detected = false }: PricingSectionProps) => {
+export const PricingSection = ({ city, detected = false, onTrackPurchase }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
   const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
 
