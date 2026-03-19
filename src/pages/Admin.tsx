@@ -67,6 +67,7 @@ const Admin = () => {
             <TabsTrigger value="faq">FAQ</TabsTrigger>
             <TabsTrigger value="footer">Rodapé</TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
+            <TabsTrigger value="integrations">Integrações e Pixels</TabsTrigger>
             <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
           </TabsList>
           <TabsContent value="hero"><AdminHero /></TabsContent>
@@ -76,6 +77,7 @@ const Admin = () => {
           <TabsContent value="faq"><AdminFAQ /></TabsContent>
           <TabsContent value="footer"><AdminFooter /></TabsContent>
           <TabsContent value="settings"><AdminSettings /></TabsContent>
+          <TabsContent value="integrations"><AdminIntegrations /></TabsContent>
           <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
         </Tabs>
       </main>

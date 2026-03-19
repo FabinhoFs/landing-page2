@@ -40,7 +40,7 @@ const Index = () => {
       <HeroSection city={city} detected={detected} />
 
       {/* 2ª Dobra — Preços */}
-      <PricingSection city={cityDisplay} detected={detected} />
+      <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
 
       {/* 3ª Dobra — Diferenciais / Prova Social */}
       <BenefitsSection />

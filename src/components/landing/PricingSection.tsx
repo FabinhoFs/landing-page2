@@ -181,6 +181,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                         : getMessage("cta_ecnpj", city)
                     }
                     className="w-full text-base py-4 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+                    onBeforeNavigate={() => {
+                      const price = promoActive ? product.promotional_price! : product.price;
+                      onTrackPurchase?.(price, product.name);
+                    }}
                   >
                     Quero meu {product.name}
                   </WhatsAppButton>
