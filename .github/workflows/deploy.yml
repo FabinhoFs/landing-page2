@@ -7,7 +7,6 @@
 #   VPS_SSH_KEY     — chave privada SSH
 #   VITE_SUPABASE_URL
 #   VITE_SUPABASE_PUBLISHABLE_KEY
-#   VITE_SUPABASE_PROJECT_ID
 
 name: Build & Deploy
 
@@ -27,7 +26,6 @@ jobs:
           docker build \
             --build-arg VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }} \
             --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }} \
-            --build-arg VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }} \
             -f deploy/Dockerfile \
             -t agis-lp:latest .
 
