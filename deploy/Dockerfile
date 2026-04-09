@@ -11,7 +11,6 @@ WORKDIR /app
 # Build args — Vite embeds these into static JS at build time
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_PUBLISHABLE_KEY
-ARG VITE_SUPABASE_PROJECT_ID
 
 # Install dependencies first (better layer caching)
 COPY package.json bun.lock ./
