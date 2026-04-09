@@ -40,7 +40,6 @@ Preencha com seus valores reais:
 |----------|-----------|----------------|
 | `VITE_SUPABASE_URL` | URL do projeto Supabase | Dashboard → Settings → API |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Chave anon/pública | Dashboard → Settings → API |
-| `VITE_SUPABASE_PROJECT_ID` | ID do projeto | Dashboard → Settings → General |
 | `APP_PORT` | Porta local (padrão: 3000) | Sua preferência |
 
 > ⚠️ **NUNCA** coloque a `service_role` key no `.env` do frontend. Ela dá acesso total ao banco.
@@ -65,8 +64,8 @@ A aplicação estará em `http://SEU_IP:3000`.
 # Status
 docker compose ps
 
-# Healthcheck
-docker inspect --format='{{.State.Health.Status}}' deploy-agis-lp-1
+# Healthcheck (funciona independente do nome do container)
+docker compose ps --format "table {{.Name}}\t{{.Status}}"
 
 # Testar resposta HTTP
 curl -I http://localhost:3000
@@ -215,7 +214,7 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 | Rebuild | `docker compose build --no-cache && docker compose up -d` |
 | Logs | `docker compose logs -f` |
 | Status | `docker compose ps` |
-| Health | `docker inspect --format='{{.State.Health.Status}}' deploy-agis-lp-1` |
+| Health | `docker compose ps` |
 
 ---
 
