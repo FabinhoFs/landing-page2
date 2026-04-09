@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   agis-lp:
     image: agis-lp:latest
@@ -9,6 +7,7 @@ services:
       args:
         VITE_SUPABASE_URL: "${VITE_SUPABASE_URL}"
         VITE_SUPABASE_PUBLISHABLE_KEY: "${VITE_SUPABASE_PUBLISHABLE_KEY}"
+        VITE_SUPABASE_PROJECT_ID: "${VITE_SUPABASE_PROJECT_ID}"
     ports:
       - "${APP_PORT:-3000}:80"
     restart: unless-stopped
@@ -21,17 +20,19 @@ services:
     networks:
       - app-network
 
-  # ── (Opcional) Descomente para usar com Traefik ──
-  # Remova a seção "ports" acima e descomente abaixo:
-  #
-  # labels:
-  #   - "traefik.enable=true"
-  #   - "traefik.http.routers.agis-lp.rule=Host(`seudominio.com.br`)"
-  #   - "traefik.http.routers.agis-lp.entrypoints=websecure"
-  #   - "traefik.http.routers.agis-lp.tls.certresolver=letsencrypt"
-  #   - "traefik.http.services.agis-lp.loadbalancer.server.port=80"
-  # networks:
-  #   - traefik-public
+    # ── (Opcional) Para usar com Traefik ──
+    # 1. Remova a seção "ports" acima
+    # 2. Descomente as labels abaixo
+    # 3. Descomente a rede "traefik-public" no final
+    #
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.agis-lp.rule=Host(`seudominio.com.br`)"
+    #   - "traefik.http.routers.agis-lp.entrypoints=websecure"
+    #   - "traefik.http.routers.agis-lp.tls.certresolver=letsencrypt"
+    #   - "traefik.http.services.agis-lp.loadbalancer.server.port=80"
+    # networks:
+    #   - traefik-public
 
 networks:
   app-network:

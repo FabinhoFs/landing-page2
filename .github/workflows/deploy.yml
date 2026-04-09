@@ -1,0 +1,56 @@
+# ============================================
+# CI/CD — Build & Deploy (Opcional)
+# ============================================
+# Para ativar, configure estes secrets no GitHub:
+#   VPS_HOST        — IP ou domínio da VPS
+#   VPS_USER        — usuário SSH (ex: root ou deploy)
+#   VPS_SSH_KEY     — chave privada SSH
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_PUBLISHABLE_KEY
+#   VITE_SUPABASE_PROJECT_ID
+
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }} \
+            --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }} \
+            --build-arg VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }} \
+            -f deploy/Dockerfile \
+            -t agis-lp:latest .
+
+      - name: Save image
+        run: docker save agis-lp:latest | gzip > /tmp/agis-lp.tar.gz
+
+      - name: Deploy to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: /tmp/agis-lp.tar.gz
+          target: /tmp/
+
+      - name: Load & restart on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker load < /tmp/agis-lp.tar.gz
+            cd /opt/agis-digital-lp/deploy
+            docker compose up -d
+            rm /tmp/agis-lp.tar.gz
