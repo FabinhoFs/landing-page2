@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+deploy/migration-master.sql
+supabase
+.vscode
+.idea
+*.log
+coverage
+.playwright
+test-results
+playwright-report
