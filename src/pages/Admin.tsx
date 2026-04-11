@@ -79,6 +79,7 @@ const Admin = () => {
             <TabsTrigger value="settings">Configurações</TabsTrigger>
             <TabsTrigger value="integrations">Integrações e Pixels</TabsTrigger>
             <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
+            <TabsTrigger value="users">Administradores</TabsTrigger>
           </TabsList>
           <TabsContent value="hero"><AdminHero /></TabsContent>
           <TabsContent value="prices"><AdminPrices /></TabsContent>
