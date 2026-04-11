@@ -5,6 +5,16 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "https://hvpilqrvoktoyhfnbwhl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cGlscXJ2b2t0b3loZm5id2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjY1NjAsImV4cCI6MjA4ODY0MjU2MH0.5QLKbH-Chah1QjoxKFreq9vKFXVIqCoA4-GXWPLlgPw";
 
+// In production, crash early if env vars are missing
+if (import.meta.env.PROD) {
+  if (!import.meta.env.VITE_SUPABASE_URL) {
+    throw new Error('[Supabase] VITE_SUPABASE_URL is not defined. Set it as a build arg.');
+  }
+  if (!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+    throw new Error('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY is not defined. Set it as a build arg.');
+  }
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 

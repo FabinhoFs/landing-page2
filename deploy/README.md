@@ -101,21 +101,57 @@ docker compose up -d
 
 ## 7. Rollback Simples
 
-Se a nova versão falhar, volte para o commit anterior:
+Se a nova versão apresentar problemas, siga estes passos para voltar a uma versão anterior:
+
+### 7.1 Identificar o commit anterior
 
 ```bash
 cd agis-digital-lp
-git log --oneline -5           # identificar o hash do commit anterior
-git checkout <HASH_ANTERIOR>
+git log --oneline -5
+```
+
+Exemplo de saída:
+
+```
+a1b2c3d  feat: nova seção de depoimentos
+e4f5g6h  fix: ajuste no botão CTA
+i7j8k9l  chore: atualizar dependências
+```
+
+### 7.2 Voltar para o commit desejado
+
+```bash
+git checkout e4f5g6h
+```
+
+> Substitua `e4f5g6h` pelo hash real do commit que deseja restaurar.
+
+### 7.3 Rebuildar e subir
+
+```bash
 cd deploy
 docker compose build --no-cache
 docker compose up -d
 ```
 
-Para voltar à branch principal depois:
+### 7.4 Verificar se voltou corretamente
 
 ```bash
+docker compose ps
+curl -I http://localhost:3000
+```
+
+### 7.5 Retornar para a branch principal
+
+Quando a versão mais recente estiver corrigida:
+
+```bash
+cd agis-digital-lp
 git checkout main
+git pull origin main
+cd deploy
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ---
