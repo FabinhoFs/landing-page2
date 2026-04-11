@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { checkIsAdmin } from "@/lib/checkIsAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +51,19 @@ const AdminLogin = () => {
       return;
     }
 
+    // Check admin role after successful authentication
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
+      await supabase.auth.signOut();
+      toast({
+        title: "Acesso negado",
+        description: "Você não possui permissão de administrador.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     navigate("/admin");
   };
 
@@ -89,7 +103,7 @@ const AdminLogin = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Verificando..." : "Entrar"}
             </Button>
           </form>
         </CardContent>
