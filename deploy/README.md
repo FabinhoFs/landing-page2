@@ -10,7 +10,6 @@ Guia completo para deploy em VPS Ubuntu/Debian com Docker.
 - Docker Engine 24+ e Docker Compose v2+
 
 ```bash
-# Instalar Docker (se ainda não tem)
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 # Saia e entre novamente no terminal
@@ -54,7 +53,7 @@ docker compose build
 docker compose up -d
 ```
 
-A aplicação estará em `http://SEU_IP:3000`.
+A aplicação estará em `http://SEU_IP:<APP_PORT>` (padrão: porta definida no `.env`, ex: `3000`).
 
 ---
 
@@ -67,8 +66,8 @@ docker compose ps
 # Healthcheck detalhado
 docker compose ps --format "table {{.Name}}\t{{.Status}}"
 
-# Testar resposta HTTP
-curl -I http://localhost:3000
+# Testar resposta HTTP (substitua pela porta definida em APP_PORT)
+curl -I http://localhost:${APP_PORT:-3000}
 ```
 
 Deve retornar `HTTP/1.1 200 OK`.
@@ -101,7 +100,7 @@ docker compose up -d
 
 ## 7. Rollback Simples
 
-Se a nova versão apresentar problemas, siga estes passos para voltar a uma versão anterior:
+Se a nova versão apresentar problemas, siga estes passos para voltar a uma versão anterior.
 
 ### 7.1 Identificar o commit anterior
 
@@ -124,7 +123,7 @@ i7j8k9l  chore: atualizar dependências
 git checkout e4f5g6h
 ```
 
-> Substitua `e4f5g6h` pelo hash real do commit que deseja restaurar.
+> ⚠️ **Atenção:** Este comando coloca o repositório em **detached HEAD** — você não estará em nenhuma branch. Isso é normal e esperado para rollback temporário. Não faça commits neste estado.
 
 ### 7.3 Rebuildar e subir
 
@@ -138,12 +137,12 @@ docker compose up -d
 
 ```bash
 docker compose ps
-curl -I http://localhost:3000
+curl -I http://localhost:${APP_PORT:-3000}
 ```
 
 ### 7.5 Retornar para a branch principal
 
-Quando a versão mais recente estiver corrigida:
+Quando a versão mais recente estiver corrigida, volte para `main`:
 
 ```bash
 cd agis-digital-lp
@@ -153,6 +152,8 @@ cd deploy
 docker compose build --no-cache
 docker compose up -d
 ```
+
+> Isso sai do detached HEAD e retorna ao fluxo normal de desenvolvimento.
 
 ---
 
@@ -172,7 +173,7 @@ server {
     server_name seudominio.com.br www.seudominio.com.br;
 
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3000;  # Use a mesma porta definida em APP_PORT
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -180,6 +181,8 @@ server {
     }
 }
 ```
+
+> Substitua `3000` pela porta que definiu em `APP_PORT` no seu `.env`.
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/agis /etc/nginx/sites-enabled/
@@ -190,7 +193,7 @@ sudo certbot --nginx -d seudominio.com.br -d www.seudominio.com.br
 ### Opção B: Nginx Proxy Manager
 
 1. Aponte o domínio para o IP da VPS
-2. No NPM, crie um Proxy Host → `http://IP_INTERNO:3000`
+2. No NPM, crie um Proxy Host → `http://IP_INTERNO:<APP_PORT>` (ex: `http://IP_INTERNO:3000`)
 3. Ative SSL via Let's Encrypt no NPM
 
 ### Opção C: Traefik (Docker Swarm)
@@ -270,7 +273,7 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 - [ ] `.env` criado com valores reais do Supabase
 - [ ] `docker compose build` executou sem erros
 - [ ] Container saudável (`healthy` no healthcheck)
-- [ ] `curl http://localhost:3000` retorna 200
+- [ ] `curl http://localhost:<APP_PORT>` retorna 200
 - [ ] Domínio apontado para o IP da VPS
 - [ ] HTTPS configurado (Certbot, NPM ou Traefik)
 - [ ] Site URL configurada no Supabase Dashboard
