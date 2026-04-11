@@ -90,6 +90,7 @@ const Admin = () => {
           <TabsContent value="settings"><AdminSettings /></TabsContent>
           <TabsContent value="integrations"><AdminIntegrations /></TabsContent>
           <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
+          <TabsContent value="users"><AdminUsers /></TabsContent>
         </Tabs>
       </main>
     </div>
