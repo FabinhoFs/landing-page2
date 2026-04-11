@@ -14,6 +14,7 @@ import { AdminFooter } from "@/components/admin/AdminFooter";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminIntegrations } from "@/components/admin/AdminIntegrations";
+import { AdminUsers } from "@/components/admin/AdminUsers";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -78,6 +79,7 @@ const Admin = () => {
             <TabsTrigger value="settings">Configurações</TabsTrigger>
             <TabsTrigger value="integrations">Integrações e Pixels</TabsTrigger>
             <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
+            <TabsTrigger value="users">Administradores</TabsTrigger>
           </TabsList>
           <TabsContent value="hero"><AdminHero /></TabsContent>
           <TabsContent value="prices"><AdminPrices /></TabsContent>
@@ -88,6 +90,7 @@ const Admin = () => {
           <TabsContent value="settings"><AdminSettings /></TabsContent>
           <TabsContent value="integrations"><AdminIntegrations /></TabsContent>
           <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
+          <TabsContent value="users"><AdminUsers /></TabsContent>
         </Tabs>
       </main>
     </div>

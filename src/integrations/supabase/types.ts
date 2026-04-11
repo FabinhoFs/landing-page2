@@ -243,12 +243,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_user_by_email: {
+        Args: { _email: string }
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      list_admins: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          role: string
+          role_id: string
+          user_id: string
+        }[]
+      }
+      promote_to_admin: { Args: { _user_id: string }; Returns: undefined }
+      remove_admin: {
+        Args: { _confirm_self_removal?: boolean; _user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
