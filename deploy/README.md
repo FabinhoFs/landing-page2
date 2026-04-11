@@ -53,7 +53,11 @@ docker compose build
 docker compose up -d
 ```
 
-A aplicação estará em `http://SEU_IP:<APP_PORT>` (padrão: porta definida no `.env`, ex: `3000`).
+A aplicação estará acessível na porta definida em `APP_PORT`. Exemplo com `APP_PORT=3000`:
+
+```
+http://SEU_IP:3000
+```
 
 ---
 
@@ -66,8 +70,8 @@ docker compose ps
 # Healthcheck detalhado
 docker compose ps --format "table {{.Name}}\t{{.Status}}"
 
-# Testar resposta HTTP (substitua pela porta definida em APP_PORT)
-curl -I http://localhost:${APP_PORT:-3000}
+# Testar resposta HTTP (use a porta definida em APP_PORT, ex: 3000)
+curl -I http://localhost:3000
 ```
 
 Deve retornar `HTTP/1.1 200 OK`.
@@ -137,8 +141,10 @@ docker compose up -d
 
 ```bash
 docker compose ps
-curl -I http://localhost:${APP_PORT:-3000}
+curl -I http://localhost:3000
 ```
+
+> Substitua `3000` pela porta definida em `APP_PORT` no seu `.env`.
 
 ### 7.5 Retornar para a branch principal
 
@@ -173,7 +179,7 @@ server {
     server_name seudominio.com.br www.seudominio.com.br;
 
     location / {
-        proxy_pass http://127.0.0.1:3000;  # Use a mesma porta definida em APP_PORT
+        proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -193,7 +199,7 @@ sudo certbot --nginx -d seudominio.com.br -d www.seudominio.com.br
 ### Opção B: Nginx Proxy Manager
 
 1. Aponte o domínio para o IP da VPS
-2. No NPM, crie um Proxy Host → `http://IP_INTERNO:<APP_PORT>` (ex: `http://IP_INTERNO:3000`)
+2. No NPM, crie um Proxy Host apontando para `http://IP_INTERNO:3000` (substitua `3000` pela porta definida em `APP_PORT`)
 3. Ative SSL via Let's Encrypt no NPM
 
 ### Opção C: Traefik (Docker Swarm)
@@ -273,7 +279,7 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 - [ ] `.env` criado com valores reais do Supabase
 - [ ] `docker compose build` executou sem erros
 - [ ] Container saudável (`healthy` no healthcheck)
-- [ ] `curl http://localhost:<APP_PORT>` retorna 200
+- [ ] `curl http://localhost:3000` retorna 200 (substitua pela porta em `APP_PORT`)
 - [ ] Domínio apontado para o IP da VPS
 - [ ] HTTPS configurado (Certbot, NPM ou Traefik)
 - [ ] Site URL configurada no Supabase Dashboard
