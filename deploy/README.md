@@ -61,10 +61,10 @@ A aplicação estará em `http://SEU_IP:3000`.
 ## 4. Verificar Saúde do Container
 
 ```bash
-# Status
+# Status geral
 docker compose ps
 
-# Healthcheck (funciona independente do nome do container)
+# Healthcheck detalhado
 docker compose ps --format "table {{.Name}}\t{{.Status}}"
 
 # Testar resposta HTTP
@@ -79,10 +79,10 @@ Deve retornar `HTTP/1.1 200 OK`.
 
 ```bash
 # Tempo real
-docker compose logs -f agis-lp
+docker compose logs -f
 
 # Últimas 100 linhas
-docker compose logs --tail=100 agis-lp
+docker compose logs --tail=100
 ```
 
 ---
@@ -189,12 +189,24 @@ Acesse o [Dashboard do Supabase](https://supabase.com/dashboard):
 
 ### 9.5 Autenticação — Observações de Produção
 
-O painel `/admin` usa Supabase Auth com email/senha e `localStorage` para persistência de sessão. Para produção:
+O painel `/admin` usa Supabase Auth com email/senha e `localStorage` para persistência de sessão.
 
+**Configurações obrigatórias:**
 - O domínio final **deve** ser cadastrado como Site URL e Redirect URL no Supabase
 - Sessões são renovadas automaticamente via `autoRefreshToken: true`
 - Use **HTTPS obrigatoriamente** — cookies e tokens trafegam pela rede
 - Crie o usuário admin diretamente no Supabase Dashboard → Authentication → Users
+
+**Sobre `localStorage`:**
+- A sessão é persistida em `localStorage` — funciona bem em produção com HTTPS
+- O token é renovado automaticamente antes de expirar
+- Se o usuário limpar o navegador, precisará fazer login novamente
+
+**⚠️ Limitação atual de segurança:**
+- Qualquer usuário autenticado no Supabase Auth pode acessar `/admin`
+- Não existe verificação de role (admin, moderator, etc.) no código atual
+- Para restringir acesso, implemente uma tabela `user_roles` com RLS e uma função `has_role()` no Supabase
+- Enquanto essa verificação não existir, **não crie usuários desnecessários** no Supabase Auth
 
 ---
 
@@ -214,7 +226,6 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 | Rebuild | `docker compose build --no-cache && docker compose up -d` |
 | Logs | `docker compose logs -f` |
 | Status | `docker compose ps` |
-| Health | `docker compose ps` |
 
 ---
 
