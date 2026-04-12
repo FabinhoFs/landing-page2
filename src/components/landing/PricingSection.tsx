@@ -74,8 +74,8 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
   const cnpjUsos = readList(settings, "cnpj_uso", DEFAULT_CNPJ_USOS, "pricing_cnpj_usos");
   const incluso = readList(settings, "incluso", DEFAULT_INCLUSO, "pricing_incluso");
 
-  const cpfCtaText = settings.pricing_cta_cpf || "Quero iniciar meu e-CPF A1";
-  const cnpjCtaText = settings.pricing_cta_cnpj || "Quero iniciar meu e-CNPJ A1";
+  const cpfCtaText = settings.pricing_cta_cpf || "Quero meu e-CPF A1";
+  const cnpjCtaText = settings.pricing_cta_cnpj || "Quero meu e-CNPJ A1";
   const microText = settings.pricing_micro || "Atendimento guiado • Validação online • Suporte durante o processo";
 
   const { data: prices } = useQuery({
@@ -118,7 +118,7 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full shadow-md uppercase tracking-wide whitespace-nowrap">⭐ Mais Vendido</div>
                 )}
                 <h3 className="text-2xl font-bold text-card-foreground text-center">{product.name}</h3>
-                <p className="mt-3 text-xs text-muted-foreground text-center leading-relaxed">{idealPara}</p>
+                <p className="mt-3 text-xs text-muted-foreground text-center leading-relaxed min-h-[3rem]">{idealPara}</p>
 
                 <div className="mt-4 text-center">
                   {promoActive ? (
@@ -133,17 +133,15 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
 
                 {promoActive && product.promo_expires_at && <Countdown expiresAt={product.promo_expires_at} />}
 
-                <div className="mt-5">
-                  <p className="text-xs font-semibold text-card-foreground mb-2">Principais usos:</p>
+                <div className="mt-5 flex-1">
                   <ul className="space-y-2">
                     {usos.map((uso, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground"><CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" /><span>{uso}</span></li>
                     ))}
                   </ul>
-                </div>
 
-                <div className="mt-4">
-                  <p className="text-xs font-semibold text-card-foreground mb-2">Incluso:</p>
+                  <div className="my-3 border-t border-border/50" />
+
                   <ul className="space-y-2">
                     {incluso.map((item, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground"><CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" /><span>{item}</span></li>

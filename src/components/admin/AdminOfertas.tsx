@@ -10,8 +10,8 @@ import { useAdminSettings } from "@/hooks/useAdminSettings";
 const DEFAULT_SECTION_TITLE = "Escolha seu Certificado Digital e inicie sua emissão agora";
 const DEFAULT_CPF_IDEAL = "Pessoa física, profissionais liberais e quem precisa acessar sistemas oficiais, assinar documentos e operar com mais praticidade no ambiente digital.";
 const DEFAULT_CNPJ_IDEAL = "Empresas que precisam emitir notas, cumprir obrigações fiscais e acessar sistemas com segurança e agilidade.";
-const DEFAULT_CTA_CPF = "Quero iniciar meu e-CPF A1";
-const DEFAULT_CTA_CNPJ = "Quero iniciar meu e-CNPJ A1";
+const DEFAULT_CTA_CPF = "Quero meu e-CPF A1";
+const DEFAULT_CTA_CNPJ = "Quero meu e-CNPJ A1";
 const DEFAULT_MICRO = "Atendimento guiado • Validação online • Suporte durante o processo";
 const DEFAULT_SUPPORT = "Atendimento humano e orientação em todas as etapas do processo.";
 
