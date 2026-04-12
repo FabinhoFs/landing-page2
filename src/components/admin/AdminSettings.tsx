@@ -1,90 +1,20 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Save, MessageCircle, Bell } from "lucide-react";
+import { Save, Bell, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-
-const CTA_FIELDS = [
-  { key: "cta_hero", label: "Mensagem — Topo (Hero)", position: "Enviada ao clicar nos botões do topo" },
-  { key: "cta_header", label: "Mensagem — Cabeçalho fixo", position: "Enviada ao clicar no botão do header ao rolar" },
-  { key: "cta_ecpf", label: "Mensagem — Card e-CPF", position: "Enviada ao clicar no botão do card e-CPF" },
-  { key: "cta_ecnpj", label: "Mensagem — Card e-CNPJ", position: "Enviada ao clicar no botão do card e-CNPJ" },
-  { key: "cta_floating", label: "Mensagem — Botão Flutuante", position: "Enviada ao clicar no ícone do WhatsApp fixo" },
-  { key: "cta_sticky_mobile", label: "Mensagem — Barra Mobile", position: "Enviada ao clicar na barra fixa do celular" },
-  { key: "cta_bottom", label: "Mensagem — Final da Página", position: "Enviada ao clicar no botão do final" },
-  { key: "cta_exit_popup", label: "Mensagem — Pop-up de Desconto", position: "Enviada ao clicar no pop-up de saída" },
-];
+import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 export const AdminSettings = () => {
-  const [settings, setSettings] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
 
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from("site_settings" as any).select("key, value");
-      if (data) {
-        const map: Record<string, string> = {};
-        (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
-        setSettings(map);
-      }
-    };
-    fetch();
-  }, []);
+  if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
-  const updateField = (key: string, value: string) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSave = async () => {
-    setLoading(true);
-    const keys = [
-      ...CTA_FIELDS.map(f => f.key),
-      "bestseller_active", "bestseller_product",
-    ];
-    const payload = keys
-      .filter(k => settings[k] !== undefined)
-      .map(key => ({ key, value: settings[key], updated_at: new Date().toISOString() }));
-
-    if (payload.length > 0) {
-      const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
-      if (error) {
-        toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Configurações salvas!", description: "Todas as alterações já estão ativas." });
-      }
-    }
-    setLoading(false);
-  };
+  const allKeys = ["bestseller_active", "bestseller_product"];
 
   return (
     <div className="space-y-6">
-      {/* CTA Messages */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            Mensagens do WhatsApp por Botão
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <p className="text-xs text-muted-foreground">
-            Configure a mensagem que o cliente envia ao clicar em cada botão. Use <code className="bg-muted px-1 rounded">{"{cidade}"}</code> para inserir a cidade automaticamente.
-          </p>
-          {CTA_FIELDS.map((field) => (
-            <div key={field.key} className="space-y-1.5">
-              <Label htmlFor={field.key} className="text-sm font-semibold">{field.label}</Label>
-              <p className="text-xs text-muted-foreground">📍 {field.position}</p>
-              <Input id={field.key} value={settings[field.key] || ""} onChange={(e) => updateField(field.key, e.target.value)} placeholder="Mensagem personalizada..." />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
       {/* Bestseller Badge */}
       <Card>
         <CardHeader>
@@ -110,8 +40,8 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
-        <Save className="mr-2 h-4 w-4" />{loading ? "Salvando..." : "Salvar Configurações"}
+      <Button onClick={() => saveKeys(allKeys, "Configurações salvas!")} disabled={saving} className="w-full sm:w-auto">
+        <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar Configurações"}
       </Button>
     </div>
   );
