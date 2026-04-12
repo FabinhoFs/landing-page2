@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { Save, Layout, CheckCircle2, RotateCcw, Plus, Trash2, Loader2 } from "lucide-react";
+import { useAdminSettings } from "@/hooks/useAdminSettings";
+import { IconPicker } from "./IconPicker";
 
 const DEFAULT_LINE1_COLOR = "#F5F2FA";
 const DEFAULT_LINE2_COLOR = "#6F2DBD";
@@ -69,30 +68,14 @@ const DEFAULT_BULLETS = [
   { icon: "Headphones", label: "Suporte humano em cada etapa" },
 ];
 
-export const AdminHero = () => {
-  const [settings, setSettings] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
-  const { toast } = useToast();
+const DEFAULT_TRUST_LINE = "ICP-Brasil • Processo online • Atendimento humano";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data } = await supabase.from("site_settings" as any).select("key, value");
-      if (data) {
-        const map: Record<string, string> = {};
-        (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
-        setSettings(map);
-      }
-      setFetching(false);
-    };
-    fetchData();
-  }, []);
+export const AdminHero = () => {
+  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
+
+  if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   const activeVariant = settings.hero_active_variant || "1";
-
-  const updateField = (key: string, value: string) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
 
   const getVal = (variant: string, field: string) => {
     return settings[`hero_v${variant}_${field}`] ?? VARIANT_DEFAULTS[variant]?.[field] ?? "";
@@ -112,10 +95,6 @@ export const AdminHero = () => {
       }
     }
     if (items.length > 0) return items;
-    // Fallback from JSON
-    if (settings.hero_bullets) {
-      try { return JSON.parse(settings.hero_bullets); } catch {}
-    }
     return DEFAULT_BULLETS;
   };
   const bullets = getBullets();
@@ -126,7 +105,6 @@ export const AdminHero = () => {
   };
 
   const handleSave = async () => {
-    setLoading(true);
     const keys: string[] = ["hero_active_variant", "hero_trust_line"];
     for (const v of ["1", "2", "3"]) {
       for (const f of FIELDS) keys.push(`hero_v${v}_${f.key}`);
@@ -134,24 +112,8 @@ export const AdminHero = () => {
     for (let i = 1; i <= 6; i++) {
       keys.push(`hero_bullet_${i}_label`, `hero_bullet_${i}_icon`);
     }
-
-    const payload = keys
-      .filter(k => settings[k] !== undefined)
-      .map((key) => ({ key, value: settings[key], updated_at: new Date().toISOString() }));
-
-    if (payload.length > 0) {
-      const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
-      if (error) {
-        toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-    }
-    toast({ title: "Hero salva!", description: "As alterações já estão ativas na Landing Page." });
-    setLoading(false);
+    await saveKeys(keys, "Hero salva!");
   };
-
-  if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div className="space-y-6">
@@ -232,7 +194,7 @@ export const AdminHero = () => {
         </Card>
       ))}
 
-      {/* Bullets */}
+      {/* Bullets with icon picker */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-base">
@@ -245,15 +207,16 @@ export const AdminHero = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-xs text-muted-foreground">Ícones exibidos abaixo do título da hero. Ícones disponíveis: MessageCircle, Video, Headphones, ShieldCheck, Zap.</p>
+          <p className="text-xs text-muted-foreground">Ícones exibidos abaixo do título da hero. Clique no ícone para trocar.</p>
           {bullets.map((b, i) => (
             <div key={i} className="flex items-center gap-2">
-              <Input value={settings[`hero_bullet_${i + 1}_icon`] ?? b.icon}
-                onChange={(e) => updateField(`hero_bullet_${i + 1}_icon`, e.target.value)}
-                className="w-36 font-mono text-xs" placeholder="Ícone" />
+              <IconPicker
+                value={settings[`hero_bullet_${i + 1}_icon`] ?? b.icon}
+                onChange={(iconName) => updateField(`hero_bullet_${i + 1}_icon`, iconName)}
+              />
               <Input value={settings[`hero_bullet_${i + 1}_label`] ?? b.label}
                 onChange={(e) => updateField(`hero_bullet_${i + 1}_label`, e.target.value)}
-                placeholder={`Bullet ${i + 1}`} />
+                className="flex-1" />
               <Button size="icon" variant="ghost" className="text-destructive shrink-0" onClick={() => {
                 for (let j = i + 1; j < bullets.length; j++) {
                   updateField(`hero_bullet_${j}_label`, bullets[j]?.label || "");
@@ -273,12 +236,12 @@ export const AdminHero = () => {
           <CardTitle className="text-base">Linha de Confiança (abaixo dos CTAs)</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={settings.hero_trust_line || ""} onChange={(e) => updateField("hero_trust_line", e.target.value)} placeholder="ICP-Brasil • Processo online • Atendimento humano" />
+          <Input value={settings.hero_trust_line ?? DEFAULT_TRUST_LINE} onChange={(e) => updateField("hero_trust_line", e.target.value)} />
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
-        <Save className="mr-2 h-4 w-4" />{loading ? "Salvando..." : "Salvar Hero"}
+      <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+        <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar Hero"}
       </Button>
     </div>
   );

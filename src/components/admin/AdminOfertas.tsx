@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Save, ShoppingBag, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_SECTION_TITLE = "Escolha seu Certificado Digital e inicie sua emissão agora";
+const DEFAULT_CPF_IDEAL = "Pessoa física, profissionais liberais e quem precisa acessar sistemas oficiais, assinar documentos e operar com mais praticidade no ambiente digital.";
+const DEFAULT_CNPJ_IDEAL = "Empresas que precisam emitir notas, cumprir obrigações fiscais e acessar sistemas com segurança e agilidade.";
+const DEFAULT_CTA_CPF = "Quero iniciar meu e-CPF A1";
+const DEFAULT_CTA_CNPJ = "Quero iniciar meu e-CNPJ A1";
+const DEFAULT_MICRO = "Atendimento guiado • Validação online • Suporte durante o processo";
+const DEFAULT_SUPPORT = "Atendimento humano e orientação em todas as etapas do processo.";
+
 const DEFAULT_CPF_USOS = ["Assinatura digital de documentos", "Acesso ao e-CAC da Receita Federal", "Declaração de Imposto de Renda", "Rotinas digitais com mais segurança"];
 const DEFAULT_CNPJ_USOS = ["Emissão de notas fiscais", "eSocial e obrigações fiscais", "Assinatura digital de documentos", "Acesso a sistemas públicos e privados"];
 const DEFAULT_INCLUSO = ["Atendimento guiado no WhatsApp", "Orientação sobre documentos e etapas", "Validação online por videoconferência", "Suporte durante o processo", "Orientação para instalação e uso"];
@@ -68,33 +76,33 @@ export const AdminOfertas = () => {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Título da Seção</Label>
-            <Input value={settings.pricing_section_title || ""} onChange={(e) => updateField("pricing_section_title", e.target.value)} placeholder="Escolha seu Certificado Digital e inicie sua emissão agora" />
+            <Input value={settings.pricing_section_title ?? DEFAULT_SECTION_TITLE} onChange={(e) => updateField("pricing_section_title", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>e-CPF — Texto "Ideal para"</Label>
-            <Textarea value={settings.pricing_cpf_ideal || ""} onChange={(e) => updateField("pricing_cpf_ideal", e.target.value)} rows={2} placeholder="Pessoa física, profissionais liberais..." />
+            <Textarea value={settings.pricing_cpf_ideal ?? DEFAULT_CPF_IDEAL} onChange={(e) => updateField("pricing_cpf_ideal", e.target.value)} rows={2} />
           </div>
           <div className="space-y-1.5">
             <Label>e-CNPJ — Texto "Ideal para"</Label>
-            <Textarea value={settings.pricing_cnpj_ideal || ""} onChange={(e) => updateField("pricing_cnpj_ideal", e.target.value)} rows={2} placeholder="Empresas que precisam emitir notas..." />
+            <Textarea value={settings.pricing_cnpj_ideal ?? DEFAULT_CNPJ_IDEAL} onChange={(e) => updateField("pricing_cnpj_ideal", e.target.value)} rows={2} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Texto CTA — Card e-CPF</Label>
-              <Input value={settings.pricing_cta_cpf || ""} onChange={(e) => updateField("pricing_cta_cpf", e.target.value)} placeholder="Quero iniciar meu e-CPF A1" />
+              <Input value={settings.pricing_cta_cpf ?? DEFAULT_CTA_CPF} onChange={(e) => updateField("pricing_cta_cpf", e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Texto CTA — Card e-CNPJ</Label>
-              <Input value={settings.pricing_cta_cnpj || ""} onChange={(e) => updateField("pricing_cta_cnpj", e.target.value)} placeholder="Quero iniciar meu e-CNPJ A1" />
+              <Input value={settings.pricing_cta_cnpj ?? DEFAULT_CTA_CNPJ} onChange={(e) => updateField("pricing_cta_cnpj", e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label>Microtexto abaixo dos botões</Label>
-            <Input value={settings.pricing_micro || ""} onChange={(e) => updateField("pricing_micro", e.target.value)} placeholder="Atendimento guiado • Validação online • Suporte durante o processo" />
+            <Input value={settings.pricing_micro ?? DEFAULT_MICRO} onChange={(e) => updateField("pricing_micro", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Frase de Suporte (abaixo dos cards)</Label>
-            <Input value={settings.support_text || ""} onChange={(e) => updateField("support_text", e.target.value)} placeholder="Atendimento humano e orientação em todas as etapas do processo." />
+            <Input value={settings.support_text ?? DEFAULT_SUPPORT} onChange={(e) => updateField("support_text", e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -119,8 +127,6 @@ export const AdminOfertas = () => {
           <ListEditor prefix="incluso" defaults={DEFAULT_INCLUSO} settings={settings} updateField={updateField} />
         </CardContent>
       </Card>
-
-      <p className="text-xs text-muted-foreground">💡 Para editar preços, promoções e frases dinâmicas dos cards, use a aba <strong>04. Ofertas</strong> (preços estão na tabela do banco de dados).</p>
 
       <Button onClick={() => saveKeys(allKeys, "Ofertas salvas!")} disabled={saving} className="w-full sm:w-auto">
         <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar Ofertas"}

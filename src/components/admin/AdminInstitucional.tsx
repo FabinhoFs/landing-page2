@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Save, Building, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_TITLE = "Agis Digital: atendimento online com praticidade, clareza e suporte especializado";
+const DEFAULT_SUBTITLE = "A Agis Digital atua com foco em Certificação Digital, oferecendo um processo online com atendimento humano, validação orientada e suporte para clientes em todo o Brasil.";
 const DEFAULT_PROOFS = ["Operação online", "Experiência no mercado", "Processo estruturado", "Atendimento especializado"];
 
 export const AdminInstitucional = () => {
@@ -19,11 +21,7 @@ export const AdminInstitucional = () => {
       const val = settings[`authority_card_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    if (items.length > 0) return items;
-    if (settings.authority_proofs) {
-      try { return JSON.parse(settings.authority_proofs).map((p: any) => p.label || p); } catch {}
-    }
-    return DEFAULT_PROOFS;
+    return items.length > 0 ? items : DEFAULT_PROOFS;
   };
   const items = getItems();
 
@@ -44,11 +42,11 @@ export const AdminInstitucional = () => {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Título</Label>
-            <Input value={settings.authority_title || ""} onChange={(e) => updateField("authority_title", e.target.value)} placeholder="Agis Digital: atendimento online..." />
+            <Input value={settings.authority_title ?? DEFAULT_TITLE} onChange={(e) => updateField("authority_title", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Texto Institucional</Label>
-            <Textarea value={settings.authority_subtitle || ""} onChange={(e) => updateField("authority_subtitle", e.target.value)} rows={3} placeholder="A Agis Digital atua com foco em..." />
+            <Textarea value={settings.authority_subtitle ?? DEFAULT_SUBTITLE} onChange={(e) => updateField("authority_subtitle", e.target.value)} rows={3} />
           </div>
         </CardContent>
       </Card>

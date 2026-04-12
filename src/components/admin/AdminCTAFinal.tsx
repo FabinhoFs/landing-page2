@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Save, Megaphone, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_TITLE = "Inicie sua emissão hoje com atendimento imediato";
+const DEFAULT_SUBTITLE = "Fale com um especialista, escolha o certificado certo e conclua seu processo com mais clareza, suporte humano e praticidade.";
+const DEFAULT_BUTTON = "Quero iniciar minha emissão agora";
+const DEFAULT_MICRO = "Atendimento humano • Processo simples • Emissão com suporte especializado";
 const DEFAULT_BULLETS = ["Processo online", "Validação rápida", "Atendimento no WhatsApp"];
 
 export const AdminCTAFinal = () => {
@@ -19,11 +23,7 @@ export const AdminCTAFinal = () => {
       const val = settings[`cta_bullet_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    if (items.length > 0) return items;
-    if (settings.cta_section_bullets) {
-      try { return JSON.parse(settings.cta_section_bullets).map((b: any) => b.text || b); } catch {}
-    }
-    return DEFAULT_BULLETS;
+    return items.length > 0 ? items : DEFAULT_BULLETS;
   };
   const items = getItems();
 
@@ -44,19 +44,19 @@ export const AdminCTAFinal = () => {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Título</Label>
-            <Input value={settings.cta_section_title || ""} onChange={(e) => updateField("cta_section_title", e.target.value)} placeholder="Inicie sua emissão hoje com atendimento imediato" />
+            <Input value={settings.cta_section_title ?? DEFAULT_TITLE} onChange={(e) => updateField("cta_section_title", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Subtítulo</Label>
-            <Textarea value={settings.cta_section_subtitle || ""} onChange={(e) => updateField("cta_section_subtitle", e.target.value)} rows={2} placeholder="Fale com um especialista..." />
+            <Textarea value={settings.cta_section_subtitle ?? DEFAULT_SUBTITLE} onChange={(e) => updateField("cta_section_subtitle", e.target.value)} rows={2} />
           </div>
           <div className="space-y-1.5">
             <Label>Texto do Botão</Label>
-            <Input value={settings.cta_section_button || ""} onChange={(e) => updateField("cta_section_button", e.target.value)} placeholder="Quero iniciar minha emissão agora" />
+            <Input value={settings.cta_section_button ?? DEFAULT_BUTTON} onChange={(e) => updateField("cta_section_button", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Microtexto</Label>
-            <Input value={settings.cta_section_micro || ""} onChange={(e) => updateField("cta_section_micro", e.target.value)} placeholder="Atendimento humano • Processo simples • Emissão com suporte especializado" />
+            <Input value={settings.cta_section_micro ?? DEFAULT_MICRO} onChange={(e) => updateField("cta_section_micro", e.target.value)} />
           </div>
         </CardContent>
       </Card>

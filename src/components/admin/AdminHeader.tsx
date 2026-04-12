@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Save, PanelTop, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_CTA = "Iniciar emissão";
 const KEYS = ["header_cta_text"];
 
 export const AdminHeader = () => {
@@ -25,7 +26,7 @@ export const AdminHeader = () => {
           <p className="text-xs text-muted-foreground">O cabeçalho fixo aparece no topo da página ao rolar. Configure o texto do botão CTA.</p>
           <div className="space-y-1.5">
             <Label>Texto do Botão CTA</Label>
-            <Input value={settings.header_cta_text || ""} onChange={(e) => updateField("header_cta_text", e.target.value)} placeholder="Iniciar emissão" />
+            <Input value={settings.header_cta_text ?? DEFAULT_CTA} onChange={(e) => updateField("header_cta_text", e.target.value)} />
           </div>
         </CardContent>
       </Card>

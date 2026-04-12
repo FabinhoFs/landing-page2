@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Save, AlertTriangle, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_TITLE = "Ficar sem Certificado Digital atrasa o que você precisa resolver hoje.";
+const DEFAULT_SUBTITLE = "Resolva isso com um processo online, validado e acompanhado por atendimento especializado.";
+const DEFAULT_CTA = "Quero falar no WhatsApp";
 const DEFAULT_PAINS = [
   "Você não consegue emitir nota fiscal",
   "Fica sem acesso a sistemas oficiais",
@@ -20,20 +23,13 @@ export const AdminDores = () => {
 
   if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
-  // Parse items from individual keys or JSON fallback
   const getItems = (): string[] => {
-    // Try individual keys first
     const items: string[] = [];
     for (let i = 1; i <= 10; i++) {
       const val = settings[`pain_item_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    if (items.length > 0) return items;
-    // Fallback to JSON
-    if (settings.pain_items) {
-      try { return JSON.parse(settings.pain_items); } catch {}
-    }
-    return DEFAULT_PAINS;
+    return items.length > 0 ? items : DEFAULT_PAINS;
   };
 
   const items = getItems();
@@ -48,7 +44,6 @@ export const AdminDores = () => {
   };
 
   const removeItem = (index: number) => {
-    // Shift items up
     for (let i = index + 1; i < items.length; i++) {
       updateField(`pain_item_${i}`, items[i] || "");
     }
@@ -72,15 +67,15 @@ export const AdminDores = () => {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Título</Label>
-            <Input value={settings.pain_title || ""} onChange={(e) => updateField("pain_title", e.target.value)} placeholder="Ficar sem Certificado Digital atrasa o que você precisa resolver hoje." />
+            <Input value={settings.pain_title ?? DEFAULT_TITLE} onChange={(e) => updateField("pain_title", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Subtítulo / Texto de apoio</Label>
-            <Textarea value={settings.pain_subtitle || ""} onChange={(e) => updateField("pain_subtitle", e.target.value)} placeholder="Resolva isso com um processo online..." rows={2} />
+            <Textarea value={settings.pain_subtitle ?? DEFAULT_SUBTITLE} onChange={(e) => updateField("pain_subtitle", e.target.value)} rows={2} />
           </div>
           <div className="space-y-1.5">
             <Label>Texto do CTA</Label>
-            <Input value={settings.pain_cta || ""} onChange={(e) => updateField("pain_cta", e.target.value)} placeholder="Quero falar no WhatsApp" />
+            <Input value={settings.pain_cta ?? DEFAULT_CTA} onChange={(e) => updateField("pain_cta", e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -96,7 +91,7 @@ export const AdminDores = () => {
           {items.map((item, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="text-xs font-mono text-muted-foreground w-6 shrink-0">{i + 1}.</span>
-              <Input value={settings[`pain_item_${i + 1}`] ?? item} onChange={(e) => updateItem(i, e.target.value)} placeholder={`Dor ${i + 1}`} />
+              <Input value={settings[`pain_item_${i + 1}`] ?? item} onChange={(e) => updateItem(i, e.target.value)} />
               <Button size="icon" variant="ghost" className="text-destructive shrink-0" onClick={() => removeItem(i)}><Trash2 className="h-4 w-4" /></Button>
             </div>
           ))}
