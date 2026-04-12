@@ -34,7 +34,7 @@ export const WhatsAppButton = ({
     onBeforeNavigate?.();
     logAccess(buttonId);
 
-    const encodedMessage = encodeURIComponent(`${message} (origem: ${buttonId})`);
+    const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${phone}?text=${encodedMessage}`, "_blank");
   };
 
