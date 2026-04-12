@@ -157,8 +157,8 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
-      const { data } = await supabase
-        .from("site_settings")
+      const { data } = await (supabase
+        .from("site_settings") as any)
         .select("key, value")
         .eq("environment", "draft")
         .in("key", [...KEYS]);
@@ -187,8 +187,8 @@ export const AdminIntegrations = () => {
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
-      const { error } = await supabase
-        .from("site_settings")
+      const { error } = await (supabase
+        .from("site_settings") as any)
         .upsert(rows, { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
