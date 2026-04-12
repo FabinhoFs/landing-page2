@@ -289,6 +289,77 @@ export const AdminDashboard = () => {
     ].filter((d) => d.value > 0);
   }, [logs]);
 
+  // ─── UTM ANALYTICS ─────────────────────────────────
+  const utmData = useMemo(() => {
+    const sources: Record<string, number> = {};
+    const campaigns: Record<string, number> = {};
+    const mediums: Record<string, number> = {};
+    let utmCount = 0;
+    logs.forEach((l) => {
+      const utm = parseUtm(l.user_agent);
+      if (!utm) return;
+      utmCount++;
+      if (utm.utm_source) sources[utm.utm_source] = (sources[utm.utm_source] || 0) + 1;
+      if (utm.utm_campaign) campaigns[utm.utm_campaign] = (campaigns[utm.utm_campaign] || 0) + 1;
+      if (utm.utm_medium) mediums[utm.utm_medium] = (mediums[utm.utm_medium] || 0) + 1;
+    });
+    return {
+      utmCount,
+      sources: Object.entries(sources).sort((a, b) => b[1] - a[1]).slice(0, 10),
+      campaigns: Object.entries(campaigns).sort((a, b) => b[1] - a[1]).slice(0, 10),
+      mediums: Object.entries(mediums).sort((a, b) => b[1] - a[1]).slice(0, 10),
+    };
+  }, [logs]);
+
+  // ─── CTA MESSAGE RANKING ──────────────────────────
+  const [ctaMessages, setCtaMessages] = useState<Record<string, string>>({});
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("site_settings" as any).select("key, value");
+      if (data) {
+        const map: Record<string, string> = {};
+        (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
+        setCtaMessages(map);
+      }
+    })();
+  }, []);
+
+  const ctaMessageRanking = useMemo(() => {
+    const map: Record<string, number> = {};
+    logs.forEach((l) => { map[l.button_id] = (map[l.button_id] || 0) + 1; });
+    const CTA_KEY_MAP: Record<string, string> = {
+      cta_hero_primary: "cta_hero", cta_hero_secondary: "cta_hero",
+      cta_header: "cta_header", cta_pain: "cta_pain",
+      "cta_pricing_e-cpfa1": "cta_ecpf", "cta_pricing_e-cnpja1": "cta_ecnpj",
+      cta_guarantee: "cta_guarantee", cta_faq: "cta_faq",
+      cta_bottom: "cta_bottom", cta_floating: "cta_floating",
+      cta_sticky_mobile: "cta_sticky_mobile", cta_exit_popup: "cta_exit_popup",
+    };
+    const msgList: { message: string; clicks: number; section: string; ctaLabel: string }[] = [];
+    Object.entries(map).forEach(([btnId, clicks]) => {
+      const msgKey = CTA_KEY_MAP[btnId] || btnId;
+      const message = ctaMessages[msgKey] || "Mensagem padrão";
+      msgList.push({
+        message: message.replace(/\{cidade\}/g, "…"),
+        clicks, section: getCtaSection(btnId), ctaLabel: getCtaLabel(btnId),
+      });
+    });
+    return msgList.sort((a, b) => b.clicks - a.clicks);
+  }, [logs, ctaMessages]);
+
+  // ─── HEATMAP DATA ──────────────────────────────────
+  const heatmapData = useMemo(() => {
+    const sectionOrder = ["Header", "Hero", "Dores", "Ofertas", "Segurança", "FAQ", "CTA Final", "Flutuante", "Mobile", "Pop-up"];
+    const map: Record<string, number> = {};
+    logs.forEach((l) => { const s = getCtaSection(l.button_id); map[s] = (map[s] || 0) + 1; });
+    const maxClicks = Math.max(...Object.values(map), 1);
+    return sectionOrder.map((name) => ({
+      name, clicks: map[name] || 0,
+      pct: totalClicks > 0 ? ((map[name] || 0) / totalClicks * 100) : 0,
+      intensity: (map[name] || 0) / maxClicks,
+    }));
+  }, [logs, totalClicks]);
+
   const tooltipStyle = {
     backgroundColor: "hsl(var(--card))",
     border: "1px solid hsl(var(--border))",
