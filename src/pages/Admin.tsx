@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 const Admin = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const pendingErrorCount = usePendingErrors();
 
   useEffect(() => {
     const checkAuth = async () => {
