@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import Autoplay from "embla-carousel-autoplay";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 import {
   Carousel,
   CarouselContent,
@@ -34,6 +35,9 @@ export const TestimonialsSection = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+  const { settings } = useCtaMessages();
+
+  const sectionTitle = settings.testimonials_title || "O que nossos clientes dizem no Google";
 
   const { data: testimonials } = useQuery({
     queryKey: ["testimonials"],
@@ -73,7 +77,7 @@ export const TestimonialsSection = () => {
     <section className="bg-deep py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
-          O que nossos clientes dizem no Google
+          {sectionTitle}
         </h2>
 
         <Carousel

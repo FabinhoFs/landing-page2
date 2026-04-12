@@ -71,35 +71,37 @@ interface PricingSectionProps {
   onTrackPurchase?: (value: number, productName: string) => void;
 }
 
-const ICON_MAP: Record<string, typeof CheckSquare> = {
-  check: CheckSquare,
-  headphones: Headphones,
-};
-
-const CARD_DESCRIPTIONS: Record<string, { idealPara: string; usos: string[] }> = {
-  cpf: {
-    idealPara: "Pessoa física, profissionais liberais e quem precisa acessar sistemas oficiais, assinar documentos e operar com mais praticidade no ambiente digital.",
-    usos: [
-      "Assinatura digital de documentos",
-      "Acesso ao e-CAC da Receita Federal",
-      "Declaração de Imposto de Renda",
-      "Rotinas digitais com mais segurança",
-    ],
-  },
-  cnpj: {
-    idealPara: "Empresas que precisam emitir notas, cumprir obrigações fiscais e acessar sistemas com segurança e agilidade.",
-    usos: [
-      "Emissão de notas fiscais",
-      "eSocial e obrigações fiscais",
-      "Assinatura digital de documentos",
-      "Acesso a sistemas públicos e privados",
-    ],
-  },
-};
+const DEFAULT_CPF_IDEAL = "Pessoa física, profissionais liberais e quem precisa acessar sistemas oficiais, assinar documentos e operar com mais praticidade no ambiente digital.";
+const DEFAULT_CNPJ_IDEAL = "Empresas que precisam emitir notas, cumprir obrigações fiscais e acessar sistemas com segurança e agilidade.";
+const DEFAULT_CPF_USOS = ["Assinatura digital de documentos", "Acesso ao e-CAC da Receita Federal", "Declaração de Imposto de Renda", "Rotinas digitais com mais segurança"];
+const DEFAULT_CNPJ_USOS = ["Emissão de notas fiscais", "eSocial e obrigações fiscais", "Assinatura digital de documentos", "Acesso a sistemas públicos e privados"];
+const DEFAULT_INCLUSO = [
+  "Atendimento guiado no WhatsApp",
+  "Orientação sobre documentos e etapas",
+  "Validação online por videoconferência",
+  "Suporte durante o processo",
+  "Orientação para instalação e uso",
+];
 
 export const PricingSection = ({ city, detected = false, onTrackPurchase }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
   const sectionTitle = settings.pricing_section_title || "Escolha seu Certificado Digital e inicie sua emissão agora";
+
+  const cpfIdeal = settings.pricing_cpf_ideal || DEFAULT_CPF_IDEAL;
+  const cnpjIdeal = settings.pricing_cnpj_ideal || DEFAULT_CNPJ_IDEAL;
+
+  let cpfUsos = DEFAULT_CPF_USOS;
+  if (settings.pricing_cpf_usos) { try { cpfUsos = JSON.parse(settings.pricing_cpf_usos); } catch {} }
+
+  let cnpjUsos = DEFAULT_CNPJ_USOS;
+  if (settings.pricing_cnpj_usos) { try { cnpjUsos = JSON.parse(settings.pricing_cnpj_usos); } catch {} }
+
+  let incluso = DEFAULT_INCLUSO;
+  if (settings.pricing_incluso) { try { incluso = JSON.parse(settings.pricing_incluso); } catch {} }
+
+  const cpfCtaText = settings.pricing_cta_cpf || "Quero iniciar meu e-CPF A1";
+  const cnpjCtaText = settings.pricing_cta_cnpj || "Quero iniciar meu e-CNPJ A1";
+  const microText = settings.pricing_micro || "Atendimento guiado • Validação online • Suporte durante o processo";
 
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
@@ -137,13 +139,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
           {products.map((product) => {
             const promoActive = isPromoActive(product);
-            const productFeatures = (features || [])
-              .filter(f => f.certificate_id === product.id)
-              .sort((a, b) => a.sort_order - b.sort_order);
-
             const isCpf = product.name.toLowerCase().includes("cpf");
-            const type = isCpf ? "cpf" : "cnpj";
-            const cardInfo = CARD_DESCRIPTIONS[type];
+            const idealPara = isCpf ? cpfIdeal : cnpjIdeal;
+            const usos = isCpf ? cpfUsos : cnpjUsos;
+            const ctaText = isCpf ? cpfCtaText : cnpjCtaText;
 
             const isBestseller = bestsellerActive && (
               (bestsellerProduct === "cpf" && isCpf) ||
@@ -165,7 +164,7 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                 </h3>
 
                 <p className="mt-3 text-xs text-muted-foreground text-center leading-relaxed">
-                  {cardInfo.idealPara}
+                  {idealPara}
                 </p>
 
                 <div className="mt-4 text-center">
@@ -189,11 +188,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                   <Countdown expiresAt={product.promo_expires_at} />
                 )}
 
-                {/* Uses */}
                 <div className="mt-5">
                   <p className="text-xs font-semibold text-card-foreground mb-2">Principais usos:</p>
                   <ul className="space-y-2">
-                    {cardInfo.usos.map((uso, j) => (
+                    {usos.map((uso, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                         <span>{uso}</span>
@@ -202,17 +200,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                   </ul>
                 </div>
 
-                {/* Incluso no atendimento */}
                 <div className="mt-4">
                   <p className="text-xs font-semibold text-card-foreground mb-2">Incluso:</p>
                   <ul className="space-y-2">
-                    {[
-                      "Atendimento guiado no WhatsApp",
-                      "Orientação sobre documentos e etapas",
-                      "Validação online por videoconferência",
-                      "Suporte durante o processo",
-                      "Orientação para instalação e uso",
-                    ].map((item, j) => (
+                    {incluso.map((item, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                         <span>{item}</span>
@@ -235,10 +226,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                       onTrackPurchase?.(price, product.name);
                     }}
                   >
-                    Quero iniciar meu {product.name}
+                    {ctaText}
                   </WhatsAppButton>
                   <p className="mt-2 text-center text-xs text-muted-foreground">
-                    Atendimento guiado • Validação online • Suporte durante o processo
+                    {microText}
                   </p>
                 </div>
               </div>

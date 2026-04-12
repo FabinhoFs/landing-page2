@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,
@@ -64,6 +65,12 @@ const FALLBACK_FAQS = [
 ];
 
 export const FAQSection = ({ city }: FAQSectionProps) => {
+  const { settings, getMessage } = useCtaMessages();
+
+  const sectionTitle = settings.faq_title || "Perguntas Frequentes";
+  const bottomText = settings.faq_bottom_text || "Ainda tem dúvidas?";
+  const bottomCta = settings.faq_bottom_cta || "Falar com um especialista";
+
   const { data: dbFaqs } = useQuery({
     queryKey: ["faqs_landing"],
     queryFn: async () => {
@@ -83,7 +90,7 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
     <section id="faq" className="bg-card py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 md:px-6">
         <h2 className="text-center text-2xl font-bold text-card-foreground md:text-4xl mb-10 md:mb-12">
-          Perguntas Frequentes
+          {sectionTitle}
         </h2>
 
         <AccordionPrimitive.Root type="single" collapsible className="space-y-3 md:space-y-4">
@@ -100,14 +107,14 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
         </AccordionPrimitive.Root>
 
         <div className="mt-10 md:mt-12 flex flex-col items-center gap-5">
-          <p className="text-muted-foreground text-sm">Ainda tem dúvidas?</p>
+          <p className="text-muted-foreground text-sm">{bottomText}</p>
           <WhatsAppButton
             buttonId="faq_duvidas"
             message={`Olá! Tenho dúvidas sobre Certificado Digital em ${city}.`}
             size="default"
             className="text-sm"
           >
-            Falar com um especialista
+            {bottomCta}
           </WhatsAppButton>
         </div>
       </div>
