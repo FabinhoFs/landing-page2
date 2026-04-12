@@ -482,7 +482,10 @@ INSERT INTO public.site_settings (key, value, environment) VALUES
   ('cta_bottom', 'Olá! Li as informações e quero iniciar meu atendimento agora.', 'published'),
   ('cta_ecpf', 'Olá! Tenho interesse no e-CPF A1 que vi no site.', 'published'),
   ('cta_ecnpj', 'Olá! Tenho interesse no e-CNPJ A1 que vi no site.', 'published'),
-  ('cta_exit_popup', 'Olá! Vi o desconto de R$ {valor},00 na página e quero aproveitar para emitir meu certificado.', 'published')
+  ('cta_exit_popup', 'Olá! Vi o desconto de R$ {valor},00 na página e quero aproveitar para emitir meu certificado.', 'published'),
+  ('geo_provider', 'ipapi', 'published'),
+  ('geo_api_key', '', 'published'),
+  ('geo_fallback', 'true', 'published')
 ON CONFLICT (key, environment) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
 
 -- Site Settings — draft environment (mirror of published for initial install)
