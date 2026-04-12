@@ -297,11 +297,15 @@ export const AdminDashboard = () => {
     ].filter((d) => d.value > 0);
   }, [logs]);
 
-  // ─── UTM ANALYTICS ─────────────────────────────────
+  // ─── UTM ANALYTICS (expanded with content + term) ──
   const utmData = useMemo(() => {
     const sources: Record<string, number> = {};
     const campaigns: Record<string, number> = {};
     const mediums: Record<string, number> = {};
+    const contents: Record<string, number> = {};
+    const terms: Record<string, number> = {};
+    // Full combination table
+    const combos: Record<string, { source: string; medium: string; campaign: string; content: string; term: string; count: number }> = {};
     let utmCount = 0;
     logs.forEach((l) => {
       const utm = parseUtm(l.user_agent);
@@ -310,12 +314,22 @@ export const AdminDashboard = () => {
       if (utm.utm_source) sources[utm.utm_source] = (sources[utm.utm_source] || 0) + 1;
       if (utm.utm_campaign) campaigns[utm.utm_campaign] = (campaigns[utm.utm_campaign] || 0) + 1;
       if (utm.utm_medium) mediums[utm.utm_medium] = (mediums[utm.utm_medium] || 0) + 1;
+      if (utm.utm_content) contents[utm.utm_content] = (contents[utm.utm_content] || 0) + 1;
+      if (utm.utm_term) terms[utm.utm_term] = (terms[utm.utm_term] || 0) + 1;
+      // Combo key
+      const key = [utm.utm_source || "—", utm.utm_medium || "—", utm.utm_campaign || "—"].join(" / ");
+      if (!combos[key]) combos[key] = { source: utm.utm_source || "—", medium: utm.utm_medium || "—", campaign: utm.utm_campaign || "—", content: utm.utm_content || "", term: utm.utm_term || "", count: 0 };
+      combos[key].count++;
     });
+    const toSorted = (obj: Record<string, number>) => Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 15);
     return {
       utmCount,
-      sources: Object.entries(sources).sort((a, b) => b[1] - a[1]).slice(0, 10),
-      campaigns: Object.entries(campaigns).sort((a, b) => b[1] - a[1]).slice(0, 10),
-      mediums: Object.entries(mediums).sort((a, b) => b[1] - a[1]).slice(0, 10),
+      sources: toSorted(sources),
+      campaigns: toSorted(campaigns),
+      mediums: toSorted(mediums),
+      contents: toSorted(contents),
+      terms: toSorted(terms),
+      combos: Object.values(combos).sort((a, b) => b.count - a.count).slice(0, 20),
     };
   }, [logs]);
 
