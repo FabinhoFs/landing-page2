@@ -129,3 +129,31 @@ O popup é exibido **uma vez por sessão** (controlado via `sessionStorage`).
 ```bash
 psql -f deploy/upgrade-add-exit-intent-settings.sql
 ```
+
+## Monitoramento e Diagnóstico
+
+O sistema possui uma Central de Diagnóstico (`system_errors`) que captura automaticamente falhas de frontend e integrações.
+
+### Como funciona
+
+| Origem | O que captura |
+|--------|---------------|
+| `ErrorBoundary` | Erros de renderização e falhas de chunk/lazy loading |
+| `useGeolocation` | Falha total de todos os provedores de geolocalização |
+| `WhatsAppButton` | Falha ao disparar eventos de conversão (dataLayer) |
+
+Os erros são registrados na tabela `system_errors` e podem ser visualizados na aba **20. Diagnóstico** do painel admin, com filtros para pendentes/resolvidos.
+
+### Limpeza da tabela
+
+Para limpar erros antigos resolvidos:
+
+```sql
+DELETE FROM public.system_errors WHERE resolved = true AND created_at < now() - interval '30 days';
+```
+
+### Upgrade de banco existente
+
+```bash
+psql -f deploy/upgrade-add-system-errors.sql
+```
