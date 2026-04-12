@@ -3,6 +3,11 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { getIconComponent } from "@/components/admin/IconPicker";
 
+interface HeroSectionProps {
+  city: string | null;
+  detected: boolean;
+}
+
 const DEFAULT_BULLETS = [
   { icon: "MessageCircle", label: "Atendimento guiado no WhatsApp" },
   { icon: "Video", label: "Validação online sem sair de casa" },
