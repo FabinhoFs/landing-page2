@@ -105,7 +105,14 @@ const Admin = () => {
             <TabsTrigger value="experiments">17. Experimentos</TabsTrigger>
             <TabsTrigger value="utm">18. UTM</TabsTrigger>
             <TabsTrigger value="performance">19. Performance</TabsTrigger>
-            <TabsTrigger value="errors">20. Diagnóstico</TabsTrigger>
+            <TabsTrigger value="errors" className="relative">
+              20. Diagnóstico
+              {pendingErrorCount > 0 && (
+                <Badge variant="destructive" className="ml-1.5 h-5 min-w-[20px] px-1.5 text-[10px]">
+                  {pendingErrorCount}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="versions">21. Versões</TabsTrigger>
             <TabsTrigger value="audit">22. Histórico</TabsTrigger>
           </TabsList>
