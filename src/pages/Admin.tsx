@@ -31,6 +31,8 @@ import { AdminExperiments } from "@/components/admin/AdminExperiments";
 import { AdminUtmRules } from "@/components/admin/AdminUtmRules";
 import { AdminPerformance } from "@/components/admin/AdminPerformance";
 import { AdminErrors } from "@/components/admin/AdminErrors";
+import { usePendingErrors } from "@/hooks/usePendingErrors";
+import { Badge } from "@/components/ui/badge";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
