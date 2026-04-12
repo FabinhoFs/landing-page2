@@ -26,6 +26,7 @@ import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { AdminAuditLog } from "@/components/admin/AdminAuditLog";
 import { AdminVersions } from "@/components/admin/AdminVersions";
+import { AdminPublishBar } from "@/components/admin/AdminPublishBar";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,7 @@ const Admin = () => {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-8">
+        <AdminPublishBar />
         <AdminAlerts />
         <Tabs defaultValue="hero">
           <TabsList className="mb-6 flex-wrap h-auto gap-1 justify-start">
