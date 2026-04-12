@@ -77,6 +77,39 @@ CREATE TABLE IF NOT EXISTS public.access_logs (
 );
 ALTER TABLE public.access_logs ENABLE ROW LEVEL SECURITY;
 
+-- Governança: Audit Log
+CREATE TABLE IF NOT EXISTS public.admin_audit_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  admin_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  admin_email text,
+  section text NOT NULL,
+  entity_key text,
+  field_name text,
+  old_value text,
+  new_value text,
+  action_type text NOT NULL DEFAULT 'update',
+  metadata jsonb
+);
+ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_audit_log_created ON public.admin_audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_section ON public.admin_audit_log(section);
+
+-- Governança: Page Versions
+CREATE TABLE IF NOT EXISTS public.page_versions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid NOT NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_by_email text,
+  version_name text NOT NULL,
+  description text,
+  snapshot_json jsonb NOT NULL,
+  is_restored boolean DEFAULT false,
+  restored_at timestamptz
+);
+ALTER TABLE public.page_versions ENABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_page_versions_created ON public.page_versions(created_at DESC);
+
 -- 2. RLS POLICIES ─────────────────────────────
 
 -- site_settings
@@ -178,6 +211,35 @@ DO $$ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='access_logs' AND policyname='Authenticated can delete access logs') THEN
     CREATE POLICY "Authenticated can delete access logs" ON public.access_logs FOR DELETE TO authenticated USING (true);
+  END IF;
+END $$;
+
+-- admin_audit_log (admin-only via has_role)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='admin_audit_log' AND policyname='Admins can read audit log') THEN
+    CREATE POLICY "Admins can read audit log" ON public.admin_audit_log FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='admin_audit_log' AND policyname='Admins can insert audit log') THEN
+    CREATE POLICY "Admins can insert audit log" ON public.admin_audit_log FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='admin_audit_log' AND policyname='Admins can delete audit log') THEN
+    CREATE POLICY "Admins can delete audit log" ON public.admin_audit_log FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+  END IF;
+END $$;
+
+-- page_versions (admin-only via has_role)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='page_versions' AND policyname='Admins can read page versions') THEN
+    CREATE POLICY "Admins can read page versions" ON public.page_versions FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='page_versions' AND policyname='Admins can insert page versions') THEN
+    CREATE POLICY "Admins can insert page versions" ON public.page_versions FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='page_versions' AND policyname='Admins can update page versions') THEN
+    CREATE POLICY "Admins can update page versions" ON public.page_versions FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='page_versions' AND policyname='Admins can delete page versions') THEN
+    CREATE POLICY "Admins can delete page versions" ON public.page_versions FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
   END IF;
 END $$;
 
