@@ -17,7 +17,7 @@ const DEFAULT_SUPPORT = "Atendimento humano e orientação em todas as etapas do
 
 const DEFAULT_CPF_USOS = ["Assinatura digital de documentos", "Acesso ao e-CAC da Receita Federal", "Declaração de Imposto de Renda", "Rotinas digitais com mais segurança"];
 const DEFAULT_CNPJ_USOS = ["Emissão de notas fiscais", "eSocial e obrigações fiscais", "Assinatura digital de documentos", "Acesso a sistemas públicos e privados"];
-const DEFAULT_INCLUSO = ["Atendimento guiado no WhatsApp", "Orientação sobre documentos e etapas", "Validação online por videoconferência", "Suporte durante o processo", "Orientação para instalação e uso"];
+
 
 function ListEditor({ prefix, defaults, settings, updateField }: {
   prefix: string; defaults: string[];
@@ -63,7 +63,7 @@ export const AdminOfertas = () => {
     "bestseller_active", "bestseller_product",
     ...Array.from({ length: 10 }, (_, i) => `cpf_uso_${i + 1}`),
     ...Array.from({ length: 10 }, (_, i) => `cnpj_uso_${i + 1}`),
-    ...Array.from({ length: 10 }, (_, i) => `incluso_${i + 1}`),
+    
   ];
 
   return (
@@ -123,12 +123,6 @@ export const AdminOfertas = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Bloco "Incluso" (ambos os cards)</CardTitle></CardHeader>
-        <CardContent>
-          <ListEditor prefix="incluso" defaults={DEFAULT_INCLUSO} settings={settings} updateField={updateField} />
-        </CardContent>
-      </Card>
 
       {/* Badge "Mais Vendido" */}
       <Card>
