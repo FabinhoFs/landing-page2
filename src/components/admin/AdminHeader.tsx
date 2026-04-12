@@ -75,7 +75,7 @@ export const AdminHeader = () => {
       </Card>
 
       <Button
-        onClick={() => saveKeys(KEYS, "Header salvo!")}
+        onClick={() => saveKeys(KEYS, "Header salvo!", "header")}
         disabled={saving}
         className="w-full sm:w-auto"
       >

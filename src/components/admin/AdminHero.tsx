@@ -131,7 +131,7 @@ export const AdminHero = () => {
     for (let i = 1; i <= 6; i++) {
       keys.push(`hero_bullet_${i}_label`, `hero_bullet_${i}_icon`);
     }
-    await saveKeys(keys, "Hero salva!");
+    await saveKeys(keys, "Hero salva!", "hero");
   };
 
   return (

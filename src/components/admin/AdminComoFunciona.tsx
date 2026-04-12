@@ -75,7 +75,7 @@ export const AdminComoFunciona = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={() => saveKeys(allKeys, "Como Funciona salvo!")} disabled={saving} className="w-full sm:w-auto">
+      <Button onClick={() => saveKeys(allKeys, "Como Funciona salvo!", "como_funciona")} disabled={saving} className="w-full sm:w-auto">
         <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar Como Funciona"}
       </Button>
     </div>

@@ -51,7 +51,7 @@ export const AdminFooter = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={() => saveKeys(KEYS, "Rodapé salvo!")} disabled={saving} className="w-full sm:w-auto">
+      <Button onClick={() => saveKeys(KEYS, "Rodapé salvo!", "footer")} disabled={saving} className="w-full sm:w-auto">
         <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar Rodapé"}
       </Button>
     </div>

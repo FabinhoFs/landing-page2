@@ -115,7 +115,7 @@ export const AdminDores = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={() => saveKeys(allKeys, "Dores salvas!")} disabled={saving} className="w-full sm:w-auto">
+      <Button onClick={() => saveKeys(allKeys, "Dores salvas!", "dores")} disabled={saving} className="w-full sm:w-auto">
         <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar Dores"}
       </Button>
     </div>
