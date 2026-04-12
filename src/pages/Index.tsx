@@ -98,21 +98,23 @@ const Index = () => {
       <StickyHeader city={cityDisplay} />
       <HeroSection city={city} detected={detected} />
       <SocialProofBar />
-      <Suspense fallback={<SectionFallback />}>
-        <PainSection />
-        <HowItWorksSection />
-        <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
-        <BenefitsSection />
-        <TestimonialsSection />
-        <GuaranteeSection city={cityDisplay} />
-        <AuthoritySection />
-        <FAQSection city={cityDisplay} />
-        <CTASection city={cityDisplay} />
-        <Footer />
-        <FloatingWhatsApp />
-        <StickyMobileCTA city={cityDisplay} />
-        <ExitIntentPopup city={cityDisplay} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<SectionFallback />}>
+          <PainSection />
+          <HowItWorksSection />
+          <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
+          <BenefitsSection />
+          <TestimonialsSection />
+          <GuaranteeSection city={cityDisplay} />
+          <AuthoritySection />
+          <FAQSection city={cityDisplay} />
+          <CTASection city={cityDisplay} />
+          <Footer />
+          <FloatingWhatsApp />
+          <StickyMobileCTA city={cityDisplay} />
+          <ExitIntentPopup city={cityDisplay} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
