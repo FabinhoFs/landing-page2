@@ -100,7 +100,9 @@ const Admin = () => {
             <TabsTrigger value="users">16. Administradores</TabsTrigger>
             <TabsTrigger value="experiments">17. Experimentos</TabsTrigger>
             <TabsTrigger value="utm">18. UTM</TabsTrigger>
-            <TabsTrigger value="versions">19. Versões</TabsTrigger>
+            <TabsTrigger value="performance">19. Performance</TabsTrigger>
+            <TabsTrigger value="versions">20. Versões</TabsTrigger>
+            <TabsTrigger value="audit">21. Histórico</TabsTrigger>
             <TabsTrigger value="audit">20. Histórico</TabsTrigger>
           </TabsList>
           <TabsContent value="header"><AdminHeader /></TabsContent>
@@ -122,6 +124,7 @@ const Admin = () => {
           <TabsContent value="users"><AdminUsers /></TabsContent>
           <TabsContent value="experiments"><AdminExperiments /></TabsContent>
           <TabsContent value="utm"><AdminUtmRules /></TabsContent>
+          <TabsContent value="performance"><AdminPerformance /></TabsContent>
           <TabsContent value="versions"><AdminVersions /></TabsContent>
           <TabsContent value="audit"><AdminAuditLog /></TabsContent>
         </Tabs>
