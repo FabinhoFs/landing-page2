@@ -1,15 +1,24 @@
-import { ShieldCheck, Headphones, CheckCircle } from "lucide-react";
+import { ShieldCheck, CheckCircle } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 
-const points = [
+const DEFAULT_POINTS = [
   "Atendimento humano durante o processo",
   "Orientação para seguir corretamente cada etapa",
   "Mais segurança para contratar com clareza",
 ];
 
 export const GuaranteeSection = ({ city }: { city: string }) => {
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+
+  const title = settings.guarantee_title || "Mais segurança para você contratar";
+  const subtitle = settings.guarantee_subtitle || "Você conta com atendimento humano e orientação em todas as etapas do processo. Nossa equipe esclarece dúvidas, explica o fluxo e acompanha você com mais segurança e clareza.";
+  const ctaText = settings.guarantee_cta || "Tirar dúvidas agora";
+
+  let points = DEFAULT_POINTS;
+  if (settings.guarantee_points) {
+    try { points = JSON.parse(settings.guarantee_points); } catch { /* use default */ }
+  }
 
   return (
     <section className="bg-deep text-deep-foreground py-16 md:py-24">
@@ -18,13 +27,8 @@ export const GuaranteeSection = ({ city }: { city: string }) => {
           <ShieldCheck className="h-8 w-8 text-primary" />
         </div>
 
-        <h2 className="text-2xl font-bold md:text-4xl mb-4">
-          Mais segurança para você contratar
-        </h2>
-
-        <p className="text-sm md:text-base text-deep-foreground/80 leading-relaxed max-w-xl mx-auto mb-8">
-          Você conta com atendimento humano e orientação em todas as etapas do processo. Nossa equipe esclarece dúvidas, explica o fluxo e acompanha você com mais segurança e clareza.
-        </p>
+        <h2 className="text-2xl font-bold md:text-4xl mb-4">{title}</h2>
+        <p className="text-sm md:text-base text-deep-foreground/80 leading-relaxed max-w-xl mx-auto mb-8">{subtitle}</p>
 
         <div className="flex flex-col gap-3 max-w-md mx-auto mb-8 text-left">
           {points.map((p, i) => (
@@ -40,7 +44,7 @@ export const GuaranteeSection = ({ city }: { city: string }) => {
           message={getMessage("cta_hero", city)}
           className="text-base px-8 py-4 font-bold"
         >
-          Tirar dúvidas agora
+          {ctaText}
         </WhatsAppButton>
       </div>
     </section>

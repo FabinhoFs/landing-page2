@@ -13,17 +13,18 @@ const bullets = [
 ];
 
 export const CTASection = ({ city }: CTASectionProps) => {
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+
+  const title = settings.cta_section_title || "Inicie sua emissão hoje com atendimento imediato";
+  const subtitle = settings.cta_section_subtitle || "Fale com um especialista, escolha o certificado certo e conclua seu processo com mais clareza, suporte humano e praticidade.";
+  const buttonText = settings.cta_section_button || "Quero iniciar minha emissão agora";
+  const microText = settings.cta_section_micro || "Atendimento humano • Processo simples • Emissão com suporte especializado";
 
   return (
     <section className="bg-deep text-deep-foreground py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 md:px-6 text-center">
-        <h2 className="text-2xl font-bold md:text-4xl mb-3">
-          Inicie sua emissão hoje com atendimento imediato
-        </h2>
-        <p className="text-sm md:text-base text-deep-foreground/70 mb-8 max-w-xl mx-auto">
-          Fale com um especialista, escolha o certificado certo e conclua seu processo com mais clareza, suporte humano e praticidade.
-        </p>
+        <h2 className="text-2xl font-bold md:text-4xl mb-3">{title}</h2>
+        <p className="text-sm md:text-base text-deep-foreground/70 mb-8 max-w-xl mx-auto">{subtitle}</p>
 
         <div className="flex flex-wrap justify-center gap-4 mb-8">
           {bullets.map((b, i) => (
@@ -39,12 +40,10 @@ export const CTASection = ({ city }: CTASectionProps) => {
           message={getMessage("cta_bottom", city)}
           className="text-base px-8 py-5 font-bold"
         >
-          Quero iniciar minha emissão agora
+          {buttonText}
         </WhatsAppButton>
 
-        <p className="mt-4 text-xs text-deep-foreground/50">
-          Atendimento humano • Processo simples • Emissão com suporte especializado
-        </p>
+        <p className="mt-4 text-xs text-deep-foreground/50">{microText}</p>
       </div>
     </section>
   );
