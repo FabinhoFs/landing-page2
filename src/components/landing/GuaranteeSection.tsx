@@ -15,9 +15,17 @@ export const GuaranteeSection = ({ city }: { city: string }) => {
   const subtitle = settings.guarantee_subtitle || "Você conta com atendimento humano e orientação em todas as etapas do processo. Nossa equipe esclarece dúvidas, explica o fluxo e acompanha você com mais segurança e clareza.";
   const ctaText = settings.guarantee_cta || "Tirar dúvidas agora";
 
-  let points = DEFAULT_POINTS;
-  if (settings.guarantee_points) {
-    try { points = JSON.parse(settings.guarantee_points); } catch { /* use default */ }
+  // Read from structured fields first, then JSON fallback
+  const points: string[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const val = settings[`guarantee_point_${i}`];
+    if (val !== undefined && val !== "") points.push(val);
+  }
+  if (points.length === 0) {
+    if (settings.guarantee_points) {
+      try { points.push(...JSON.parse(settings.guarantee_points)); } catch {}
+    }
+    if (points.length === 0) points.push(...DEFAULT_POINTS);
   }
 
   return (
@@ -26,7 +34,6 @@ export const GuaranteeSection = ({ city }: { city: string }) => {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 mb-6">
           <ShieldCheck className="h-8 w-8 text-primary" />
         </div>
-
         <h2 className="text-2xl font-bold md:text-4xl mb-4">{title}</h2>
         <p className="text-sm md:text-base text-deep-foreground/80 leading-relaxed max-w-xl mx-auto mb-8">{subtitle}</p>
 
@@ -39,11 +46,7 @@ export const GuaranteeSection = ({ city }: { city: string }) => {
           ))}
         </div>
 
-        <WhatsAppButton
-          buttonId="cta_guarantee"
-          message={getMessage("cta_hero", city)}
-          className="text-base px-8 py-4 font-bold"
-        >
+        <WhatsAppButton buttonId="cta_guarantee" message={getMessage("cta_hero", city)} className="text-base px-8 py-4 font-bold">
           {ctaText}
         </WhatsAppButton>
       </div>
