@@ -39,8 +39,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-# Healthcheck — verifies Nginx is serving content
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:80/ || exit 1
+# Healthcheck is defined in docker-compose.yml / docker-stack.yml
+# to allow per-stack customization without rebuilding the image.
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
