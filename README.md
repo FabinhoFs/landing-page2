@@ -32,7 +32,9 @@ deploy/
 ├── upgrade-add-experiments.sql
 ├── upgrade-add-utm-rules.sql
 ├── upgrade-add-geo-settings.sql
-└── upgrade-add-exit-intent-settings.sql
+├── upgrade-add-exit-intent-settings.sql
+├── upgrade-add-system-errors.sql
+└── upgrade-add-anti-spam.sql
 ```
 
 ## Desenvolvimento Local
