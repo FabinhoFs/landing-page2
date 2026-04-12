@@ -1,17 +1,23 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Save, Award, Users, Loader2 } from "lucide-react";
+import { Save, Award, Users, Loader2, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 import { IconPicker } from "./IconPicker";
 
-const SOCIAL_DEFAULTS = [
-  { key: "social_experience_text", label: "Ícone 1 — Certificação", hint: "📍 1ª posição da barra", default: "Certificação ICP-Brasil" },
-  { key: "social_authority_title", label: "Ícone 2 — Rapidez", hint: "📍 2ª posição da barra", default: "Emissão rápida" },
-  { key: "social_proof_text", label: "Ícone 3 — Prova Social", hint: "📍 3ª posição da barra", default: "Clientes atendidos" },
-  { key: "social_support_text", label: "Ícone 4 — Suporte", hint: "📍 4ª posição da barra", default: "Suporte humano" },
+interface SocialItem {
+  icon: string;
+  text: string;
+}
+
+const DEFAULT_SOCIAL_ITEMS: SocialItem[] = [
+  { icon: "ShieldCheck", text: "Emissão oficial ICP-Brasil" },
+  { icon: "Zap", text: "Rapidez e Segurança" },
+  { icon: "Users", text: "Junte-se a quem confia em nossa emissão oficial." },
+  { icon: "Headphones", text: "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim." },
 ];
 
 const BENEFITS_FIELDS = [
