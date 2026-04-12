@@ -30,7 +30,9 @@ deploy/
 ├── migration-master.sql # SQL completo para banco novo
 ├── upgrade-add-environment.sql
 ├── upgrade-add-experiments.sql
-└── upgrade-add-utm-rules.sql
+├── upgrade-add-utm-rules.sql
+├── upgrade-add-geo-settings.sql
+└── upgrade-add-exit-intent-settings.sql
 ```
 
 ## Desenvolvimento Local
@@ -104,4 +106,25 @@ Com fallback ativo, se o provedor principal retornar erro 429 ou falhar, o siste
 
 ```bash
 psql -f deploy/upgrade-add-geo-settings.sql
+```
+
+## Popup de Retenção (Exit Intent)
+
+Popup de retenção com desconto que aparece quando o visitante tenta sair da página. Configurável pelo admin em **Integrações → Popup de Retenção**.
+
+### Gatilhos disponíveis
+
+| Gatilho | Dispositivo | Comportamento |
+|---------|-------------|---------------|
+| Mouse Leave | Desktop | Dispara quando o mouse sai pelo topo da janela |
+| Scroll Rápido | Mobile | Detecta subidas rápidas (>150px em <200ms) |
+| Botão Voltar | Mobile | Intercepta o botão voltar do navegador |
+| Inatividade | Ambos | Dispara após 20s sem interação |
+
+O popup é exibido **uma vez por sessão** (controlado via `sessionStorage`).
+
+### Upgrade de banco existente
+
+```bash
+psql -f deploy/upgrade-add-exit-intent-settings.sql
 ```

@@ -36,6 +36,17 @@ const KEYS = [
 const GEO_KEYS = ["geo_provider", "geo_api_key", "geo_fallback"] as const;
 type GeoKeys = (typeof GEO_KEYS)[number];
 
+const POPUP_KEYS = [
+  "popup_enabled",
+  "popup_trigger_desktop",
+  "popup_trigger_mobile_scroll",
+  "popup_trigger_mobile_back",
+  "popup_title",
+  "popup_subtitle",
+  "popup_discount_value",
+] as const;
+type PopupKeys = (typeof POPUP_KEYS)[number];
+
 type ConfigKeys = (typeof KEYS)[number];
 
 type IntegrationStatus = "configured" | "partial" | "not_configured";
@@ -164,6 +175,15 @@ export const AdminIntegrations = () => {
     geo_api_key: "",
     geo_fallback: "true",
   });
+  const [popupValues, setPopupValues] = useState<Record<PopupKeys, string>>({
+    popup_enabled: "true",
+    popup_trigger_desktop: "true",
+    popup_trigger_mobile_scroll: "true",
+    popup_trigger_mobile_back: "false",
+    popup_title: "ESPERA! NÃO VÁ EMBORA.",
+    popup_subtitle: "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.",
+    popup_discount_value: "20",
+  });
   const [saving, setSaving] = useState(false);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -173,7 +193,7 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
-      const allKeys = [...KEYS, ...GEO_KEYS];
+      const allKeys = [...KEYS, ...GEO_KEYS, ...POPUP_KEYS];
       const { data } = await (supabase
         .from("site_settings") as any)
         .select("key, value")
@@ -195,6 +215,16 @@ export const AdminIntegrations = () => {
         geo_api_key: loaded.geo_api_key ?? prev.geo_api_key,
         geo_fallback: loaded.geo_fallback ?? prev.geo_fallback,
       }));
+
+      setPopupValues((prev) => ({
+        popup_enabled: loaded.popup_enabled ?? prev.popup_enabled,
+        popup_trigger_desktop: loaded.popup_trigger_desktop ?? prev.popup_trigger_desktop,
+        popup_trigger_mobile_scroll: loaded.popup_trigger_mobile_scroll ?? prev.popup_trigger_mobile_scroll,
+        popup_trigger_mobile_back: loaded.popup_trigger_mobile_back ?? prev.popup_trigger_mobile_back,
+        popup_title: loaded.popup_title ?? prev.popup_title,
+        popup_subtitle: loaded.popup_subtitle ?? prev.popup_subtitle,
+        popup_discount_value: loaded.popup_discount_value ?? prev.popup_discount_value,
+      }));
     };
     load();
   }, []);
@@ -214,9 +244,15 @@ export const AdminIntegrations = () => {
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
+      const popupRows = POPUP_KEYS.map((key) => ({
+        key,
+        value: popupValues[key],
+        environment: "draft",
+        updated_at: new Date().toISOString(),
+      }));
       const { error } = await (supabase
         .from("site_settings") as any)
-        .upsert([...trackingRows, ...geoRows], { onConflict: "key,environment" });
+        .upsert([...trackingRows, ...geoRows, ...popupRows], { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
@@ -487,6 +523,107 @@ export const AdminIntegrations = () => {
                 onCheckedChange={(checked) =>
                   setGeoValues((prev) => ({ ...prev, geo_fallback: checked ? "true" : "false" }))
                 }
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Popup de Retenção Card */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <Zap className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <CardTitle className="text-base">Popup de Retenção (Exit Intent)</CardTitle>
+                <CardDescription>
+                  Exibe um popup com desconto quando o usuário tenta sair da página. Configuração de gatilhos por dispositivo.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Global toggle */}
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Popup ativo</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Liga/desliga o popup de retenção globalmente.</p>
+              </div>
+              <Switch
+                checked={popupValues.popup_enabled === "true"}
+                onCheckedChange={(c) => setPopupValues((p) => ({ ...p, popup_enabled: c ? "true" : "false" }))}
+              />
+            </div>
+
+            {/* Desktop trigger */}
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Gatilho Desktop (Mouse)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Dispara quando o mouse sai pelo topo da janela.</p>
+              </div>
+              <Switch
+                checked={popupValues.popup_trigger_desktop === "true"}
+                onCheckedChange={(c) => setPopupValues((p) => ({ ...p, popup_trigger_desktop: c ? "true" : "false" }))}
+              />
+            </div>
+
+            {/* Mobile scroll trigger */}
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Gatilho Mobile (Scroll rápido)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Detecta subidas rápidas no celular como intenção de saída.</p>
+              </div>
+              <Switch
+                checked={popupValues.popup_trigger_mobile_scroll === "true"}
+                onCheckedChange={(c) => setPopupValues((p) => ({ ...p, popup_trigger_mobile_scroll: c ? "true" : "false" }))}
+              />
+            </div>
+
+            {/* Mobile back button trigger */}
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Gatilho Mobile (Botão Voltar)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Intercepta o botão "voltar" do navegador e exibe o popup. Use com cuidado pois altera o histórico de navegação.
+                </p>
+              </div>
+              <Switch
+                checked={popupValues.popup_trigger_mobile_back === "true"}
+                onCheckedChange={(c) => setPopupValues((p) => ({ ...p, popup_trigger_mobile_back: c ? "true" : "false" }))}
+              />
+            </div>
+
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground/80">Como funciona:</strong> O gatilho de <strong>Scroll</strong> detecta subidas rápidas no celular (mais de 150px em menos de 200ms).
+                O gatilho de <strong>Botão Voltar</strong> intercepta a tentativa de saída do navegador. O popup é exibido apenas <strong>uma vez por sessão</strong>.
+              </p>
+            </div>
+
+            {/* Popup content fields */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Título do Popup</Label>
+              <Input
+                value={popupValues.popup_title}
+                onChange={(e) => setPopupValues((p) => ({ ...p, popup_title: e.target.value }))}
+                placeholder="ESPERA! NÃO VÁ EMBORA."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Subtítulo</Label>
+              <Input
+                value={popupValues.popup_subtitle}
+                onChange={(e) => setPopupValues((p) => ({ ...p, popup_subtitle: e.target.value }))}
+                placeholder="Garanta um desconto exclusivo..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Valor do Desconto (R$)</Label>
+              <Input
+                value={popupValues.popup_discount_value}
+                onChange={(e) => setPopupValues((p) => ({ ...p, popup_discount_value: e.target.value }))}
+                placeholder="20"
               />
             </div>
           </CardContent>

@@ -485,7 +485,11 @@ INSERT INTO public.site_settings (key, value, environment) VALUES
   ('cta_exit_popup', 'Olá! Vi o desconto de R$ {valor},00 na página e quero aproveitar para emitir meu certificado.', 'published'),
   ('geo_provider', 'ipapi', 'published'),
   ('geo_api_key', '', 'published'),
-  ('geo_fallback', 'true', 'published')
+  ('geo_fallback', 'true', 'published'),
+  ('popup_trigger_desktop', 'true', 'published'),
+  ('popup_trigger_mobile_scroll', 'true', 'published'),
+  ('popup_trigger_mobile_back', 'false', 'published'),
+  ('popup_discount_value', '20', 'published')
 ON CONFLICT (key, environment) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
 
 -- Site Settings — draft environment (mirror of published for initial install)
