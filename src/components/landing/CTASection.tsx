@@ -2,16 +2,9 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { ShieldCheck, Zap, MessageCircle } from "lucide-react";
 
-interface CTASectionProps {
-  city: string;
-}
+interface CTASectionProps { city: string; }
 
-const DEFAULT_BULLETS = [
-  { text: "Processo online" },
-  { text: "Validação rápida" },
-  { text: "Atendimento no WhatsApp" },
-];
-
+const DEFAULT_BULLETS = ["Processo online", "Validação rápida", "Atendimento no WhatsApp"];
 const BULLET_ICONS = [Zap, ShieldCheck, MessageCircle];
 
 export const CTASection = ({ city }: CTASectionProps) => {
@@ -22,9 +15,17 @@ export const CTASection = ({ city }: CTASectionProps) => {
   const buttonText = settings.cta_section_button || "Quero iniciar minha emissão agora";
   const microText = settings.cta_section_micro || "Atendimento humano • Processo simples • Emissão com suporte especializado";
 
-  let bullets = DEFAULT_BULLETS;
-  if (settings.cta_section_bullets) {
-    try { bullets = JSON.parse(settings.cta_section_bullets); } catch { /* use default */ }
+  // Read from structured fields first, then JSON fallback
+  const bullets: string[] = [];
+  for (let i = 1; i <= 6; i++) {
+    const val = settings[`cta_bullet_${i}`];
+    if (val !== undefined && val !== "") bullets.push(val);
+  }
+  if (bullets.length === 0) {
+    if (settings.cta_section_bullets) {
+      try { bullets.push(...JSON.parse(settings.cta_section_bullets).map((b: any) => b.text || b)); } catch {}
+    }
+    if (bullets.length === 0) bullets.push(...DEFAULT_BULLETS);
   }
 
   return (
@@ -34,25 +35,19 @@ export const CTASection = ({ city }: CTASectionProps) => {
         <p className="text-sm md:text-base text-deep-foreground/70 mb-8 max-w-xl mx-auto">{subtitle}</p>
 
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {bullets.map((b, i) => {
+          {bullets.map((text, i) => {
             const Icon = BULLET_ICONS[i % BULLET_ICONS.length];
             return (
               <div key={i} className="flex items-center gap-2 text-sm text-deep-foreground/80">
-                <Icon className="h-4 w-4 text-primary" />
-                <span>{b.text}</span>
+                <Icon className="h-4 w-4 text-primary" /><span>{text}</span>
               </div>
             );
           })}
         </div>
 
-        <WhatsAppButton
-          buttonId="cta_bottom"
-          message={getMessage("cta_bottom", city)}
-          className="text-base px-8 py-5 font-bold"
-        >
+        <WhatsAppButton buttonId="cta_bottom" message={getMessage("cta_bottom", city)} className="text-base px-8 py-5 font-bold">
           {buttonText}
         </WhatsAppButton>
-
         <p className="mt-4 text-xs text-deep-foreground/50">{microText}</p>
       </div>
     </section>

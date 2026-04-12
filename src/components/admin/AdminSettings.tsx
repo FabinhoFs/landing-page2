@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Phone, MessageCircle, Bell } from "lucide-react";
+import { Save, MessageCircle, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 const CTA_FIELDS = [
@@ -43,7 +43,6 @@ export const AdminSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     const keys = [
-      "whatsapp_number",
       ...CTA_FIELDS.map(f => f.key),
       "bestseller_active", "bestseller_product",
     ];
@@ -64,30 +63,6 @@ export const AdminSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* WhatsApp Number */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Phone className="h-5 w-5 text-primary" />
-            Número do WhatsApp
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp">Número completo com DDI + DDD (somente números)</Label>
-            <Input
-              id="whatsapp"
-              placeholder="5524974022516"
-              value={settings.whatsapp_number || ""}
-              onChange={(e) => updateField("whatsapp_number", e.target.value.replace(/\D/g, ""))}
-            />
-            <p className="text-xs text-muted-foreground">
-              Exemplo: 55 (Brasil) + 24 (DDD) + 974022516 → <strong>5524974022516</strong>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* CTA Messages */}
       <Card>
         <CardHeader>
@@ -104,12 +79,7 @@ export const AdminSettings = () => {
             <div key={field.key} className="space-y-1.5">
               <Label htmlFor={field.key} className="text-sm font-semibold">{field.label}</Label>
               <p className="text-xs text-muted-foreground">📍 {field.position}</p>
-              <Input
-                id={field.key}
-                value={settings[field.key] || ""}
-                onChange={(e) => updateField(field.key, e.target.value)}
-                placeholder="Mensagem personalizada..."
-              />
+              <Input id={field.key} value={settings[field.key] || ""} onChange={(e) => updateField(field.key, e.target.value)} placeholder="Mensagem personalizada..." />
             </div>
           ))}
         </CardContent>
@@ -124,23 +94,15 @@ export const AdminSettings = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">
-            Exibe um selo "⭐ Mais Vendido" sobre o card escolhido na seção de preços.
-          </p>
+          <p className="text-xs text-muted-foreground">Exibe um selo "⭐ Mais Vendido" sobre o card escolhido na seção de preços.</p>
           <div className="flex items-center gap-3">
-            <Switch
-              checked={settings.bestseller_active === "true"}
-              onCheckedChange={(v) => updateField("bestseller_active", v ? "true" : "false")}
-            />
+            <Switch checked={settings.bestseller_active === "true"} onCheckedChange={(v) => updateField("bestseller_active", v ? "true" : "false")} />
             <span className="text-sm text-muted-foreground">Badge ativo</span>
           </div>
           <div className="space-y-1.5">
             <Label>Exibir no produto</Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={settings.bestseller_product || "cnpj"}
-              onChange={(e) => updateField("bestseller_product", e.target.value)}
-            >
+            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={settings.bestseller_product || "cnpj"} onChange={(e) => updateField("bestseller_product", e.target.value)}>
               <option value="cpf">e-CPF A1</option>
               <option value="cnpj">e-CNPJ A1</option>
             </select>
@@ -149,8 +111,7 @@ export const AdminSettings = () => {
       </Card>
 
       <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
-        <Save className="mr-2 h-4 w-4" />
-        {loading ? "Salvando..." : "Salvar Configurações"}
+        <Save className="mr-2 h-4 w-4" />{loading ? "Salvando..." : "Salvar Configurações"}
       </Button>
     </div>
   );

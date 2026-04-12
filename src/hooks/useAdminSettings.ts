@@ -1,0 +1,48 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+export function useAdminSettings() {
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [fetching, setFetching] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await supabase.from("site_settings" as any).select("key, value");
+      if (data) {
+        const map: Record<string, string> = {};
+        (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
+        setSettings(map);
+      }
+      setFetching(false);
+    };
+    fetchData();
+  }, []);
+
+  const updateField = (key: string, value: string) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const saveKeys = async (keys: string[], successMsg = "Salvo com sucesso!") => {
+    setSaving(true);
+    const payload = keys
+      .filter(k => settings[k] !== undefined)
+      .map(key => ({ key, value: settings[key], updated_at: new Date().toISOString() }));
+
+    if (payload.length > 0) {
+      const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
+      if (error) {
+        toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+        setSaving(false);
+        return false;
+      }
+    }
+    toast({ title: successMsg, description: "As alterações já estão ativas na Landing Page." });
+    setSaving(false);
+    return true;
+  };
+
+  return { settings, fetching, saving, updateField, saveKeys, setSettings };
+}

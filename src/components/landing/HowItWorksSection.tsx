@@ -17,9 +17,20 @@ export const HowItWorksSection = () => {
   const subtitle = settings.howitworks_subtitle || "Você faz o processo online com orientação em cada etapa.";
   const complianceText = settings.howitworks_compliance || "O processo é realizado pelo titular ou responsável pelo certificado, com orientação especializada do início ao fim.";
 
-  let steps = DEFAULT_STEPS;
-  if (settings.howitworks_steps) {
-    try { steps = JSON.parse(settings.howitworks_steps); } catch { /* use default */ }
+  // Read from structured fields first, then JSON fallback
+  const steps: { title: string; desc: string }[] = [];
+  for (let i = 1; i <= 4; i++) {
+    const t = settings[`step_${i}_title`];
+    const d = settings[`step_${i}_desc`];
+    if (t || d) {
+      steps.push({ title: t || DEFAULT_STEPS[i - 1]?.title || "", desc: d || DEFAULT_STEPS[i - 1]?.desc || "" });
+    }
+  }
+  if (steps.length === 0) {
+    if (settings.howitworks_steps) {
+      try { steps.push(...JSON.parse(settings.howitworks_steps)); } catch {}
+    }
+    if (steps.length === 0) steps.push(...DEFAULT_STEPS);
   }
 
   return (
@@ -34,13 +45,8 @@ export const HowItWorksSection = () => {
           {steps.map((step, i) => {
             const Icon = STEP_ICONS[i % STEP_ICONS.length];
             return (
-              <div
-                key={i}
-                className="relative flex flex-col items-center text-center gap-4 rounded-2xl bg-deep-foreground/5 border border-deep-foreground/10 p-6"
-              >
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  {i + 1}
-                </div>
+              <div key={i} className="relative flex flex-col items-center text-center gap-4 rounded-2xl bg-deep-foreground/5 border border-deep-foreground/10 p-6">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">{i + 1}</div>
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 mt-2">
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
@@ -53,9 +59,7 @@ export const HowItWorksSection = () => {
 
         <div className="mt-10 flex items-center justify-center gap-3 bg-deep-foreground/5 border border-deep-foreground/10 rounded-xl px-6 py-4 max-w-2xl mx-auto">
           <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
-          <p className="text-sm md:text-base text-deep-foreground/80 font-semibold">
-            {complianceText}
-          </p>
+          <p className="text-sm md:text-base text-deep-foreground/80 font-semibold">{complianceText}</p>
         </div>
       </div>
     </section>
