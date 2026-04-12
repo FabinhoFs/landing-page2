@@ -17,11 +17,12 @@ const DEFAULT_CTA_MESSAGES: Record<string, string> = {
 
 export function useCtaMessages() {
   const { data, isLoading } = useQuery({
-    queryKey: ["site_settings", "all"],
+    queryKey: ["site_settings", "published"],
     queryFn: async () => {
       const { data } = await supabase
         .from("site_settings" as any)
-        .select("key, value");
+        .select("key, value")
+        .eq("environment", "published");
       const map: Record<string, string> = {};
       if (data) {
         (data as any[]).forEach((row: any) => {
@@ -42,4 +43,3 @@ export function useCtaMessages() {
 
   return { settings: data || {}, getMessage, isLoading };
 }
-

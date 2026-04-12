@@ -12,7 +12,10 @@ export function useAdminSettings() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data } = await supabase.from("site_settings" as any).select("key, value");
+      const { data } = await supabase
+        .from("site_settings" as any)
+        .select("key, value")
+        .eq("environment", "draft");
       if (data) {
         const map: Record<string, string> = {};
         (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
@@ -32,10 +35,10 @@ export function useAdminSettings() {
     setSaving(true);
     const payload = keys
       .filter(k => settings[k] !== undefined)
-      .map(key => ({ key, value: settings[key], updated_at: new Date().toISOString() }));
+      .map(key => ({ key, value: settings[key], environment: "draft", updated_at: new Date().toISOString() }));
 
     if (payload.length > 0) {
-      const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
+      const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key,environment" });
       if (error) {
         toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
         setSaving(false);
@@ -59,7 +62,7 @@ export function useAdminSettings() {
       keys.forEach(k => { if (settings[k] !== undefined) updated[k] = settings[k]; });
       setOriginalSettings(updated);
     }
-    toast({ title: successMsg, description: "As alterações já estão ativas na Landing Page." });
+    toast({ title: successMsg, description: "As alterações foram salvas no rascunho. Publique quando estiver pronto." });
     setSaving(false);
     return true;
   };

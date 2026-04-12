@@ -50,7 +50,6 @@ function injectGTM(gtmId: string) {
   window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
   injectScript(`https://www.googletagmanager.com/gtm.js?id=${gtmId}`, "gtm-script");
 
-  // noscript iframe
   if (!document.getElementById("gtm-noscript")) {
     const ns = document.createElement("noscript");
     ns.id = "gtm-noscript";
@@ -86,8 +85,9 @@ export function useTracking() {
 
     (async () => {
       const { data } = await supabase
-        .from("site_settings")
+        .from("site_settings" as any)
         .select("key, value")
+        .eq("environment", "published")
         .in("key", ["g_tag_id", "g_ads_purchase_label", "meta_pixel_id", "g_tag_manager_id"]);
 
       const cfg: TrackingConfig = {
@@ -96,7 +96,7 @@ export function useTracking() {
         meta_pixel_id: "",
         g_tag_manager_id: "",
       };
-      data?.forEach((r) => {
+      (data as any[])?.forEach((r: any) => {
         if (r.key in cfg) (cfg as any)[r.key] = r.value;
       });
       configRef.current = cfg;
