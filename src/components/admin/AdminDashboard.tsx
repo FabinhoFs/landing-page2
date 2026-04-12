@@ -839,14 +839,14 @@ export const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* ─── CTA MESSAGE RANKING ──────────────────── */}
+      {/* ─── CTA MESSAGE RANKING (enhanced) ────────── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <MessageSquare className="h-4 w-4" />
             Ranking de Mensagens de CTA
           </CardTitle>
-          <CardDescription>Qual mensagem de WhatsApp mais gera ação? Compare abordagens comerciais.</CardDescription>
+          <CardDescription>Qual mensagem de WhatsApp mais gera ação? Compare abordagens comerciais e identifique o copy que converte.</CardDescription>
         </CardHeader>
         <CardContent>
           {ctaMessageRanking.length > 0 ? (
@@ -856,28 +856,42 @@ export const AdminDashboard = () => {
                   <tr className="border-b border-border text-left">
                     <th className="py-2 pr-2 font-semibold text-muted-foreground w-10">#</th>
                     <th className="py-2 pr-3 font-semibold text-muted-foreground">CTA</th>
-                    <th className="py-2 pr-3 font-semibold text-muted-foreground">Mensagem</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground">Seção</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground">Mensagem enviada ao WhatsApp</th>
                     <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Cliques</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">%</th>
+                    <th className="py-2 font-semibold text-muted-foreground min-w-[100px]">Participação</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ctaMessageRanking.map((row, i) => (
-                    <tr key={i} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i < 3 ? "bg-primary/5" : ""}`}>
-                      <td className="py-2.5 pr-2 text-center">
-                        {i < 3 ? <span className="text-base">{MEDAL_ICONS[i]}</span> : <span className="text-xs font-mono text-muted-foreground">{i + 1}</span>}
-                      </td>
-                      <td className="py-2.5 pr-3">
-                        <p className="font-medium text-foreground text-xs">{row.ctaLabel}</p>
-                        <Badge variant="outline" className="text-[10px] mt-0.5">{row.section}</Badge>
-                      </td>
-                      <td className="py-2.5 pr-3">
-                        <p className="text-xs text-muted-foreground max-w-xs truncate" title={row.message}>
-                          "{row.message}"
-                        </p>
-                      </td>
-                      <td className="py-2.5 pr-3 text-right font-bold text-foreground">{row.clicks}</td>
-                    </tr>
-                  ))}
+                  {ctaMessageRanking.map((row, i) => {
+                    const pct = totalClicks > 0 ? (row.clicks / totalClicks * 100) : 0;
+                    return (
+                      <tr key={i} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i < 3 ? "bg-primary/5" : ""}`}>
+                        <td className="py-2.5 pr-2 text-center">
+                          {i < 3 ? <span className="text-base">{MEDAL_ICONS[i]}</span> : <span className="text-xs font-mono text-muted-foreground">{i + 1}</span>}
+                        </td>
+                        <td className="py-2.5 pr-3">
+                          <p className="font-medium text-foreground text-sm">{row.ctaLabel}</p>
+                        </td>
+                        <td className="py-2.5 pr-3">
+                          <Badge variant="outline" className="text-[11px] whitespace-nowrap">{row.section}</Badge>
+                        </td>
+                        <td className="py-2.5 pr-3 max-w-[280px]">
+                          <p className="text-xs text-muted-foreground truncate" title={row.message}>
+                            "{row.message}"
+                          </p>
+                        </td>
+                        <td className="py-2.5 pr-3 text-right font-bold text-foreground">{row.clicks}</td>
+                        <td className="py-2.5 pr-3 text-right text-muted-foreground">{pct.toFixed(1)}%</td>
+                        <td className="py-2.5">
+                          <div className="h-2 w-full max-w-[100px] rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full bg-primary/60 transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%` }} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
