@@ -398,91 +398,97 @@ export const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* ─── 6 SUMMARY CARDS ──────────────────────── */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {/* Total clicks */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <MousePointerClick className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold text-foreground">{totalClicks}</p>
-              <p className="text-xs text-muted-foreground">Total de Cliques</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* ─── SUMMARY CARDS — 2 ROWS of 3 ──────────── */}
+      <div className="space-y-4">
+        {/* Row 1 */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+          <Card>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <MousePointerClick className="h-6 w-6 text-primary" />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-3xl font-bold text-foreground leading-none">{totalClicks}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total de Cliques</p>
+                <p className="text-xs text-muted-foreground/60">Todos os CTAs no período</p>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Top CTA */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(142, 70%, 40%, 0.1)" }}>
-              <Trophy className="h-5 w-5" style={{ color: "hsl(142, 70%, 40%)" }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-foreground leading-tight">
-                <TruncatedText text={topCta?.name || "—"} maxLen={22} />
-              </p>
-              <p className="text-xs text-muted-foreground">CTA Mais Clicado{topCta ? ` (${topCta.count})` : ""}</p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(142, 70%, 40%, 0.1)" }}>
+                <Trophy className="h-6 w-6" style={{ color: "hsl(142, 70%, 40%)" }} />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-base font-bold text-foreground leading-snug">
+                  <TruncatedText text={topCta?.name || "—"} maxLen={32} />
+                </p>
+                <p className="text-sm font-medium text-muted-foreground">CTA Mais Clicado</p>
+                <p className="text-xs text-muted-foreground/60">{topCta ? `${topCta.count} cliques no período` : "Sem dados"}</p>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Top City */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(200, 60%, 50%, 0.1)" }}>
-              <MapPin className="h-5 w-5" style={{ color: "hsl(200, 60%, 50%)" }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-foreground leading-tight">
-                <TruncatedText text={topCity?.name || "—"} maxLen={22} />
-              </p>
-              <p className="text-xs text-muted-foreground">Cidade Líder{topCity ? ` (${topCity.count})` : ""}</p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(200, 60%, 50%, 0.1)" }}>
+                <MapPin className="h-6 w-6" style={{ color: "hsl(200, 60%, 50%)" }} />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-base font-bold text-foreground leading-snug">
+                  <TruncatedText text={topCity?.name || "—"} maxLen={32} />
+                </p>
+                <p className="text-sm font-medium text-muted-foreground">Cidade Líder</p>
+                <p className="text-xs text-muted-foreground/60">{topCity ? `${topCity.count} interações` : "Sem dados"}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Mobile % */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(30, 80%, 55%, 0.1)" }}>
-              <Smartphone className="h-5 w-5" style={{ color: "hsl(30, 80%, 55%)" }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xl font-bold text-foreground">
-                {deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%
-              </p>
-              <p className="text-xs text-muted-foreground">Mobile ({deviceStats.mobile})</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Row 2 */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+          <Card>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(30, 80%, 55%, 0.1)" }}>
+                <Smartphone className="h-6 w-6" style={{ color: "hsl(30, 80%, 55%)" }} />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-3xl font-bold text-foreground leading-none">
+                  {deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%
+                </p>
+                <p className="text-sm font-medium text-muted-foreground">Acessos Mobile</p>
+                <p className="text-xs text-muted-foreground/60">{deviceStats.mobile} mobile · {deviceStats.desktop} desktop</p>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Best hour */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(280, 54%, 33%, 0.1)" }}>
-              <Clock className="h-5 w-5" style={{ color: "hsl(280, 54%, 33%)" }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xl font-bold text-foreground">{bestHour ? bestHour.hour : "—"}</p>
-              <p className="text-xs text-muted-foreground">Melhor Horário{bestHour ? ` (${bestHour.total})` : ""}</p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(280, 54%, 33%, 0.1)" }}>
+                <Clock className="h-6 w-6" style={{ color: "hsl(280, 54%, 33%)" }} />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-3xl font-bold text-foreground leading-none">{bestHour ? bestHour.hour : "—"}</p>
+                <p className="text-sm font-medium text-muted-foreground">Melhor Horário</p>
+                <p className="text-xs text-muted-foreground/60">{bestHour ? `${bestHour.total} cliques neste horário` : "Sem dados"}</p>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Best day */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(350, 65%, 50%, 0.1)" }}>
-              <CalendarDays className="h-5 w-5" style={{ color: "hsl(350, 65%, 50%)" }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xl font-bold text-foreground">{bestDay ? bestDay.name : "—"}</p>
-              <p className="text-xs text-muted-foreground">Melhor Dia{bestDay ? ` (${bestDay.total})` : ""}</p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(350, 65%, 50%, 0.1)" }}>
+                <CalendarDays className="h-6 w-6" style={{ color: "hsl(350, 65%, 50%)" }} />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-3xl font-bold text-foreground leading-none">{bestDay ? bestDay.name : "—"}</p>
+                <p className="text-sm font-medium text-muted-foreground">Melhor Dia da Semana</p>
+                <p className="text-xs text-muted-foreground/60">{bestDay ? `${bestDay.total} cliques neste dia` : "Sem dados"}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* ─── LAST INTERACTION ──────────────────────── */}
