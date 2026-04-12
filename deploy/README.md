@@ -484,6 +484,34 @@ O projeto inclui duas tabelas de governança protegidas por RLS (somente admins)
 | Excluir versão individual | 17. Versões | Botão 🗑️ com confirmação (bloqueia exclusão da última) |
 | Limpeza inteligente de versões | 17. Versões | Manter últimas 3/5/10/20, remover o restante |
 
+### 12.3 Experimentos A/B/C
+
+O sistema permite criar testes de conteúdo para otimizar conversão.
+
+| Tabela | Finalidade |
+|--------|-----------|
+| `experiments` | Cadastro de experimentos (nome, seção, status, distribuição) |
+| `experiment_variants` | Variantes de cada experimento com config JSON |
+| `experiment_events` | Impressões e cliques por variante, sessão e dispositivo |
+
+**Fluxo:**
+1. Admin cria experimento → define variantes → configura JSON de cada variante
+2. Admin ativa o experimento → visitantes são distribuídos entre A/B/C
+3. Cada impressão e clique é registrado com sessão, device, cidade
+4. Admin acompanha CTR por variante no painel → identifica vencedor
+5. Admin encerra o experimento → aplica a variante vencedora como padrão
+
+**Seções suportadas:** Hero, CTA Hero, CTA Header, CTA Ofertas
+
+**Tipos de experimento:**
+- `content` — troca a variante da Hero (ex: `{"hero_active_variant": "2"}`)
+- `cta_text` — troca o texto do botão CTA (ex: `{"cta_text": "Começar agora"}`)
+- `cta_message` — troca a mensagem do WhatsApp (ex: `{"cta_message": "Olá!"}`)
+
+**Segurança:** Anon só vê experimentos ativos. Criar/editar/excluir exige `has_role('admin')`. Eventos são insert-only para público, leitura apenas autenticada.
+
+**Integração com Draft/Publish:** Experimentos operam independente do draft/publish. Ativar = ao ar. O conteúdo de `site_settings` continua com draft/publish separadamente.
+
 ### Retenção recomendada
 
 - **Histórico:** limpar registros acima de 90 dias periodicamente
@@ -545,7 +573,9 @@ SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tab
 - [ ] Coluna `environment` existe em `site_settings` com dados em `draft` e `published`
 - [ ] Função `has_role()` e tabela `user_roles` existem
 - [ ] Tabelas `admin_audit_log` e `page_versions` criadas com RLS
+- [ ] Tabelas `experiments`, `experiment_variants` e `experiment_events` criadas com RLS
 - [ ] Bootstrap do primeiro admin concluído
 - [ ] Login em `/admin/login` funcionando
 - [ ] Publicação e rascunho funcionando no admin
 - [ ] Histórico e versionamento funcionando no admin
+- [ ] Experimentos A/B/C acessíveis na aba 17 do admin
