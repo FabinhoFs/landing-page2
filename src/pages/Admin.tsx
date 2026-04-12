@@ -71,7 +71,7 @@ const Admin = () => {
 
       <main className="mx-auto max-w-5xl px-6 py-8">
         <Tabs defaultValue="hero">
-          <TabsList className="mb-6 flex-wrap h-auto gap-1">
+          <TabsList className="mb-6 flex-wrap h-auto gap-1 justify-start">
             <TabsTrigger value="header">00. Header</TabsTrigger>
             <TabsTrigger value="hero">01. Hero</TabsTrigger>
             <TabsTrigger value="dores">02. Dores</TabsTrigger>
@@ -85,10 +85,10 @@ const Admin = () => {
             <TabsTrigger value="ctafinal">10. CTA Final</TabsTrigger>
             <TabsTrigger value="footer">11. Rodapé</TabsTrigger>
             <TabsTrigger value="whatsapp">12. WhatsApp</TabsTrigger>
-            <TabsTrigger value="settings">90. Config</TabsTrigger>
-            <TabsTrigger value="integrations">91. Integrações</TabsTrigger>
-            <TabsTrigger value="dashboard">92. Inteligência</TabsTrigger>
-            <TabsTrigger value="users">93. Admins</TabsTrigger>
+            <TabsTrigger value="settings">13. Configurações</TabsTrigger>
+            <TabsTrigger value="integrations">14. Integrações</TabsTrigger>
+            <TabsTrigger value="dashboard">15. Inteligência</TabsTrigger>
+            <TabsTrigger value="users">16. Administradores</TabsTrigger>
           </TabsList>
           <TabsContent value="header"><AdminHeader /></TabsContent>
           <TabsContent value="hero"><AdminHero /></TabsContent>
