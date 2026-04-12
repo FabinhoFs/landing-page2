@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUtms } from "@/lib/logAccess";
+import { checkRateLimit } from "@/lib/antiSpam";
 
 interface UtmRule {
   id: string;
@@ -161,6 +162,8 @@ async function logUtmEvent(
   buttonId?: string,
 ) {
   try {
+    const allowed = await checkRateLimit("utmEvent");
+    if (!allowed) return;
     const deviceType = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
     let city: string | undefined;
     let region: string | undefined;
