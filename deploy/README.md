@@ -33,15 +33,27 @@ cp .env.example .env
 nano .env
 ```
 
-Preencha com seus valores reais:
+| Variável | Tipo | Descrição | Onde encontrar |
+|----------|------|-----------|----------------|
+| `SUPABASE_URL` | **Runtime** | URL do projeto Supabase | Dashboard → Settings → API |
+| `SUPABASE_PUBLISHABLE_KEY` | **Runtime** | Chave anon/pública | Dashboard → Settings → API |
+| `APP_PORT` | **Runtime** | Porta local (padrão: 3000) | Sua preferência |
 
-| Variável | Descrição | Onde encontrar |
-|----------|-----------|----------------|
-| `VITE_SUPABASE_URL` | URL do projeto Supabase | Dashboard → Settings → API |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Chave anon/pública | Dashboard → Settings → API |
-| `APP_PORT` | Porta local (padrão: 3000) | Sua preferência |
+> ⚠️ **NUNCA** coloque a `service_role` key no `.env`. Ela dá acesso total ao banco.
 
-> ⚠️ **NUNCA** coloque a `service_role` key no `.env` do frontend. Ela dá acesso total ao banco.
+### Arquitetura de Runtime Config
+
+A imagem Docker é **genérica** — não contém credenciais Supabase. A configuração é injetada em runtime:
+
+1. O container inicia e executa `docker-entrypoint.sh`
+2. O script gera `/usr/share/nginx/html/runtime-config.js` a partir das variáveis de ambiente
+3. O `index.html` carrega `runtime-config.js` antes do bundle da aplicação
+4. O app React lê `window.RUNTIME_CONFIG` em vez de `import.meta.env`
+
+**Benefícios:**
+- Uma única imagem serve para **vários clientes** — mude apenas as variáveis
+- Trocar de servidor Supabase **não requer rebuild**
+- Secrets não ficam embutidas no bundle JavaScript
 
 ---
 
@@ -100,11 +112,13 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+> **Nota:** Rebuild é necessário apenas para mudanças no código. Para trocar a URL/chave do Supabase, basta atualizar o `.env` e reiniciar: `docker compose restart`
+
 ---
 
 ## 7. Rollback Simples
 
-Se a nova versão apresentar problemas, siga estes passos para voltar a uma versão anterior.
+Se a nova versão apresentar problemas:
 
 ### 7.1 Identificar o commit anterior
 
@@ -113,21 +127,11 @@ cd agis-digital-lp
 git log --oneline -5
 ```
 
-Exemplo de saída:
-
-```
-a1b2c3d  feat: nova seção de depoimentos
-e4f5g6h  fix: ajuste no botão CTA
-i7j8k9l  chore: atualizar dependências
-```
-
 ### 7.2 Voltar para o commit desejado
 
 ```bash
 git checkout e4f5g6h
 ```
-
-> ⚠️ **Atenção:** Este comando coloca o repositório em **detached HEAD** — você não estará em nenhuma branch. Isso é normal e esperado para rollback temporário. Não faça commits neste estado.
 
 ### 7.3 Rebuildar e subir
 
@@ -137,29 +141,15 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-### 7.4 Verificar se voltou corretamente
+### 7.4 Retornar para a branch principal
 
 ```bash
-docker compose ps
-curl -I http://localhost:3000
-```
-
-> Substitua `3000` pela porta definida em `APP_PORT` no seu `.env`.
-
-### 7.5 Retornar para a branch principal
-
-Quando a versão mais recente estiver corrigida, volte para `main`:
-
-```bash
-cd agis-digital-lp
 git checkout main
 git pull origin main
 cd deploy
 docker compose build --no-cache
 docker compose up -d
 ```
-
-> Isso sai do detached HEAD e retorna ao fluxo normal de desenvolvimento.
 
 ---
 
@@ -188,8 +178,6 @@ server {
 }
 ```
 
-> Substitua `3000` pela porta que definiu em `APP_PORT` no seu `.env`.
-
 ```bash
 sudo ln -s /etc/nginx/sites-available/agis /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
@@ -199,7 +187,7 @@ sudo certbot --nginx -d seudominio.com.br -d www.seudominio.com.br
 ### Opção B: Nginx Proxy Manager
 
 1. Aponte o domínio para o IP da VPS
-2. No NPM, crie um Proxy Host apontando para `http://IP_INTERNO:3000` (substitua `3000` pela porta definida em `APP_PORT`)
+2. No NPM, crie um Proxy Host apontando para `http://IP_INTERNO:3000`
 3. Ative SSL via Let's Encrypt no NPM
 
 ### Opção C: Traefik (Docker Swarm)
@@ -240,18 +228,6 @@ O painel `/admin` usa Supabase Auth com email/senha e `localStorage` para persis
 - O domínio final **deve** ser cadastrado como Site URL e Redirect URL no Supabase
 - Sessões são renovadas automaticamente via `autoRefreshToken: true`
 - Use **HTTPS obrigatoriamente** — cookies e tokens trafegam pela rede
-- Crie o usuário admin diretamente no Supabase Dashboard → Authentication → Users
-
-**Sobre `localStorage`:**
-- A sessão é persistida em `localStorage` — funciona bem em produção com HTTPS
-- O token é renovado automaticamente antes de expirar
-- Se o usuário limpar o navegador, precisará fazer login novamente
-
-**⚠️ Limitação atual de segurança:**
-- Qualquer usuário autenticado no Supabase Auth pode acessar `/admin`
-- Não existe verificação de role (admin, moderator, etc.) no código atual
-- Para restringir acesso, implemente uma tabela `user_roles` com RLS e uma função `has_role()` no Supabase
-- Enquanto essa verificação não existir, **não crie usuários desnecessários** no Supabase Auth
 
 ---
 
@@ -259,23 +235,28 @@ O painel `/admin` usa Supabase Auth com email/senha e `localStorage` para persis
 
 O projeto inclui `deploy/docker-stack.yml` otimizado para Swarm.
 
-### 10.1 Pré-requisito: Build da Imagem
+### 10.1 Build da Imagem (uma única vez)
 
-Docker Swarm **não suporta `build` inline**. Construa a imagem antes:
+Docker Swarm **não suporta `build` inline**. Construa a imagem:
 
 ```bash
-docker build \
-  --build-arg VITE_SUPABASE_URL="https://xxx.supabase.co" \
-  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY="eyJ..." \
-  -f deploy/Dockerfile \
-  -t agis-lp:latest .
+docker build -f deploy/Dockerfile -t agis-lp:latest .
 ```
 
-> Em clusters multi-node, publique a imagem num registry (Docker Hub, GitHub Container Registry, registry privado) e atualize o campo `image:` no stack file.
+> **A imagem é genérica** — não contém credenciais. A mesma imagem serve para todos os clientes.
+
+Em clusters multi-node, publique num registry:
+
+```bash
+docker tag agis-lp:latest registry.exemplo.com/agis-lp:latest
+docker push registry.exemplo.com/agis-lp:latest
+```
 
 ### 10.2 Deploy via CLI
 
 ```bash
+SUPABASE_URL="https://xxx.supabase.co" \
+SUPABASE_PUBLISHABLE_KEY="eyJ..." \
 docker stack deploy -c deploy/docker-stack.yml agis
 ```
 
@@ -284,12 +265,28 @@ docker stack deploy -c deploy/docker-stack.yml agis
 1. Acesse **Stacks → Add stack**
 2. Cole o conteúdo de `deploy/docker-stack.yml` ou faça upload
 3. Em **Environment variables**, defina:
+   - `SUPABASE_URL` — URL do Supabase do cliente
+   - `SUPABASE_PUBLISHABLE_KEY` — Chave anon do cliente
    - `APP_PORT` — porta de publicação (padrão: `3000`)
 4. Clique em **Deploy the stack**
 
-> As variáveis Vite (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) são embutidas no build. Elas **não são** variáveis de runtime — defina apenas `APP_PORT` no Portainer.
+### 10.4 Multi-tenant: Uma Imagem, Vários Clientes
 
-### 10.4 Verificar
+```
+┌─────────────────────────────────────────────────┐
+│               agis-lp:latest                    │
+│          (imagem Docker genérica)                │
+└──────────┬──────────────┬───────────────┬───────┘
+           │              │               │
+    ┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼──────┐
+    │ Stack: A    │ │ Stack: B   │ │ Stack: C    │
+    │ SUPABASE_URL│ │ SUPABASE_  │ │ SUPABASE_   │
+    │ =cliente-a  │ │ URL=cli-b  │ │ URL=cli-c   │
+    │ PORT=3001   │ │ PORT=3002  │ │ PORT=3003   │
+    └─────────────┘ └────────────┘ └─────────────┘
+```
+
+### 10.5 Verificar
 
 ```bash
 docker service ls
@@ -297,7 +294,22 @@ docker service logs agis_agis-lp --tail 50
 curl -I http://localhost:3000
 ```
 
-### 10.5 Atualizar a Stack
+### 10.6 Trocar Supabase sem Rebuild
+
+Para apontar para outro projeto Supabase:
+
+**Via Portainer:** Stacks → agis → Environment → editar variáveis → Update
+
+**Via CLI:**
+```bash
+SUPABASE_URL="https://novo-projeto.supabase.co" \
+SUPABASE_PUBLISHABLE_KEY="eyJ_nova_chave..." \
+docker stack deploy -c deploy/docker-stack.yml agis
+```
+
+O container reinicia e gera novo `runtime-config.js` automaticamente.
+
+### 10.7 Atualizar a Stack (código novo)
 
 Após rebuild da imagem:
 
@@ -307,9 +319,7 @@ docker service update --image agis-lp:latest agis_agis-lp
 
 Ou via Portainer: **Stacks → agis → Update the stack** (com `Re-pull image` marcado).
 
-O `update_config` garante **zero-downtime** com `order: start-first` — o novo container sobe antes do antigo ser removido.
-
-### 10.6 Rollback
+### 10.8 Rollback
 
 ```bash
 docker service rollback agis_agis-lp
@@ -317,9 +327,7 @@ docker service rollback agis_agis-lp
 
 Ou via Portainer: **Services → agis_agis-lp → Rollback**.
 
-O `rollback_config` está configurado com `order: stop-first` para liberar recursos rapidamente.
-
-### 10.7 Usar com Traefik no Swarm
+### 10.9 Usar com Traefik no Swarm
 
 No `docker-stack.yml`:
 1. Remova a seção `ports`
@@ -328,18 +336,16 @@ No `docker-stack.yml`:
 4. Substitua `seudominio.com.br` pelo seu domínio
 5. Deploy: `docker stack deploy -c deploy/docker-stack.yml agis`
 
-### 10.8 Diferenças: Compose vs Swarm
+### 10.10 Diferenças: Compose vs Swarm
 
 | Aspecto | `docker-compose.yml` | `docker-stack.yml` |
 |---------|---------------------|--------------------|
 | Modo | `docker compose up -d` | `docker stack deploy` |
 | Build | Suporta `build:` inline | Requer imagem pré-construída |
+| Config | Runtime via `environment:` | Runtime via `environment:` |
 | Restart | `restart: unless-stopped` | `deploy.restart_policy` |
 | Update | Rebuild + recreate | Rolling update com rollback |
 | Rede | `bridge` | `overlay` |
-| Healthcheck | Container-level | Orchestrator-managed |
-| Rollback | Manual (git checkout) | `docker service rollback` |
-| Porta | `ports: "3000:80"` | `mode: ingress` (load balanced) |
 
 ---
 
@@ -359,20 +365,22 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 | Rebuild | `docker compose build --no-cache && docker compose up -d` |
 | Logs | `docker compose logs -f` |
 | Status | `docker compose ps` |
+| Trocar Supabase | Editar `.env` → `docker compose restart` |
 
 ---
 
 ## Checklist Final para Publicar
 
-- [ ] `.env` criado com valores reais do Supabase
+- [ ] `.env` criado com `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`
 - [ ] `docker compose build` executou sem erros
 - [ ] Container saudável (`healthy` no healthcheck)
-- [ ] `curl http://localhost:3000` retorna 200 (substitua pela porta em `APP_PORT`)
+- [ ] Logs mostram `runtime-config.js generated successfully`
+- [ ] `curl http://localhost:3000` retorna 200
 - [ ] Domínio apontado para o IP da VPS
 - [ ] HTTPS configurado (Certbot, NPM ou Traefik)
 - [ ] Site URL configurada no Supabase Dashboard
 - [ ] Redirect URLs configuradas no Supabase Dashboard
 - [ ] Leaked Password Protection ativada
 - [ ] Migration SQL executada no Supabase
-- [ ] Usuário admin criado no Supabase Auth
+- [ ] Bootstrap do primeiro admin concluído
 - [ ] Login em `/admin/login` funcionando
