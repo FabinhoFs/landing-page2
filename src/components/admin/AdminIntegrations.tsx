@@ -159,6 +159,11 @@ export const AdminIntegrations = () => {
     meta_pixel_id: "",
     g_tag_manager_id: "",
   });
+  const [geoValues, setGeoValues] = useState<Record<GeoKeys, string>>({
+    geo_provider: "ipapi",
+    geo_api_key: "",
+    geo_fallback: "true",
+  });
   const [saving, setSaving] = useState(false);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -168,22 +173,27 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
+      const allKeys = [...KEYS, ...GEO_KEYS];
       const { data } = await (supabase
         .from("site_settings") as any)
         .select("key, value")
         .eq("environment", "draft")
-        .in("key", [...KEYS]);
+        .in("key", allKeys);
 
-      const loaded: Partial<Record<ConfigKeys, string>> = {};
-      data?.forEach((r) => {
-        if (KEYS.includes(r.key as ConfigKeys)) loaded[r.key as ConfigKeys] = r.value;
-      });
+      const loaded: Partial<Record<string, string>> = {};
+      data?.forEach((r: any) => { loaded[r.key] = r.value; });
 
       setValues((prev) => ({
         g_tag_id: loaded.g_tag_id ?? prev.g_tag_id ?? "",
         g_ads_purchase_label: loaded.g_ads_purchase_label ?? prev.g_ads_purchase_label ?? "",
         meta_pixel_id: loaded.meta_pixel_id ?? prev.meta_pixel_id ?? "",
         g_tag_manager_id: loaded.g_tag_manager_id ?? prev.g_tag_manager_id ?? "",
+      }));
+
+      setGeoValues((prev) => ({
+        geo_provider: (loaded.geo_provider as GeoKeys) ?? prev.geo_provider,
+        geo_api_key: loaded.geo_api_key ?? prev.geo_api_key,
+        geo_fallback: loaded.geo_fallback ?? prev.geo_fallback,
       }));
     };
     load();
@@ -192,15 +202,21 @@ export const AdminIntegrations = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const rows = KEYS.map((key) => ({
+      const trackingRows = KEYS.map((key) => ({
         key,
         value: values[key],
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
+      const geoRows = GEO_KEYS.map((key) => ({
+        key,
+        value: geoValues[key],
+        environment: "draft",
+        updated_at: new Date().toISOString(),
+      }));
       const { error } = await (supabase
         .from("site_settings") as any)
-        .upsert(rows, { onConflict: "key,environment" });
+        .upsert([...trackingRows, ...geoRows], { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
