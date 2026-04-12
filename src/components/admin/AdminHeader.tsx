@@ -3,14 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Save, PanelTop, Loader2, Image, Phone } from "lucide-react";
+import { Save, PanelTop, Loader2, Phone } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 const DEFAULT_CTA = "Iniciar emissão";
 const KEYS = [
   "header_cta_text",
-  "header_logo_url",
-  "header_show_logo",
   "header_show_phone",
   "header_phone_display",
 ];
@@ -27,45 +25,6 @@ export const AdminHeader = () => {
 
   return (
     <div className="space-y-6">
-      {/* Logo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Image className="h-5 w-5 text-primary" />
-            Logo
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label>Exibir logo no header</Label>
-            <Switch
-              checked={settings.header_show_logo !== "false"}
-              onCheckedChange={(v) => updateField("header_show_logo", v ? "true" : "false")}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>URL do Logo</Label>
-            <Input
-              placeholder="https://exemplo.com/logo.png"
-              value={settings.header_logo_url ?? ""}
-              onChange={(e) => updateField("header_logo_url", e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Use uma imagem com fundo transparente (PNG) para melhor resultado em fundo escuro.
-            </p>
-          </div>
-          {settings.header_logo_url && (
-            <div className="rounded-md bg-deep p-4 flex items-center justify-center">
-              <img
-                src={settings.header_logo_url}
-                alt="Preview do logo"
-                className="h-12 w-auto object-contain max-w-[220px]"
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Telefone */}
       <Card>
         <CardHeader>
