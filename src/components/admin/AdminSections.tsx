@@ -21,6 +21,7 @@ interface SectionField {
 interface SectionGroup {
   title: string;
   number: string;
+  category: "header" | "content";
   fields: SectionField[];
 }
 
@@ -28,40 +29,53 @@ const SECTION_GROUPS: SectionGroup[] = [
   {
     number: "00",
     title: "Header (Cabeçalho Fixo)",
+    category: "header",
     fields: [
       { key: "header_cta_text", label: "Texto do Botão CTA", placeholder: "Iniciar emissão" },
     ],
   },
   {
+    number: "01",
+    title: "Hero — Bullets de Confiança",
+    category: "content",
+    fields: [
+      { key: "hero_bullets", label: "Bullets do Hero (JSON)", placeholder: '[{"icon":"MessageCircle","label":"Atendimento guiado no WhatsApp"},...]', multiline: true, helpText: 'Array JSON com objetos {icon, label}. Ícones: MessageCircle, Video, Headphones, ShieldCheck, Zap.' },
+      { key: "hero_trust_line", label: "Linha de confiança (abaixo dos CTAs)", placeholder: "ICP-Brasil • Processo online • Atendimento humano" },
+    ],
+  },
+  {
     number: "02",
     title: "Dores",
+    category: "content",
     fields: [
       { key: "pain_title", label: "Título", placeholder: "Ficar sem Certificado Digital atrasa o que você precisa resolver hoje." },
       { key: "pain_subtitle", label: "Subtítulo / Texto de apoio", placeholder: "Resolva isso com um processo online...", multiline: true },
       { key: "pain_cta", label: "Texto do CTA", placeholder: "Quero falar no WhatsApp" },
-      { key: "pain_items", label: "Lista de dores (JSON)", placeholder: '["Dor 1", "Dor 2", ...]', multiline: true, helpText: "Array JSON com os textos das dores. Ex: [\"Você não consegue emitir nota fiscal\", ...]" },
+      { key: "pain_items", label: "Lista de dores (JSON)", placeholder: '["Dor 1", "Dor 2", ...]', multiline: true, helpText: 'Array JSON com os textos das dores.' },
     ],
   },
   {
     number: "03",
     title: "Como Funciona",
+    category: "content",
     fields: [
       { key: "howitworks_title", label: "Título", placeholder: "Veja como funciona a emissão" },
       { key: "howitworks_subtitle", label: "Subtítulo", placeholder: "Você faz o processo online com orientação em cada etapa." },
       { key: "howitworks_compliance", label: "Frase de Compliance", placeholder: "O processo é realizado pelo titular...", multiline: true },
-      { key: "howitworks_steps", label: "Etapas (JSON)", placeholder: '[{"title":"...","desc":"..."},...]', multiline: true, helpText: 'Array JSON com objetos {title, desc}. Ex: [{"title":"Escolha o certificado","desc":"Selecione..."}]' },
+      { key: "howitworks_steps", label: "Etapas (JSON)", placeholder: '[{"title":"...","desc":"..."},...]', multiline: true, helpText: 'Array JSON com objetos {title, desc}.' },
     ],
   },
   {
     number: "04",
     title: "Ofertas / Produtos",
+    category: "content",
     fields: [
       { key: "pricing_section_title", label: "Título da Seção", placeholder: "Escolha seu Certificado Digital e inicie sua emissão agora" },
       { key: "pricing_cpf_ideal", label: "e-CPF — Texto 'Ideal para'", placeholder: "Pessoa física, profissionais liberais...", multiline: true },
       { key: "pricing_cnpj_ideal", label: "e-CNPJ — Texto 'Ideal para'", placeholder: "Empresas que precisam emitir notas...", multiline: true },
       { key: "pricing_cpf_usos", label: "e-CPF — Usos (JSON)", placeholder: '["Assinatura digital","Acesso ao e-CAC",...]', multiline: true, helpText: "Array JSON com os principais usos do e-CPF." },
       { key: "pricing_cnpj_usos", label: "e-CNPJ — Usos (JSON)", placeholder: '["Emissão de notas fiscais","eSocial",...]', multiline: true, helpText: "Array JSON com os principais usos do e-CNPJ." },
-      { key: "pricing_incluso", label: "Bloco 'Incluso' (JSON)", placeholder: '["Atendimento guiado no WhatsApp",...]', multiline: true, helpText: "Array JSON com itens do bloco Incluso, comum aos dois cards." },
+      { key: "pricing_incluso", label: "Bloco 'Incluso' (JSON)", placeholder: '["Atendimento guiado no WhatsApp",...]', multiline: true, helpText: "Array JSON com itens do bloco Incluso." },
       { key: "pricing_cta_cpf", label: "Texto CTA — Card e-CPF", placeholder: "Quero iniciar meu e-CPF A1" },
       { key: "pricing_cta_cnpj", label: "Texto CTA — Card e-CNPJ", placeholder: "Quero iniciar meu e-CNPJ A1" },
       { key: "pricing_micro", label: "Microtexto abaixo do botão", placeholder: "Atendimento guiado • Validação online • Suporte durante o processo" },
@@ -69,23 +83,9 @@ const SECTION_GROUPS: SectionGroup[] = [
     ],
   },
   {
-    number: "05",
-    title: "Diferenciais",
-    fields: [
-      { key: "benefits_title", label: "Título da Seção", placeholder: "Por que emitir com a Agis Digital" },
-      { key: "benefits_items", label: "Cards de Diferenciais (JSON)", placeholder: '[{"title":"...","desc":"..."},...]', multiline: true, helpText: 'Array JSON com objetos {title, desc}.' },
-    ],
-  },
-  {
-    number: "06",
-    title: "Prova Social (Depoimentos)",
-    fields: [
-      { key: "testimonials_title", label: "Título da Seção", placeholder: "O que nossos clientes dizem no Google" },
-    ],
-  },
-  {
     number: "07",
     title: "Segurança para Contratar",
+    category: "content",
     fields: [
       { key: "guarantee_title", label: "Título", placeholder: "Mais segurança para você contratar" },
       { key: "guarantee_subtitle", label: "Descrição", placeholder: "Você conta com atendimento humano e orientação...", multiline: true },
@@ -96,6 +96,7 @@ const SECTION_GROUPS: SectionGroup[] = [
   {
     number: "08",
     title: "Institucional (Autoridade)",
+    category: "content",
     fields: [
       { key: "authority_title", label: "Título", placeholder: "Agis Digital: atendimento online..." },
       { key: "authority_subtitle", label: "Texto institucional", placeholder: "A Agis Digital atua com foco em Certificação Digital...", multiline: true },
@@ -105,6 +106,7 @@ const SECTION_GROUPS: SectionGroup[] = [
   {
     number: "09",
     title: "FAQ",
+    category: "content",
     fields: [
       { key: "faq_title", label: "Título da Seção", placeholder: "Perguntas Frequentes" },
       { key: "faq_bottom_text", label: "Texto abaixo do FAQ", placeholder: "Ainda tem dúvidas?" },
@@ -114,6 +116,7 @@ const SECTION_GROUPS: SectionGroup[] = [
   {
     number: "11",
     title: "CTA Final",
+    category: "content",
     fields: [
       { key: "cta_section_title", label: "Título", placeholder: "Inicie sua emissão hoje com atendimento imediato" },
       { key: "cta_section_subtitle", label: "Subtítulo", placeholder: "Fale com um especialista...", multiline: true },
@@ -125,6 +128,7 @@ const SECTION_GROUPS: SectionGroup[] = [
   {
     number: "13",
     title: "WhatsApp Flutuante",
+    category: "content",
     fields: [
       { key: "floating_whatsapp_enabled", label: "Exibir botão flutuante", type: "switch" },
     ],
@@ -132,17 +136,38 @@ const SECTION_GROUPS: SectionGroup[] = [
   {
     number: "—",
     title: "Barra Mobile Fixa",
+    category: "content",
     fields: [
       { key: "sticky_mobile_cta_text", label: "Texto do botão mobile", placeholder: "Iniciar minha emissão agora" },
     ],
   },
+  {
+    number: "—",
+    title: "Pop-up de Saída",
+    category: "content",
+    fields: [
+      { key: "popup_enabled", label: "Ativar pop-up de saída", type: "switch" },
+      { key: "popup_title", label: "Título do Pop-up", placeholder: "ESPERA! NÃO VÁ EMBORA." },
+      { key: "popup_subtitle", label: "Subtítulo do Pop-up", placeholder: "Garanta um desconto exclusivo..." },
+      { key: "popup_discount", label: "Valor do Cupom (R$)", placeholder: "20" },
+      { key: "popup_cta_text", label: "Texto do botão CTA do Pop-up", placeholder: "Quero falar no WhatsApp" },
+    ],
+  },
 ];
 
-export const AdminSections = () => {
+interface AdminSectionsProps {
+  filter?: "header" | "content";
+}
+
+export const AdminSections = ({ filter }: AdminSectionsProps) => {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const { toast } = useToast();
+
+  const groups = filter
+    ? SECTION_GROUPS.filter(g => g.category === filter)
+    : SECTION_GROUPS;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -163,7 +188,7 @@ export const AdminSections = () => {
 
   const handleSave = async () => {
     setLoading(true);
-    const allKeys = SECTION_GROUPS.flatMap(g => g.fields.map(f => f.key));
+    const allKeys = groups.flatMap(g => g.fields.map(f => f.key));
     const payload = allKeys
       .filter(k => settings[k] !== undefined)
       .map(key => ({ key, value: settings[key], updated_at: new Date().toISOString() }));
@@ -190,7 +215,7 @@ export const AdminSections = () => {
 
   return (
     <div className="space-y-6">
-      {SECTION_GROUPS.map((group) => (
+      {groups.map((group) => (
         <Card key={group.number + group.title}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -205,7 +230,7 @@ export const AdminSections = () => {
                 {field.type === "switch" ? (
                   <div className="flex items-center gap-3">
                     <Switch
-                      checked={settings[field.key] !== "false"}
+                      checked={settings[field.key] === "true"}
                       onCheckedChange={(v) => updateField(field.key, v ? "true" : "false")}
                     />
                     <Label className="text-sm">{field.label}</Label>

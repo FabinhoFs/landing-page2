@@ -1,23 +1,38 @@
-import { Zap, Headphones, Video, ShieldCheck } from "lucide-react";
+import { Zap, Headphones, Video, ShieldCheck, Clock, Lock, Target, Rocket, Star, Heart, CheckCircle, Globe, Eye, Sparkles, Shield, Award, Fingerprint, FileCheck, UserCheck, FastForward } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import type { LucideIcon } from "lucide-react";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Zap, Headphones, Video, ShieldCheck, Clock, Lock, Target, Rocket, Star, Heart,
+  CheckCircle, Globe, Eye, Sparkles, Shield, Award, Fingerprint, FileCheck, UserCheck, FastForward,
+};
 
 const DEFAULT_BENEFITS = [
-  { title: "Atendimento imediato", desc: "Você fala com uma equipe preparada para orientar seu processo com mais agilidade." },
-  { title: "Suporte do início ao fim", desc: "Nossa equipe acompanha cada etapa para reduzir dúvidas, erro e retrabalho." },
-  { title: "Validação online com praticidade", desc: "Você realiza a validação por videoconferência, com mais comodidade e segurança." },
-  { title: "Processo seguro e homologado", desc: "A emissão segue um fluxo estruturado, com foco em conformidade, segurança e clareza." },
+  { title: "Atendimento imediato", desc: "Você fala com uma equipe preparada para orientar seu processo com mais agilidade.", icon: "FastForward" },
+  { title: "Suporte do início ao fim", desc: "Nossa equipe acompanha cada etapa para reduzir dúvidas, erro e retrabalho.", icon: "ShieldCheck" },
+  { title: "Validação online com praticidade", desc: "Você realiza a validação por videoconferência, com mais comodidade e segurança.", icon: "Headphones" },
+  { title: "Processo seguro e homologado", desc: "A emissão segue um fluxo estruturado, com foco em conformidade, segurança e clareza.", icon: "Lock" },
 ];
 
-const BENEFIT_ICONS = [Zap, Headphones, Video, ShieldCheck];
+const FALLBACK_ICONS = [Zap, Headphones, Video, ShieldCheck];
 
 export const BenefitsSection = () => {
   const { settings } = useCtaMessages();
 
   const title = settings.benefits_title || "Por que emitir com a Agis Digital";
 
+  // Support both JSON array format AND individual benefit_N fields from AdminDiferenciais
   let benefits = DEFAULT_BENEFITS;
+
   if (settings.benefits_items) {
-    try { benefits = JSON.parse(settings.benefits_items); } catch { /* use default */ }
+    try { benefits = JSON.parse(settings.benefits_items); } catch { /* use fallback */ }
+  } else if (settings.benefit_1_title) {
+    // Read from individual fields saved by AdminDiferenciais
+    benefits = [1, 2, 3, 4].map((n, i) => ({
+      title: settings[`benefit_${n}_title`] || DEFAULT_BENEFITS[i]?.title || "",
+      desc: settings[`benefit_${n}_desc`] || DEFAULT_BENEFITS[i]?.desc || "",
+      icon: settings[`diff_${n}_icon`] || DEFAULT_BENEFITS[i]?.icon || "Zap",
+    })).filter(b => b.title);
   }
 
   return (
@@ -28,8 +43,8 @@ export const BenefitsSection = () => {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
-          {benefits.map((b, i) => {
-            const Icon = BENEFIT_ICONS[i % BENEFIT_ICONS.length];
+          {benefits.map((b: any, i: number) => {
+            const Icon = (b.icon && ICON_MAP[b.icon]) || FALLBACK_ICONS[i % FALLBACK_ICONS.length];
             return (
               <div
                 key={i}
