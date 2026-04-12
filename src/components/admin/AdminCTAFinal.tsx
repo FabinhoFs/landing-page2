@@ -1,0 +1,90 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Save, Megaphone, Plus, Trash2, Loader2 } from "lucide-react";
+import { useAdminSettings } from "@/hooks/useAdminSettings";
+
+const DEFAULT_BULLETS = ["Processo online", "Validação rápida", "Atendimento no WhatsApp"];
+
+export const AdminCTAFinal = () => {
+  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
+
+  if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+
+  const getItems = (): string[] => {
+    const items: string[] = [];
+    for (let i = 1; i <= 6; i++) {
+      const val = settings[`cta_bullet_${i}`];
+      if (val !== undefined && val !== "") items.push(val);
+    }
+    if (items.length > 0) return items;
+    if (settings.cta_section_bullets) {
+      try { return JSON.parse(settings.cta_section_bullets).map((b: any) => b.text || b); } catch {}
+    }
+    return DEFAULT_BULLETS;
+  };
+  const items = getItems();
+
+  const allKeys = [
+    "cta_section_title", "cta_section_subtitle", "cta_section_button", "cta_section_micro",
+    ...Array.from({ length: 6 }, (_, i) => `cta_bullet_${i + 1}`),
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Megaphone className="h-5 w-5 text-primary" />
+            CTA Final
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Título</Label>
+            <Input value={settings.cta_section_title || ""} onChange={(e) => updateField("cta_section_title", e.target.value)} placeholder="Inicie sua emissão hoje com atendimento imediato" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Subtítulo</Label>
+            <Textarea value={settings.cta_section_subtitle || ""} onChange={(e) => updateField("cta_section_subtitle", e.target.value)} rows={2} placeholder="Fale com um especialista..." />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Texto do Botão</Label>
+            <Input value={settings.cta_section_button || ""} onChange={(e) => updateField("cta_section_button", e.target.value)} placeholder="Quero iniciar minha emissão agora" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Microtexto</Label>
+            <Input value={settings.cta_section_micro || ""} onChange={(e) => updateField("cta_section_micro", e.target.value)} placeholder="Atendimento humano • Processo simples • Emissão com suporte especializado" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-base">
+            <span className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary" />Bullets</span>
+            <Button size="sm" variant="outline" onClick={() => updateField(`cta_bullet_${items.length + 1}`, "Novo bullet")}><Plus className="mr-1 h-4 w-4" />Adicionar</Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {items.map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-xs font-mono text-muted-foreground w-5 shrink-0">{i + 1}.</span>
+              <Input value={settings[`cta_bullet_${i + 1}`] ?? item} onChange={(e) => updateField(`cta_bullet_${i + 1}`, e.target.value)} />
+              <Button size="icon" variant="ghost" className="text-destructive shrink-0" onClick={() => {
+                for (let j = i + 1; j < items.length; j++) updateField(`cta_bullet_${j}`, items[j] || "");
+                updateField(`cta_bullet_${items.length}`, "");
+              }}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Button onClick={() => saveKeys(allKeys, "CTA Final salvo!")} disabled={saving} className="w-full sm:w-auto">
+        <Save className="mr-2 h-4 w-4" />{saving ? "Salvando..." : "Salvar CTA Final"}
+      </Button>
+    </div>
+  );
+};
