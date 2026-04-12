@@ -11,7 +11,7 @@ interface AlertItem {
 
 const SETTING_CHECKS: { key: string; label: string; level: "error" | "warn" }[] = [
   { key: "whatsapp_number", label: "Telefone global do WhatsApp não configurado", level: "error" },
-  { key: "logo_url", label: "Logo do site não configurada", level: "warn" },
+  { key: "header_logo_url", label: "Logo do site não configurada", level: "warn" },
   { key: "favicon_url", label: "Favicon do site não configurado", level: "warn" },
   { key: "seo_title", label: "Título SEO (title tag) não configurado", level: "warn" },
   { key: "seo_description", label: "Meta description não configurada", level: "warn" },
