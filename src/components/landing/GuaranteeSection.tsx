@@ -46,7 +46,7 @@ export const GuaranteeSection = ({ city }: { city: string }) => {
           ))}
         </div>
 
-        <WhatsAppButton buttonId="cta_guarantee" message={getMessage("cta_hero", city)} className="text-base px-8 py-4 font-bold">
+        <WhatsAppButton buttonId="cta_guarantee" message={getMessage("cta_guarantee", city)} className="text-base px-8 py-4 font-bold">
           {ctaText}
         </WhatsAppButton>
       </div>

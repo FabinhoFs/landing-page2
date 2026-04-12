@@ -4,8 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 const DEFAULT_CTA_MESSAGES: Record<string, string> = {
   cta_hero: "Olá! Quero emitir meu Certificado Digital em {cidade}.",
   cta_header: "Olá! Quero falar com um especialista em Certificado Digital em {cidade}.",
+  cta_pain: "Olá! Quero resolver minha situação e emitir meu Certificado Digital em {cidade}.",
   cta_ecpf: "Olá! Quero emitir meu e-CPF A1 em {cidade}.",
   cta_ecnpj: "Olá! Quero emitir meu e-CNPJ A1 em {cidade}.",
+  cta_guarantee: "Olá! Quero tirar dúvidas sobre Certificado Digital em {cidade}.",
+  cta_faq: "Olá! Tenho dúvidas sobre Certificado Digital em {cidade}.",
   cta_floating: "Olá! Quero atendimento rápido para emitir meu Certificado Digital.",
   cta_sticky_mobile: "Olá! Quero emitir meu Certificado Digital agora.",
   cta_bottom: "Olá! Quero iniciar a emissão do meu Certificado Digital.",

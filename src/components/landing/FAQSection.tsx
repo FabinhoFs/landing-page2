@@ -109,8 +109,8 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
         <div className="mt-10 md:mt-12 flex flex-col items-center gap-5">
           <p className="text-muted-foreground text-sm">{bottomText}</p>
           <WhatsAppButton
-            buttonId="faq_duvidas"
-            message={`Olá! Tenho dúvidas sobre Certificado Digital em ${city}.`}
+            buttonId="cta_faq"
+            message={getMessage("cta_faq", city)}
             size="default"
             className="text-sm"
           >

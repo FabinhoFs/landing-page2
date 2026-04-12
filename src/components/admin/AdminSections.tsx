@@ -75,7 +75,7 @@ const SECTION_GROUPS: SectionGroup[] = [
       { key: "pricing_cnpj_ideal", label: "e-CNPJ — Texto 'Ideal para'", placeholder: "Empresas que precisam emitir notas...", multiline: true },
       { key: "pricing_cpf_usos", label: "e-CPF — Usos (JSON)", placeholder: '["Assinatura digital","Acesso ao e-CAC",...]', multiline: true, helpText: "Array JSON com os principais usos do e-CPF." },
       { key: "pricing_cnpj_usos", label: "e-CNPJ — Usos (JSON)", placeholder: '["Emissão de notas fiscais","eSocial",...]', multiline: true, helpText: "Array JSON com os principais usos do e-CNPJ." },
-      { key: "pricing_incluso", label: "Bloco 'Incluso' (JSON)", placeholder: '["Atendimento guiado no WhatsApp",...]', multiline: true, helpText: "Array JSON com itens do bloco Incluso." },
+      
       { key: "pricing_cta_cpf", label: "Texto CTA — Card e-CPF", placeholder: "Quero iniciar meu e-CPF A1" },
       { key: "pricing_cta_cnpj", label: "Texto CTA — Card e-CNPJ", placeholder: "Quero iniciar meu e-CNPJ A1" },
       { key: "pricing_micro", label: "Microtexto abaixo do botão", placeholder: "Atendimento guiado • Validação online • Suporte durante o processo" },

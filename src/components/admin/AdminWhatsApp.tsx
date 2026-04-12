@@ -7,14 +7,17 @@ import { Save, MessageCircle, Phone, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 const CTA_FIELDS = [
-  { key: "cta_hero", label: "Mensagem — Topo (Hero)", position: "Enviada ao clicar nos botões do topo", default: "Olá! Quero emitir meu Certificado Digital." },
-  { key: "cta_header", label: "Mensagem — Cabeçalho fixo", position: "Enviada ao clicar no botão do header ao rolar", default: "Olá! Quero informações sobre Certificado Digital." },
-  { key: "cta_ecpf", label: "Mensagem — Card e-CPF", position: "Enviada ao clicar no botão do card e-CPF", default: "Olá! Quero emitir meu e-CPF A1." },
-  { key: "cta_ecnpj", label: "Mensagem — Card e-CNPJ", position: "Enviada ao clicar no botão do card e-CNPJ", default: "Olá! Quero emitir meu e-CNPJ A1." },
-  { key: "cta_floating", label: "Mensagem — Botão Flutuante", position: "Enviada ao clicar no ícone do WhatsApp fixo", default: "Olá! Vim pelo site e preciso de ajuda." },
-  { key: "cta_sticky_mobile", label: "Mensagem — Barra Mobile", position: "Enviada ao clicar na barra fixa do celular", default: "Olá! Quero emitir meu Certificado Digital." },
-  { key: "cta_bottom", label: "Mensagem — Final da Página", position: "Enviada ao clicar no botão do final", default: "Olá! Quero iniciar minha emissão agora." },
-  { key: "cta_exit_popup", label: "Mensagem — Pop-up de Desconto", position: "Enviada ao clicar no pop-up de saída", default: "Olá! Quero aproveitar o desconto exclusivo." },
+  { key: "cta_hero", label: "Mensagem — Hero (botões principais)", position: "Enviada ao clicar nos botões do Hero", default: "Olá! Quero emitir meu Certificado Digital em {cidade}." },
+  { key: "cta_header", label: "Mensagem — Cabeçalho fixo", position: "Enviada ao clicar no botão do header ao rolar", default: "Olá! Quero falar com um especialista em Certificado Digital em {cidade}." },
+  { key: "cta_pain", label: "Mensagem — Seção Dores", position: "Enviada ao clicar no CTA da seção de problemas", default: "Olá! Quero resolver minha situação e emitir meu Certificado Digital em {cidade}." },
+  { key: "cta_ecpf", label: "Mensagem — Card e-CPF", position: "Enviada ao clicar no botão do card e-CPF", default: "Olá! Quero emitir meu e-CPF A1 em {cidade}." },
+  { key: "cta_ecnpj", label: "Mensagem — Card e-CNPJ", position: "Enviada ao clicar no botão do card e-CNPJ", default: "Olá! Quero emitir meu e-CNPJ A1 em {cidade}." },
+  { key: "cta_guarantee", label: "Mensagem — Seção Segurança", position: "Enviada ao clicar no CTA de tirar dúvidas", default: "Olá! Quero tirar dúvidas sobre Certificado Digital em {cidade}." },
+  { key: "cta_faq", label: "Mensagem — FAQ", position: "Enviada ao clicar no botão abaixo do FAQ", default: "Olá! Tenho dúvidas sobre Certificado Digital em {cidade}." },
+  { key: "cta_floating", label: "Mensagem — Botão Flutuante", position: "Enviada ao clicar no ícone do WhatsApp fixo", default: "Olá! Quero atendimento rápido para emitir meu Certificado Digital." },
+  { key: "cta_sticky_mobile", label: "Mensagem — Barra Mobile", position: "Enviada ao clicar na barra fixa do celular", default: "Olá! Quero emitir meu Certificado Digital agora." },
+  { key: "cta_bottom", label: "Mensagem — CTA Final", position: "Enviada ao clicar no botão do final da página", default: "Olá! Quero iniciar a emissão do meu Certificado Digital." },
+  { key: "cta_exit_popup", label: "Mensagem — Pop-up de Desconto", position: "Enviada ao clicar no pop-up de saída", default: "Olá! Vi o desconto e quero aproveitar agora." },
 ];
 
 export const AdminWhatsApp = () => {
