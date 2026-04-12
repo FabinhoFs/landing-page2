@@ -47,6 +47,9 @@ const POPUP_KEYS = [
 ] as const;
 type PopupKeys = (typeof POPUP_KEYS)[number];
 
+const SPAM_KEYS = ["spam_guard_enabled", "spam_max_requests", "spam_window_ms"] as const;
+type SpamKeys = (typeof SPAM_KEYS)[number];
+
 type ConfigKeys = (typeof KEYS)[number];
 
 type IntegrationStatus = "configured" | "partial" | "not_configured";
@@ -184,6 +187,11 @@ export const AdminIntegrations = () => {
     popup_subtitle: "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.",
     popup_discount_value: "20",
   });
+  const [spamValues, setSpamValues] = useState<Record<SpamKeys, string>>({
+    spam_guard_enabled: "true",
+    spam_max_requests: "20",
+    spam_window_ms: "60000",
+  });
   const [saving, setSaving] = useState(false);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -193,7 +201,7 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
-      const allKeys = [...KEYS, ...GEO_KEYS, ...POPUP_KEYS];
+      const allKeys = [...KEYS, ...GEO_KEYS, ...POPUP_KEYS, ...SPAM_KEYS];
       const { data } = await (supabase
         .from("site_settings") as any)
         .select("key, value")
@@ -225,6 +233,12 @@ export const AdminIntegrations = () => {
         popup_subtitle: loaded.popup_subtitle ?? prev.popup_subtitle,
         popup_discount_value: loaded.popup_discount_value ?? prev.popup_discount_value,
       }));
+
+      setSpamValues((prev) => ({
+        spam_guard_enabled: loaded.spam_guard_enabled ?? prev.spam_guard_enabled,
+        spam_max_requests: loaded.spam_max_requests ?? prev.spam_max_requests,
+        spam_window_ms: loaded.spam_window_ms ?? prev.spam_window_ms,
+      }));
     };
     load();
   }, []);
@@ -250,9 +264,15 @@ export const AdminIntegrations = () => {
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
+      const spamRows = SPAM_KEYS.map((key) => ({
+        key,
+        value: spamValues[key],
+        environment: "draft",
+        updated_at: new Date().toISOString(),
+      }));
       const { error } = await (supabase
         .from("site_settings") as any)
-        .upsert([...trackingRows, ...geoRows, ...popupRows], { onConflict: "key,environment" });
+        .upsert([...trackingRows, ...geoRows, ...popupRows, ...spamRows], { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
