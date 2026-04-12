@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Save, Loader2, Settings, Globe, Trash2, ExternalLink, Search, Image, Link2, Share2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
@@ -13,8 +14,8 @@ export const AdminSettings = () => {
 
   const faviconUrl = settings["favicon_url"] || "";
 
-  const handleSaveFavicon = async () => {
-    await saveKeys(["favicon_url"], "Favicon salvo com sucesso!");
+  const handleSaveIdentity = async () => {
+    await saveKeys(["header_logo_url", "header_show_logo", "favicon_url"], "Identidade visual salva com sucesso!");
   };
 
   const handleRemoveFavicon = () => {
@@ -35,64 +36,103 @@ export const AdminSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* Favicon */}
+      {/* Identidade Visual — Logo + Favicon */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Globe className="h-5 w-5 text-primary" />
-            Favicon do Site
+            <Image className="h-5 w-5 text-primary" />
+            Identidade Visual
           </CardTitle>
+          <CardDescription>
+            Configure o logo e o favicon do site em um só lugar.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            O favicon é o ícone pequeno que aparece na aba do navegador. Insira a URL de uma imagem (.png, .ico ou .svg).
-          </p>
-
-          <div className="space-y-2">
-            <Label htmlFor="favicon_url">URL do Favicon</Label>
-            <Input
-              id="favicon_url"
-              placeholder="https://exemplo.com/favicon.png"
-              value={faviconUrl}
-              onChange={(e) => updateField("favicon_url", e.target.value)}
-            />
-          </div>
-
-          {faviconUrl && (
-            <div className="flex items-center gap-4 rounded-md border border-border bg-muted/30 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-background">
+        <CardContent className="space-y-6">
+          {/* Logo */}
+          <div className="space-y-4">
+            <p className="text-sm font-semibold text-foreground">Logo</p>
+            <div className="flex items-center justify-between">
+              <Label>Exibir logo no header</Label>
+              <Switch
+                checked={settings.header_show_logo !== "false"}
+                onCheckedChange={(v) => updateField("header_show_logo", v ? "true" : "false")}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>URL do Logo</Label>
+              <Input
+                placeholder="https://exemplo.com/logo.png"
+                value={settings.header_logo_url ?? ""}
+                onChange={(e) => updateField("header_logo_url", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Use uma imagem com fundo transparente (PNG) para melhor resultado em fundo escuro.
+              </p>
+            </div>
+            {settings.header_logo_url && (
+              <div className="rounded-md bg-deep p-4 flex items-center justify-center">
                 <img
-                  src={faviconUrl}
-                  alt="Preview do favicon"
-                  className="h-8 w-8 object-contain"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  src={settings.header_logo_url}
+                  alt="Preview do logo"
+                  className="h-12 w-auto object-contain max-w-[220px]"
                 />
               </div>
-              <div className="flex-1 text-sm">
-                <p className="font-medium text-foreground">Preview atual</p>
-                <a
-                  href={faviconUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary truncate max-w-xs"
-                >
-                  {faviconUrl} <ExternalLink className="h-3 w-3 shrink-0" />
-                </a>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          <div className="flex items-center gap-2">
-            <Button onClick={handleSaveFavicon} disabled={saving} size="sm">
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Salvar Favicon
-            </Button>
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* Favicon */}
+          <div className="space-y-4">
+            <p className="text-sm font-semibold text-foreground">Favicon do Site</p>
+            <p className="text-sm text-muted-foreground">
+              O favicon é o ícone pequeno que aparece na aba do navegador. Insira a URL de uma imagem (.png, .ico ou .svg).
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="favicon_url">URL do Favicon</Label>
+              <Input
+                id="favicon_url"
+                placeholder="https://exemplo.com/favicon.png"
+                value={faviconUrl}
+                onChange={(e) => updateField("favicon_url", e.target.value)}
+              />
+            </div>
+            {faviconUrl && (
+              <div className="flex items-center gap-4 rounded-md border border-border bg-muted/30 p-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-background">
+                  <img
+                    src={faviconUrl}
+                    alt="Preview do favicon"
+                    className="h-8 w-8 object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+                <div className="flex-1 text-sm">
+                  <p className="font-medium text-foreground">Preview atual</p>
+                  <a
+                    href={faviconUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary truncate max-w-xs"
+                  >
+                    {faviconUrl} <ExternalLink className="h-3 w-3 shrink-0" />
+                  </a>
+                </div>
+              </div>
+            )}
             {faviconUrl && (
               <Button variant="outline" size="sm" onClick={handleRemoveFavicon}>
-                <Trash2 className="mr-2 h-4 w-4" /> Remover
+                <Trash2 className="mr-2 h-4 w-4" /> Remover Favicon
               </Button>
             )}
           </div>
+
+          {/* Save both */}
+          <Button onClick={handleSaveIdentity} disabled={saving} size="sm">
+            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Salvar Identidade Visual
+          </Button>
         </CardContent>
       </Card>
 
@@ -274,7 +314,7 @@ export const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Placeholder for other global settings */}
+      {/* Outras Configurações */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
