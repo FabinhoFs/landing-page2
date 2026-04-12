@@ -92,8 +92,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {isPreview && (
-        <div className="sticky top-0 z-[100] bg-amber-500 text-amber-950 text-center text-sm font-semibold py-2 px-4">
-          ⚠️ MODO PRÉVIA — Você está visualizando o <strong>rascunho</strong>. Esta versão NÃO está pública.
+        <div className="fixed top-2 right-2 z-[100] bg-amber-500/90 text-amber-950 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-1.5">
+          <span className="inline-block h-2 w-2 rounded-full bg-amber-950/60 animate-pulse" />
+          PRÉVIA DO RASCUNHO
         </div>
       )}
       <StickyHeader city={cityDisplay} />
