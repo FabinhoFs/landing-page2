@@ -29,6 +29,7 @@ import { AdminVersions } from "@/components/admin/AdminVersions";
 import { AdminPublishBar } from "@/components/admin/AdminPublishBar";
 import { AdminExperiments } from "@/components/admin/AdminExperiments";
 import { AdminUtmRules } from "@/components/admin/AdminUtmRules";
+import { AdminPerformance } from "@/components/admin/AdminPerformance";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
