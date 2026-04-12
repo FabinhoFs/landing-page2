@@ -15,7 +15,7 @@ export const AdminSettings = () => {
   const faviconUrl = settings["favicon_url"] || "";
 
   const handleSaveIdentity = async () => {
-    await saveKeys(["header_logo_url", "header_show_logo", "favicon_url"], "Identidade visual salva com sucesso!");
+    await saveKeys(["header_logo_url", "header_show_logo", "favicon_url"], "Identidade visual salva com sucesso!", "settings");
   };
 
   const handleRemoveFavicon = () => {
@@ -25,7 +25,7 @@ export const AdminSettings = () => {
   const seoKeys = ["seo_title", "seo_description", "seo_og_image", "seo_og_title", "seo_og_description", "seo_canonical"];
 
   const handleSaveSeo = async () => {
-    await saveKeys(seoKeys, "Configurações de SEO salvas com sucesso!");
+    await saveKeys(seoKeys, "Configurações de SEO salvas com sucesso!", "settings");
   };
 
   // Preview data

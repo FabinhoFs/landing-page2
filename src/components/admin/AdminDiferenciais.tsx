@@ -171,7 +171,7 @@ export const AdminDiferenciais = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={() => saveKeys(allKeys, "Diferenciais salvos!")} disabled={saving} className="w-full sm:w-auto">
+      <Button onClick={() => saveKeys(allKeys, "Diferenciais salvos!", "diferenciais")} disabled={saving} className="w-full sm:w-auto">
         <Save className="mr-2 h-4 w-4" />
         {saving ? "Salvando..." : "Salvar Diferenciais"}
       </Button>
