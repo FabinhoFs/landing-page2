@@ -1,4 +1,4 @@
-import { ListChecks, FileText, Video, CheckCircle } from "lucide-react";
+import { ListChecks, FileText, Video, CheckCircle, ShieldCheck } from "lucide-react";
 
 const steps = [
   {
@@ -54,9 +54,12 @@ export const HowItWorksSection = () => {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-xs md:text-sm text-deep-foreground/60 italic">
-          O processo é realizado pelo titular ou responsável pelo certificado, com orientação especializada do início ao fim.
-        </p>
+        <div className="mt-10 flex items-center justify-center gap-3 bg-deep-foreground/5 border border-deep-foreground/10 rounded-xl px-6 py-4 max-w-2xl mx-auto">
+          <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+          <p className="text-sm md:text-base text-deep-foreground/80 font-semibold">
+            O processo é realizado pelo titular ou responsável pelo certificado, com orientação especializada do início ao fim.
+          </p>
+        </div>
       </div>
     </section>
   );

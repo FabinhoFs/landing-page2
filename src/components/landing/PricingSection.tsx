@@ -99,7 +99,7 @@ const CARD_DESCRIPTIONS: Record<string, { idealPara: string; usos: string[] }> =
 
 export const PricingSection = ({ city, detected = false, onTrackPurchase }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
-  const sectionTitle = settings.pricing_section_title || "Escolha o certificado ideal para sua necessidade";
+  const sectionTitle = settings.pricing_section_title || "Escolha seu Certificado Digital e inicie sua emissão agora";
 
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
@@ -202,23 +202,24 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                   </ul>
                 </div>
 
-                {/* DB features */}
-                {productFeatures.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-xs font-semibold text-card-foreground mb-2">Incluso:</p>
-                    <ul className="space-y-2">
-                      {productFeatures.map((feat) => {
-                        const Icon = ICON_MAP[feat.icon] || CheckSquare;
-                        return (
-                          <li key={feat.id} className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                            <span>{feat.text}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
+                {/* Incluso no atendimento */}
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-card-foreground mb-2">Incluso:</p>
+                  <ul className="space-y-2">
+                    {[
+                      "Atendimento guiado no WhatsApp",
+                      "Orientação sobre documentos e etapas",
+                      "Validação online por videoconferência",
+                      "Suporte durante o processo",
+                      "Orientação para instalação e uso",
+                    ].map((item, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 <div className="pt-6 mt-auto">
                   <WhatsAppButton

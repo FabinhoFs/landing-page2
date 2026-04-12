@@ -52,14 +52,14 @@ interface FAQSectionProps {
 }
 
 const FALLBACK_FAQS = [
-  { id: "1", question: "Como funciona a emissão do Certificado Digital?", answer: "Você escolhe o certificado, envia os dados necessários, faz a validação por videoconferência e conclui sua emissão com orientação da nossa equipe." },
-  { id: "2", question: "Em quanto tempo consigo fazer a validação?", answer: "A validação por videoconferência pode acontecer em poucos minutos, conforme disponibilidade e conferência dos dados." },
-  { id: "3", question: "A emissão pode ser concluída no mesmo dia?", answer: "Em muitos casos, sim. A conclusão depende do andamento correto das etapas e da aprovação do processo." },
-  { id: "4", question: "Preciso ir presencialmente para emitir?", answer: "Não necessariamente. O processo pode ocorrer online, conforme o fluxo aplicável." },
+  { id: "1", question: "Como funciona a emissão do Certificado Digital?", answer: "O processo é realizado online: você escolhe o tipo de certificado, envia os dados necessários, faz a validação por videoconferência e conclui sua emissão com orientação da nossa equipe. A videoconferência pode acontecer em poucos minutos, e a conclusão ocorre após a validação e aprovação do processo." },
+  { id: "2", question: "Em quanto tempo consigo fazer a validação?", answer: "A validação por videoconferência pode ser agendada rapidamente, conforme disponibilidade. O tempo da validação em si costuma ser breve, mas a conclusão da emissão depende da aprovação do processo." },
+  { id: "3", question: "A emissão pode ser concluída no mesmo dia?", answer: "Em muitos casos, sim. A conclusão depende do andamento correto das etapas, da conferência dos dados e da aprovação do processo." },
+  { id: "4", question: "Preciso ir presencialmente para emitir?", answer: "Não necessariamente. O processo pode ocorrer online, com validação por videoconferência, conforme o fluxo aplicável." },
   { id: "5", question: "Posso fazer tudo pelo celular?", answer: "Em muitos casos, sim. Também é possível utilizar notebook para mais conforto durante o processo." },
-  { id: "6", question: "Quais documentos são necessários?", answer: "Os documentos variam conforme o tipo de certificado. Nossa equipe orienta você no início do atendimento." },
+  { id: "6", question: "Quais documentos são necessários?", answer: "Os documentos variam conforme o tipo de certificado. Nossa equipe orienta você no início do atendimento sobre o que é necessário." },
   { id: "7", question: "O certificado funciona para e-CAC, eSocial, SPED e NF-e?", answer: "Sim, desde que você escolha o certificado adequado para sua necessidade. Nossa equipe pode orientar essa escolha." },
-  { id: "8", question: "Vocês fazem a emissão por mim?", answer: "Não. A emissão é realizada pelo titular ou responsável pelo certificado, com suporte e orientação da nossa equipe durante o processo." },
+  { id: "8", question: "Vocês fazem a emissão por mim?", answer: "Não. A emissão é realizada pelo titular ou responsável pelo certificado. Nossa equipe oferece suporte e orientação durante todo o processo, mas a conclusão é feita por você." },
   { id: "9", question: "Vocês ajudam na instalação e no uso?", answer: "Sim. Oferecemos orientação para instalação e uso, sempre preservando a segurança do processo e o controle do titular sobre seus dados de acesso." },
 ];
 
@@ -107,7 +107,7 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
             size="default"
             className="text-sm"
           >
-            Fale com um especialista agora
+            Falar com um especialista
           </WhatsAppButton>
         </div>
       </div>
