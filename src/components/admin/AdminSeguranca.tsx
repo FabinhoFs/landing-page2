@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Save, ShieldCheck, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_TITLE = "Mais segurança para você contratar";
+const DEFAULT_SUBTITLE = "Você conta com atendimento humano e orientação em todas as etapas do processo. Nossa equipe esclarece dúvidas, explica o fluxo e acompanha você com mais segurança e clareza.";
+const DEFAULT_CTA = "Tirar dúvidas agora";
 const DEFAULT_POINTS = [
   "Atendimento humano durante o processo",
   "Orientação para seguir corretamente cada etapa",
@@ -23,11 +26,7 @@ export const AdminSeguranca = () => {
       const val = settings[`guarantee_point_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    if (items.length > 0) return items;
-    if (settings.guarantee_points) {
-      try { return JSON.parse(settings.guarantee_points); } catch {}
-    }
-    return DEFAULT_POINTS;
+    return items.length > 0 ? items : DEFAULT_POINTS;
   };
   const items = getItems();
 
@@ -48,15 +47,15 @@ export const AdminSeguranca = () => {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Título</Label>
-            <Input value={settings.guarantee_title || ""} onChange={(e) => updateField("guarantee_title", e.target.value)} placeholder="Mais segurança para você contratar" />
+            <Input value={settings.guarantee_title ?? DEFAULT_TITLE} onChange={(e) => updateField("guarantee_title", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Descrição</Label>
-            <Textarea value={settings.guarantee_subtitle || ""} onChange={(e) => updateField("guarantee_subtitle", e.target.value)} rows={3} placeholder="Você conta com atendimento humano..." />
+            <Textarea value={settings.guarantee_subtitle ?? DEFAULT_SUBTITLE} onChange={(e) => updateField("guarantee_subtitle", e.target.value)} rows={3} />
           </div>
           <div className="space-y-1.5">
             <Label>Texto do CTA</Label>
-            <Input value={settings.guarantee_cta || ""} onChange={(e) => updateField("guarantee_cta", e.target.value)} placeholder="Tirar dúvidas agora" />
+            <Input value={settings.guarantee_cta ?? DEFAULT_CTA} onChange={(e) => updateField("guarantee_cta", e.target.value)} />
           </div>
         </CardContent>
       </Card>

@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Save, ListChecks, Loader2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
+const DEFAULT_TITLE = "Veja como funciona a emissão";
+const DEFAULT_SUBTITLE = "Você faz o processo online com orientação em cada etapa.";
+const DEFAULT_COMPLIANCE = "O processo é realizado pelo titular ou responsável pelo certificado, com orientação especializada do início ao fim.";
 const DEFAULT_STEPS = [
   { title: "Escolha o certificado ideal", desc: "Selecione o e-CPF A1 ou e-CNPJ A1 conforme sua necessidade." },
   { title: "Envie os dados e documentos necessários", desc: "Nossa equipe orienta o que é preciso para seguir corretamente." },
@@ -35,15 +38,15 @@ export const AdminComoFunciona = () => {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Título</Label>
-            <Input value={settings.howitworks_title || ""} onChange={(e) => updateField("howitworks_title", e.target.value)} placeholder="Veja como funciona a emissão" />
+            <Input value={settings.howitworks_title ?? DEFAULT_TITLE} onChange={(e) => updateField("howitworks_title", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Subtítulo</Label>
-            <Input value={settings.howitworks_subtitle || ""} onChange={(e) => updateField("howitworks_subtitle", e.target.value)} placeholder="Você faz o processo online com orientação em cada etapa." />
+            <Input value={settings.howitworks_subtitle ?? DEFAULT_SUBTITLE} onChange={(e) => updateField("howitworks_subtitle", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Frase de Compliance / Segurança</Label>
-            <Textarea value={settings.howitworks_compliance || ""} onChange={(e) => updateField("howitworks_compliance", e.target.value)} placeholder="O processo é realizado pelo titular..." rows={2} />
+            <Textarea value={settings.howitworks_compliance ?? DEFAULT_COMPLIANCE} onChange={(e) => updateField("howitworks_compliance", e.target.value)} rows={2} />
           </div>
         </CardContent>
       </Card>
@@ -61,11 +64,11 @@ export const AdminComoFunciona = () => {
               <Label className="font-semibold">Etapa {n}</Label>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Título</Label>
-                <Input value={settings[`step_${n}_title`] ?? DEFAULT_STEPS[i]?.title ?? ""} onChange={(e) => updateField(`step_${n}_title`, e.target.value)} placeholder={DEFAULT_STEPS[i]?.title} />
+                <Input value={settings[`step_${n}_title`] ?? DEFAULT_STEPS[i]?.title ?? ""} onChange={(e) => updateField(`step_${n}_title`, e.target.value)} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Descrição</Label>
-                <Textarea value={settings[`step_${n}_desc`] ?? DEFAULT_STEPS[i]?.desc ?? ""} onChange={(e) => updateField(`step_${n}_desc`, e.target.value)} placeholder={DEFAULT_STEPS[i]?.desc} rows={2} />
+                <Textarea value={settings[`step_${n}_desc`] ?? DEFAULT_STEPS[i]?.desc ?? ""} onChange={(e) => updateField(`step_${n}_desc`, e.target.value)} rows={2} />
               </div>
             </div>
           ))}
