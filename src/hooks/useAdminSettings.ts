@@ -63,6 +63,8 @@ export function useAdminSettings() {
       setOriginalSettings(updated);
     }
     toast({ title: successMsg, description: "As alterações foram salvas no rascunho. Publique quando estiver pronto." });
+    // Notify AdminPublishBar to re-check draft status
+    window.dispatchEvent(new Event("draft-saved"));
     setSaving(false);
     return true;
   };

@@ -16,13 +16,32 @@ const DEFAULT_CTA_MESSAGES: Record<string, string> = {
 };
 
 export function useCtaMessages() {
+  // Determine if we're in preview mode (admin viewing draft)
+  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "draft";
+  const env = isPreview ? "draft" : "published";
+
   const { data, isLoading } = useQuery({
-    queryKey: ["site_settings", "published"],
+    queryKey: ["site_settings", env],
     queryFn: async () => {
+      // For draft preview, verify admin auth first
+      if (isPreview) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // Not authenticated — fallback to published
+          const { data: pubData } = await supabase
+            .from("site_settings" as any)
+            .select("key, value")
+            .eq("environment", "published");
+          const map: Record<string, string> = {};
+          if (pubData) (pubData as any[]).forEach((row: any) => { map[row.key] = row.value; });
+          return map;
+        }
+      }
+
       const { data } = await supabase
         .from("site_settings" as any)
         .select("key, value")
-        .eq("environment", "published");
+        .eq("environment", env);
       const map: Record<string, string> = {};
       if (data) {
         (data as any[]).forEach((row: any) => {

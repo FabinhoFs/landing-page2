@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Upload, Undo2, FileEdit, CheckCircle2, Clock } from "lucide-react";
+import { Loader2, Upload, Undo2, FileEdit, CheckCircle2, Clock, Eye } from "lucide-react";
 
 export const AdminPublishBar = () => {
   const [publishing, setPublishing] = useState(false);
@@ -23,10 +23,10 @@ export const AdminPublishBar = () => {
   const [hasDraftChanges, setHasDraftChanges] = useState(false);
   const [lastPublished, setLastPublished] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [changedCount, setChangedCount] = useState(0);
   const { toast } = useToast();
 
   const checkDraftStatus = useCallback(async () => {
-    setChecking(true);
     try {
       const { data: draftData } = await supabase
         .from("site_settings" as any)
@@ -45,11 +45,19 @@ export const AdminPublishBar = () => {
       // Check if any draft value differs from published
       const allKeys = new Set([...Object.keys(draftMap), ...Object.keys(pubMap)]);
       let differs = false;
+      let count = 0;
       allKeys.forEach((k) => {
         if (k === "__last_published_at") return;
-        if (draftMap[k] !== pubMap[k]) differs = true;
+        if (draftMap[k] !== pubMap[k]) {
+          differs = true;
+          count++;
+        }
       });
+
+      // Also detect keys that exist only in draft (new keys)
+      // or only in published (deleted keys) — both are changes
       setHasDraftChanges(differs);
+      setChangedCount(count);
       setLastPublished(pubMap["__last_published_at"] || null);
     } catch {
       // ignore
@@ -57,17 +65,30 @@ export const AdminPublishBar = () => {
     setChecking(false);
   }, []);
 
-  useEffect(() => { checkDraftStatus(); }, [checkDraftStatus]);
+  // Initial check + re-check every 3 seconds for responsiveness
+  useEffect(() => {
+    checkDraftStatus();
+    const interval = setInterval(checkDraftStatus, 3000);
+    return () => clearInterval(interval);
+  }, [checkDraftStatus]);
+
+  // Listen for custom event dispatched by useAdminSettings after save
+  useEffect(() => {
+    const handler = () => { checkDraftStatus(); };
+    window.addEventListener("draft-saved", handler);
+    return () => window.removeEventListener("draft-saved", handler);
+  }, [checkDraftStatus]);
+
+  const handlePreview = () => {
+    // Open landing page with ?preview=draft param
+    // The Index page will detect this + admin auth to show draft content
+    const baseUrl = window.location.origin;
+    window.open(`${baseUrl}/?preview=draft`, "_blank");
+  };
 
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      // Read all draft settings
-      const { data: draftData } = await supabase
-        .from("site_settings" as any)
-        .select("key, value");
-
-      // Filter only draft rows
       const { data: draftOnly } = await supabase
         .from("site_settings" as any)
         .select("key, value")
@@ -79,7 +100,6 @@ export const AdminPublishBar = () => {
         return;
       }
 
-      // Upsert draft values as published
       const now = new Date().toISOString();
       const entries = (draftOnly as any[]).map((r: any) => ({
         key: r.key,
@@ -121,6 +141,7 @@ export const AdminPublishBar = () => {
 
       toast({ title: "Publicado com sucesso!", description: "As alterações estão no ar." });
       setHasDraftChanges(false);
+      setChangedCount(0);
       setLastPublished(now);
     } catch {
       toast({ title: "Erro", description: "Falha ao publicar.", variant: "destructive" });
@@ -131,7 +152,6 @@ export const AdminPublishBar = () => {
   const handleDiscard = async () => {
     setDiscarding(true);
     try {
-      // Read all published settings
       const { data: pubData } = await supabase
         .from("site_settings" as any)
         .select("key, value")
@@ -143,7 +163,6 @@ export const AdminPublishBar = () => {
         return;
       }
 
-      // Overwrite draft with published values
       const entries = (pubData as any[]).map((r: any) => ({
         key: r.key,
         value: r.value,
@@ -189,7 +208,7 @@ export const AdminPublishBar = () => {
           {hasDraftChanges ? (
             <span className="text-sm text-amber-500 font-medium flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              Alterações não publicadas
+              {changedCount} alteração{changedCount !== 1 ? "ões" : ""} não publicada{changedCount !== 1 ? "s" : ""}
             </span>
           ) : (
             <span className="text-sm text-emerald-500 font-medium flex items-center gap-1">
@@ -205,6 +224,12 @@ export const AdminPublishBar = () => {
         </div>
 
         <div className="flex gap-2">
+          {/* Preview button — always available */}
+          <Button variant="outline" size="sm" onClick={handlePreview}>
+            <Eye className="mr-2 h-3.5 w-3.5" />
+            Previsualizar
+          </Button>
+
           {hasDraftChanges && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
