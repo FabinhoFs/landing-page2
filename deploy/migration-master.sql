@@ -8,9 +8,11 @@
 
 CREATE TABLE IF NOT EXISTS public.site_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  key text NOT NULL UNIQUE,
+  key text NOT NULL,
   value text NOT NULL,
-  updated_at timestamptz NOT NULL DEFAULT now()
+  environment text NOT NULL DEFAULT 'published',
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT site_settings_key_env_unique UNIQUE (key, environment)
 );
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
@@ -114,8 +116,8 @@ CREATE INDEX IF NOT EXISTS idx_page_versions_created ON public.page_versions(cre
 
 -- site_settings
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_settings' AND policyname='Public read all settings') THEN
-    CREATE POLICY "Public read all settings" ON public.site_settings FOR SELECT TO anon USING (true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_settings' AND policyname='Public read published settings') THEN
+    CREATE POLICY "Public read published settings" ON public.site_settings FOR SELECT TO anon USING (environment = 'published');
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_settings' AND policyname='Authenticated read all settings') THEN
     CREATE POLICY "Authenticated read all settings" ON public.site_settings FOR SELECT TO authenticated USING (true);
