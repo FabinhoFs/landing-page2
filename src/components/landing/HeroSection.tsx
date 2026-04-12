@@ -1,16 +1,12 @@
-import { ShieldCheck, Zap, MessageCircle, Video, Headphones } from "lucide-react";
+import { ShieldCheck, Zap, MessageCircle } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
-import type { LucideIcon } from "lucide-react";
+import { getIconComponent } from "@/components/admin/IconPicker";
 
 interface HeroSectionProps {
   city: string | null;
   detected: boolean;
 }
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  MessageCircle, Video, Headphones, ShieldCheck, Zap,
-};
 
 const DEFAULT_BULLETS = [
   { icon: "MessageCircle", label: "Atendimento guiado no WhatsApp" },
@@ -128,8 +124,8 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            {bullets.map((b: any, i: number) => {
-              const Icon = (b.icon && ICON_MAP[b.icon]) || MessageCircle;
+          {bullets.map((b: any, i: number) => {
+              const Icon = (b.icon && getIconComponent(b.icon)) || MessageCircle;
               return (
                 <div key={i} className="flex items-center gap-2 text-sm text-deep-foreground/80">
                   <Icon className="h-4 w-4 text-primary shrink-0" />
