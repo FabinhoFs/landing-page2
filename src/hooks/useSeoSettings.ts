@@ -3,7 +3,7 @@ import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 /**
  * Applies SEO meta tags from site_settings to the document <head>.
- * Keys: seo_title, seo_description, seo_og_image, seo_og_title, seo_canonical
+ * Keys: seo_title, seo_description, seo_og_image, seo_og_title, seo_og_description, seo_canonical
  */
 export function useSeoSettings() {
   const { settings, isLoading } = useCtaMessages();
@@ -19,18 +19,23 @@ export function useSeoSettings() {
     }
 
     // OG Title
-    const ogTitle = settings["seo_og_title"];
+    const ogTitle = settings["seo_og_title"] || settings["seo_title"];
     if (ogTitle) {
       setMeta("og:title", ogTitle);
       setMeta("twitter:title", ogTitle);
+    }
+
+    // OG Description (separate field, falls back to seo_description)
+    const ogDesc = settings["seo_og_description"] || settings["seo_description"];
+    if (ogDesc) {
+      setMeta("og:description", ogDesc);
+      setMeta("twitter:description", ogDesc);
     }
 
     // Meta description
     const desc = settings["seo_description"];
     if (desc) {
       setMetaName("description", desc);
-      setMeta("og:description", desc);
-      setMeta("twitter:description", desc);
     }
 
     // Canonical
@@ -43,6 +48,7 @@ export function useSeoSettings() {
         document.head.appendChild(link);
       }
       link.href = canonical;
+      setMeta("og:url", canonical);
     }
 
     // Twitter card type
