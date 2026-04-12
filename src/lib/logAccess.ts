@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { checkRateLimit } from "@/lib/antiSpam";
 
 let cachedGeo: { ip?: string; city?: string; region?: string } | null = null;
 
@@ -51,6 +52,8 @@ export const getStoredUtms = (): Record<string, string> | null => {
 
 export const logAccess = async (buttonId: string) => {
   try {
+    const allowed = await checkRateLimit("logAccess");
+    if (!allowed) return;
     const geo = await getGeoData();
     const utms = getStoredUtms();
     // Encode UTM data into user_agent after delimiter for analytics

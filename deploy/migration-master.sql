@@ -519,7 +519,10 @@ INSERT INTO public.site_settings (key, value, environment) VALUES
   ('popup_trigger_desktop', 'true', 'published'),
   ('popup_trigger_mobile_scroll', 'true', 'published'),
   ('popup_trigger_mobile_back', 'false', 'published'),
-  ('popup_discount_value', '20', 'published')
+  ('popup_discount_value', '20', 'published'),
+  ('spam_guard_enabled', 'true', 'published'),
+  ('spam_max_requests', '20', 'published'),
+  ('spam_window_ms', '60000', 'published')
 ON CONFLICT (key, environment) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
 
 -- Site Settings — draft environment (mirror of published for initial install)

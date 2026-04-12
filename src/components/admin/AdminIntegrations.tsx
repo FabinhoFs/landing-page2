@@ -47,6 +47,9 @@ const POPUP_KEYS = [
 ] as const;
 type PopupKeys = (typeof POPUP_KEYS)[number];
 
+const SPAM_KEYS = ["spam_guard_enabled", "spam_max_requests", "spam_window_ms"] as const;
+type SpamKeys = (typeof SPAM_KEYS)[number];
+
 type ConfigKeys = (typeof KEYS)[number];
 
 type IntegrationStatus = "configured" | "partial" | "not_configured";
@@ -184,6 +187,11 @@ export const AdminIntegrations = () => {
     popup_subtitle: "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.",
     popup_discount_value: "20",
   });
+  const [spamValues, setSpamValues] = useState<Record<SpamKeys, string>>({
+    spam_guard_enabled: "true",
+    spam_max_requests: "20",
+    spam_window_ms: "60000",
+  });
   const [saving, setSaving] = useState(false);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -193,7 +201,7 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
-      const allKeys = [...KEYS, ...GEO_KEYS, ...POPUP_KEYS];
+      const allKeys = [...KEYS, ...GEO_KEYS, ...POPUP_KEYS, ...SPAM_KEYS];
       const { data } = await (supabase
         .from("site_settings") as any)
         .select("key, value")
@@ -225,6 +233,12 @@ export const AdminIntegrations = () => {
         popup_subtitle: loaded.popup_subtitle ?? prev.popup_subtitle,
         popup_discount_value: loaded.popup_discount_value ?? prev.popup_discount_value,
       }));
+
+      setSpamValues((prev) => ({
+        spam_guard_enabled: loaded.spam_guard_enabled ?? prev.spam_guard_enabled,
+        spam_max_requests: loaded.spam_max_requests ?? prev.spam_max_requests,
+        spam_window_ms: loaded.spam_window_ms ?? prev.spam_window_ms,
+      }));
     };
     load();
   }, []);
@@ -250,9 +264,15 @@ export const AdminIntegrations = () => {
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
+      const spamRows = SPAM_KEYS.map((key) => ({
+        key,
+        value: spamValues[key],
+        environment: "draft",
+        updated_at: new Date().toISOString(),
+      }));
       const { error } = await (supabase
         .from("site_settings") as any)
-        .upsert([...trackingRows, ...geoRows, ...popupRows], { onConflict: "key,environment" });
+        .upsert([...trackingRows, ...geoRows, ...popupRows, ...spamRows], { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
@@ -625,6 +645,65 @@ export const AdminIntegrations = () => {
                 onChange={(e) => setPopupValues((p) => ({ ...p, popup_discount_value: e.target.value }))}
                 placeholder="20"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Anti-Spam Card */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <CardTitle className="text-base">Proteção Anti-Spam (Frontend)</CardTitle>
+                <CardDescription>
+                  Rate limiting via localStorage para proteger o Supabase contra loops e excesso de requisições do navegador.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Anti-Spam ativo</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Liga/desliga a trava de rate limiting no frontend.</p>
+              </div>
+              <Switch
+                checked={spamValues.spam_guard_enabled === "true"}
+                onCheckedChange={(c) => setSpamValues((p) => ({ ...p, spam_guard_enabled: c ? "true" : "false" }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Limite de requisições</Label>
+              <Input
+                type="number"
+                value={spamValues.spam_max_requests}
+                onChange={(e) => setSpamValues((p) => ({ ...p, spam_max_requests: e.target.value }))}
+                placeholder="20"
+              />
+              <p className="text-xs text-muted-foreground">
+                Número máximo de ações permitidas dentro da janela de tempo.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Janela de tempo (ms)</Label>
+              <Input
+                type="number"
+                value={spamValues.spam_window_ms}
+                onChange={(e) => setSpamValues((p) => ({ ...p, spam_window_ms: e.target.value }))}
+                placeholder="60000"
+              />
+              <p className="text-xs text-muted-foreground">
+                Janela em milissegundos (60000 = 1 minuto).
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground/80">Como funciona:</strong> Cada ação de escrita (log de acesso, eventos de experimento, eventos UTM) é contabilizada no <code className="bg-muted px-1 rounded">localStorage</code>. Se o limite for atingido, novas escritas são bloqueadas silenciosamente até a janela expirar.
+              </p>
             </div>
           </CardContent>
         </Card>

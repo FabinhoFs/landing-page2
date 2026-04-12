@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { checkRateLimit } from "@/lib/antiSpam";
 
 interface ExperimentVariant {
   variant_key: string;
@@ -140,6 +141,8 @@ async function logExperimentEvent(
   sessionId?: string,
 ) {
   try {
+    const allowed = await checkRateLimit("experimentEvent");
+    if (!allowed) return;
     const deviceType = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
     let city: string | undefined;
     let region: string | undefined;

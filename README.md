@@ -32,7 +32,9 @@ deploy/
 ├── upgrade-add-experiments.sql
 ├── upgrade-add-utm-rules.sql
 ├── upgrade-add-geo-settings.sql
-└── upgrade-add-exit-intent-settings.sql
+├── upgrade-add-exit-intent-settings.sql
+├── upgrade-add-system-errors.sql
+└── upgrade-add-anti-spam.sql
 ```
 
 ## Desenvolvimento Local
@@ -156,4 +158,26 @@ DELETE FROM public.system_errors WHERE resolved = true AND created_at < now() - 
 
 ```bash
 psql -f deploy/upgrade-add-system-errors.sql
+```
+
+## Proteção Anti-Spam Frontend
+
+O sistema possui rate limiting no frontend via `localStorage` para proteger o Supabase contra loops e excesso de requisições.
+
+### Como funciona
+
+O utilitário `checkRateLimit(action)` contabiliza ações de escrita (log de acesso, eventos de experimento, eventos UTM) e bloqueia silenciosamente quando o limite é atingido dentro da janela de tempo.
+
+| Configuração | Default | Descrição |
+|---|---|---|
+| `spam_guard_enabled` | `true` | Liga/desliga o rate limiting |
+| `spam_max_requests` | `20` | Máximo de ações por janela |
+| `spam_window_ms` | `60000` | Janela em milissegundos (1 min) |
+
+Configurável pelo admin em **Integrações → Proteção Anti-Spam**.
+
+### Upgrade de banco existente
+
+```bash
+psql -f deploy/upgrade-add-anti-spam.sql
 ```
