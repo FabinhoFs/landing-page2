@@ -95,6 +95,7 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
     try { bullets = JSON.parse(settings.hero_bullets); } catch {}
   }
 
+  const showTrustLine = settings.hero_show_trust_line !== "false";
   const trustLine = settings.hero_trust_line || "ICP-Brasil • Processo online • Atendimento humano";
 
   return (
@@ -148,10 +149,12 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
             </WhatsAppButton>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-deep-foreground/60 pt-2">
-            <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-            <span>{trustLine}</span>
-          </div>
+          {showTrustLine && (
+            <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-deep-foreground/60 pt-2">
+              <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+              <span>{trustLine}</span>
+            </div>
+          )}
         </div>
       </div>
     </section>

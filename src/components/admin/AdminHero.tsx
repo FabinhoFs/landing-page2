@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -105,7 +106,7 @@ export const AdminHero = () => {
   };
 
   const handleSave = async () => {
-    const keys: string[] = ["hero_active_variant", "hero_trust_line"];
+    const keys: string[] = ["hero_active_variant", "hero_trust_line", "hero_show_trust_line"];
     for (const v of ["1", "2", "3"]) {
       for (const f of FIELDS) keys.push(`hero_v${v}_${f.key}`);
     }
@@ -233,7 +234,13 @@ export const AdminHero = () => {
       {/* Trust line */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Linha de Confiança (abaixo dos CTAs)</CardTitle>
+          <CardTitle className="text-base flex items-center justify-between">
+            Linha de Confiança (abaixo dos CTAs)
+            <div className="flex items-center gap-2">
+              <Label htmlFor="show_trust_line" className="text-sm font-normal text-muted-foreground">Exibir</Label>
+              <Switch id="show_trust_line" checked={settings.hero_show_trust_line !== "false"} onCheckedChange={(v) => updateField("hero_show_trust_line", v ? "true" : "false")} />
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Input value={settings.hero_trust_line ?? DEFAULT_TRUST_LINE} onChange={(e) => updateField("hero_trust_line", e.target.value)} />
