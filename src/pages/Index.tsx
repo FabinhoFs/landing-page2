@@ -53,8 +53,9 @@ const Index = () => {
     captureUtmParams();
   }, []);
 
-  // Apply SEO settings
+  // Apply SEO settings and favicon
   useSeoSettings();
+  useFavicon();
 
   useEffect(() => {
     // Use SEO title from admin if available, otherwise dynamic city-based
