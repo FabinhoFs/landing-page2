@@ -94,9 +94,12 @@ export const TestimonialsSection = () => {
 
   if (items.length === 0) return null;
 
-  const avgRating = items.length > 0 ? (items.reduce((s, t) => s + t.rating, 0) / items.length).toFixed(1) : "0";
-  const googleCount = items.filter((t) => t.is_google_review).length;
-  const fiveStarCount = items.filter((t) => t.rating === 5).length;
+  return (
+    <section ref={sectionRef} className="bg-deep py-16 md:py-24">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
+          {sectionTitle}
+        </h2>
 
         <Carousel
           setApi={setApi}
