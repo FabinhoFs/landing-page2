@@ -53,6 +53,12 @@ services:
         reservations:
           memory: 32M
           cpus: "0.10"
+    # ── Healthcheck ──
+    # Controlado aqui (não embutido na imagem).
+    # Para desativar temporariamente no Portainer:
+    #   Edite a stack e substitua o bloco abaixo por:
+    #   healthcheck:
+    #     test: ["NONE"]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/"]
       interval: 30s
