@@ -5,7 +5,9 @@ import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 export const FloatingWhatsApp = () => {
   const phone = useWhatsAppNumber();
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+
+  const enabled = settings.floating_whatsapp_enabled !== "false";
 
   const handleClick = () => {
     if (typeof window !== "undefined" && (window as any).dataLayer) {
@@ -20,6 +22,8 @@ export const FloatingWhatsApp = () => {
     const msg = encodeURIComponent(getMessage("cta_floating"));
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
+
+  if (!enabled) return null;
 
   return (
     <button

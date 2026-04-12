@@ -2,7 +2,9 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 
 export const StickyMobileCTA = ({ city }: { city: string }) => {
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+
+  const ctaText = settings.sticky_mobile_cta_text || "Iniciar minha emissão agora";
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-deep/95 backdrop-blur-md p-3 md:hidden border-t border-deep-foreground/10">
@@ -11,7 +13,7 @@ export const StickyMobileCTA = ({ city }: { city: string }) => {
         message={getMessage("cta_sticky_mobile", city)}
         className="w-full text-base py-4 font-bold"
       >
-        Iniciar minha emissão agora
+        {ctaText}
       </WhatsAppButton>
     </div>
   );

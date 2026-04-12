@@ -5,7 +5,9 @@ import agisLogo from "@/assets/agis-logo.png";
 
 export const StickyHeader = ({ city }: { city: string }) => {
   const [scrolled, setScrolled] = useState(false);
-  const { getMessage } = useCtaMessages();
+  const { settings, getMessage } = useCtaMessages();
+
+  const ctaText = settings.header_cta_text || "Iniciar emissão";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -29,7 +31,7 @@ export const StickyHeader = ({ city }: { city: string }) => {
           size="sm"
           className="text-sm px-4 py-2"
         >
-          Iniciar emissão
+          {ctaText}
         </WhatsAppButton>
       </div>
     </header>

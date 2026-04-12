@@ -71,19 +71,20 @@ const Admin = () => {
       <main className="mx-auto max-w-5xl px-6 py-8">
         <Tabs defaultValue="hero">
           <TabsList className="mb-6 flex-wrap h-auto gap-1">
-            <TabsTrigger value="hero">Hero</TabsTrigger>
-            <TabsTrigger value="prices">Preços</TabsTrigger>
-            <TabsTrigger value="diferenciais">Diferenciais</TabsTrigger>
-            <TabsTrigger value="testimonials">Depoimentos</TabsTrigger>
-            <TabsTrigger value="faq">FAQ</TabsTrigger>
-            <TabsTrigger value="footer">Rodapé</TabsTrigger>
-            <TabsTrigger value="settings">Configurações</TabsTrigger>
-            <TabsTrigger value="integrations">Integrações e Pixels</TabsTrigger>
-            <TabsTrigger value="sections">Seções da LP</TabsTrigger>
-            <TabsTrigger value="dashboard">Inteligência</TabsTrigger>
-            <TabsTrigger value="users">Administradores</TabsTrigger>
+            <TabsTrigger value="hero">01. Hero</TabsTrigger>
+            <TabsTrigger value="sections">02–13. Seções da LP</TabsTrigger>
+            <TabsTrigger value="prices">04. Preços</TabsTrigger>
+            <TabsTrigger value="diferenciais">05. Diferenciais</TabsTrigger>
+            <TabsTrigger value="testimonials">06. Depoimentos</TabsTrigger>
+            <TabsTrigger value="faq">09. FAQ</TabsTrigger>
+            <TabsTrigger value="footer">12. Rodapé</TabsTrigger>
+            <TabsTrigger value="settings">90. Configurações</TabsTrigger>
+            <TabsTrigger value="integrations">91. Integrações</TabsTrigger>
+            <TabsTrigger value="dashboard">92. Inteligência</TabsTrigger>
+            <TabsTrigger value="users">93. Administradores</TabsTrigger>
           </TabsList>
           <TabsContent value="hero"><AdminHero /></TabsContent>
+          <TabsContent value="sections"><AdminSections /></TabsContent>
           <TabsContent value="prices"><AdminPrices /></TabsContent>
           <TabsContent value="diferenciais"><AdminDiferenciais /></TabsContent>
           <TabsContent value="testimonials"><AdminTestimonials /></TabsContent>
@@ -91,7 +92,6 @@ const Admin = () => {
           <TabsContent value="footer"><AdminFooter /></TabsContent>
           <TabsContent value="settings"><AdminSettings /></TabsContent>
           <TabsContent value="integrations"><AdminIntegrations /></TabsContent>
-          <TabsContent value="sections"><AdminSections /></TabsContent>
           <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
           <TabsContent value="users"><AdminUsers /></TabsContent>
         </Tabs>
