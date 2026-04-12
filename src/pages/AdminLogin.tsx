@@ -30,19 +30,6 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const checkAdminExists = async (): Promise<boolean> => {
-    const { count, error } = await supabase
-      .from("user_roles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "admin");
-
-    if (error) {
-      // If error (e.g. RLS blocks), assume admins exist for safety
-      return true;
-    }
-    return (count ?? 0) > 0;
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -79,9 +66,22 @@ const AdminLogin = () => {
       return;
     }
 
-    // Not admin — check if ANY admin exists
-    const adminExists = await checkAdminExists();
-    if (!adminExists) {
+    // Not admin — check if ANY admin exists via secure RPC
+    const { data: hasAdmin, error: rpcError } = await supabase.rpc("admin_exists");
+
+    if (rpcError || hasAdmin === null) {
+      // On error, assume admins exist for safety
+      await supabase.auth.signOut();
+      toast({
+        title: "Acesso negado",
+        description: "Você não possui permissão de administrador.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!hasAdmin) {
       // No admins in the system — show bootstrap UI
       setState("bootstrap");
       setLoading(false);
@@ -149,11 +149,11 @@ const AdminLogin = () => {
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-              <Key className="h-6 w-6 text-amber-600" />
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-accent">
+              <Key className="h-6 w-6 text-accent-foreground" />
             </div>
             <CardTitle className="text-2xl">Bootstrap do Administrador</CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
+            <CardDescription>
               Nenhum administrador encontrado. Insira a chave de bootstrap para configurar o primeiro administrador do sistema.
             </CardDescription>
           </CardHeader>
