@@ -5,17 +5,24 @@ import { checkIsAdmin } from "@/lib/checkIsAdmin";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut } from "lucide-react";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminHero } from "@/components/admin/AdminHero";
+import { AdminDores } from "@/components/admin/AdminDores";
+import { AdminComoFunciona } from "@/components/admin/AdminComoFunciona";
 import { AdminPrices } from "@/components/admin/AdminPrices";
+import { AdminOfertas } from "@/components/admin/AdminOfertas";
 import { AdminDiferenciais } from "@/components/admin/AdminDiferenciais";
 import { AdminTestimonials } from "@/components/admin/AdminTestimonials";
+import { AdminSeguranca } from "@/components/admin/AdminSeguranca";
+import { AdminInstitucional } from "@/components/admin/AdminInstitucional";
 import { AdminFAQ } from "@/components/admin/AdminFAQ";
+import { AdminCTAFinal } from "@/components/admin/AdminCTAFinal";
 import { AdminFooter } from "@/components/admin/AdminFooter";
+import { AdminWhatsApp } from "@/components/admin/AdminWhatsApp";
 import { AdminSettings } from "@/components/admin/AdminSettings";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminIntegrations } from "@/components/admin/AdminIntegrations";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminUsers } from "@/components/admin/AdminUsers";
-import { AdminSections } from "@/components/admin/AdminSections";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -25,14 +32,8 @@ const Admin = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/admin/login"); return; }
-
       const isAdmin = await checkIsAdmin();
-      if (!isAdmin) {
-        await supabase.auth.signOut();
-        navigate("/admin/login");
-        return;
-      }
-
+      if (!isAdmin) { await supabase.auth.signOut(); navigate("/admin/login"); return; }
       setLoading(false);
     };
 
@@ -71,27 +72,37 @@ const Admin = () => {
       <main className="mx-auto max-w-5xl px-6 py-8">
         <Tabs defaultValue="hero">
           <TabsList className="mb-6 flex-wrap h-auto gap-1">
-            <TabsTrigger value="sections-header">00. Header</TabsTrigger>
+            <TabsTrigger value="header">00. Header</TabsTrigger>
             <TabsTrigger value="hero">01. Hero</TabsTrigger>
-            <TabsTrigger value="sections-content">02–11. Seções</TabsTrigger>
-            <TabsTrigger value="prices">04. Preços</TabsTrigger>
+            <TabsTrigger value="dores">02. Dores</TabsTrigger>
+            <TabsTrigger value="comofunciona">03. Como Funciona</TabsTrigger>
+            <TabsTrigger value="ofertas">04. Ofertas</TabsTrigger>
             <TabsTrigger value="diferenciais">05. Diferenciais</TabsTrigger>
             <TabsTrigger value="testimonials">06. Depoimentos</TabsTrigger>
+            <TabsTrigger value="seguranca">07. Segurança</TabsTrigger>
+            <TabsTrigger value="institucional">08. Institucional</TabsTrigger>
             <TabsTrigger value="faq">09. FAQ</TabsTrigger>
-            <TabsTrigger value="footer">12. Rodapé</TabsTrigger>
-            <TabsTrigger value="settings">90. Configurações</TabsTrigger>
+            <TabsTrigger value="ctafinal">10. CTA Final</TabsTrigger>
+            <TabsTrigger value="footer">11. Rodapé</TabsTrigger>
+            <TabsTrigger value="whatsapp">12. WhatsApp</TabsTrigger>
+            <TabsTrigger value="settings">90. Config</TabsTrigger>
             <TabsTrigger value="integrations">91. Integrações</TabsTrigger>
             <TabsTrigger value="dashboard">92. Inteligência</TabsTrigger>
-            <TabsTrigger value="users">93. Administradores</TabsTrigger>
+            <TabsTrigger value="users">93. Admins</TabsTrigger>
           </TabsList>
-          <TabsContent value="sections-header"><AdminSections filter="header" /></TabsContent>
+          <TabsContent value="header"><AdminHeader /></TabsContent>
           <TabsContent value="hero"><AdminHero /></TabsContent>
-          <TabsContent value="sections-content"><AdminSections filter="content" /></TabsContent>
-          <TabsContent value="prices"><AdminPrices /></TabsContent>
+          <TabsContent value="dores"><AdminDores /></TabsContent>
+          <TabsContent value="comofunciona"><AdminComoFunciona /></TabsContent>
+          <TabsContent value="ofertas"><AdminOfertas /><div className="mt-8 border-t pt-8"><AdminPrices /></div></TabsContent>
           <TabsContent value="diferenciais"><AdminDiferenciais /></TabsContent>
           <TabsContent value="testimonials"><AdminTestimonials /></TabsContent>
+          <TabsContent value="seguranca"><AdminSeguranca /></TabsContent>
+          <TabsContent value="institucional"><AdminInstitucional /></TabsContent>
           <TabsContent value="faq"><AdminFAQ /></TabsContent>
+          <TabsContent value="ctafinal"><AdminCTAFinal /></TabsContent>
           <TabsContent value="footer"><AdminFooter /></TabsContent>
+          <TabsContent value="whatsapp"><AdminWhatsApp /></TabsContent>
           <TabsContent value="settings"><AdminSettings /></TabsContent>
           <TabsContent value="integrations"><AdminIntegrations /></TabsContent>
           <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
