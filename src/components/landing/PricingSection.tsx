@@ -49,7 +49,7 @@ interface PricingSectionProps {
 
 const DEFAULT_CPF_USOS = ["Assinatura digital de documentos", "Acesso ao e-CAC da Receita Federal", "Declaração de Imposto de Renda", "Rotinas digitais com mais segurança"];
 const DEFAULT_CNPJ_USOS = ["Emissão de notas fiscais", "eSocial e obrigações fiscais", "Assinatura digital de documentos", "Acesso a sistemas públicos e privados"];
-const DEFAULT_INCLUSO = ["Atendimento guiado no WhatsApp", "Orientação sobre documentos e etapas", "Validação online por videoconferência", "Suporte durante o processo", "Orientação para instalação e uso"];
+
 
 function readList(settings: Record<string, string>, prefix: string, defaults: string[], jsonKey?: string): string[] {
   const items: string[] = [];
@@ -72,7 +72,7 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
 
   const cpfUsos = readList(settings, "cpf_uso", DEFAULT_CPF_USOS, "pricing_cpf_usos");
   const cnpjUsos = readList(settings, "cnpj_uso", DEFAULT_CNPJ_USOS, "pricing_cnpj_usos");
-  const incluso = readList(settings, "incluso", DEFAULT_INCLUSO, "pricing_incluso");
+  
 
   const cpfCtaText = settings.pricing_cta_cpf || "Quero meu e-CPF A1";
   const cnpjCtaText = settings.pricing_cta_cnpj || "Quero meu e-CNPJ A1";
@@ -140,13 +140,6 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                     ))}
                   </ul>
 
-                  <div className="my-3 border-t border-border/50" />
-
-                  <ul className="space-y-2">
-                    {incluso.map((item, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground"><CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" /><span>{item}</span></li>
-                    ))}
-                  </ul>
                 </div>
 
                 <div className="pt-6 mt-auto">
