@@ -243,6 +243,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bootstrap_first_admin: {
+        Args: { _bootstrap_key: string }
+        Returns: undefined
+      }
       find_user_by_email: {
         Args: { _email: string }
         Returns: {
