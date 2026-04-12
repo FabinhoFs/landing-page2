@@ -36,6 +36,17 @@ const KEYS = [
 const GEO_KEYS = ["geo_provider", "geo_api_key", "geo_fallback"] as const;
 type GeoKeys = (typeof GEO_KEYS)[number];
 
+const POPUP_KEYS = [
+  "popup_enabled",
+  "popup_trigger_desktop",
+  "popup_trigger_mobile_scroll",
+  "popup_trigger_mobile_back",
+  "popup_title",
+  "popup_subtitle",
+  "popup_discount_value",
+] as const;
+type PopupKeys = (typeof POPUP_KEYS)[number];
+
 type ConfigKeys = (typeof KEYS)[number];
 
 type IntegrationStatus = "configured" | "partial" | "not_configured";
@@ -164,6 +175,15 @@ export const AdminIntegrations = () => {
     geo_api_key: "",
     geo_fallback: "true",
   });
+  const [popupValues, setPopupValues] = useState<Record<PopupKeys, string>>({
+    popup_enabled: "true",
+    popup_trigger_desktop: "true",
+    popup_trigger_mobile_scroll: "true",
+    popup_trigger_mobile_back: "false",
+    popup_title: "ESPERA! NÃO VÁ EMBORA.",
+    popup_subtitle: "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.",
+    popup_discount_value: "20",
+  });
   const [saving, setSaving] = useState(false);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -173,7 +193,7 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
-      const allKeys = [...KEYS, ...GEO_KEYS];
+      const allKeys = [...KEYS, ...GEO_KEYS, ...POPUP_KEYS];
       const { data } = await (supabase
         .from("site_settings") as any)
         .select("key, value")
@@ -195,6 +215,16 @@ export const AdminIntegrations = () => {
         geo_api_key: loaded.geo_api_key ?? prev.geo_api_key,
         geo_fallback: loaded.geo_fallback ?? prev.geo_fallback,
       }));
+
+      setPopupValues((prev) => ({
+        popup_enabled: loaded.popup_enabled ?? prev.popup_enabled,
+        popup_trigger_desktop: loaded.popup_trigger_desktop ?? prev.popup_trigger_desktop,
+        popup_trigger_mobile_scroll: loaded.popup_trigger_mobile_scroll ?? prev.popup_trigger_mobile_scroll,
+        popup_trigger_mobile_back: loaded.popup_trigger_mobile_back ?? prev.popup_trigger_mobile_back,
+        popup_title: loaded.popup_title ?? prev.popup_title,
+        popup_subtitle: loaded.popup_subtitle ?? prev.popup_subtitle,
+        popup_discount_value: loaded.popup_discount_value ?? prev.popup_discount_value,
+      }));
     };
     load();
   }, []);
@@ -214,9 +244,15 @@ export const AdminIntegrations = () => {
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
+      const popupRows = POPUP_KEYS.map((key) => ({
+        key,
+        value: popupValues[key],
+        environment: "draft",
+        updated_at: new Date().toISOString(),
+      }));
       const { error } = await (supabase
         .from("site_settings") as any)
-        .upsert([...trackingRows, ...geoRows], { onConflict: "key,environment" });
+        .upsert([...trackingRows, ...geoRows, ...popupRows], { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
