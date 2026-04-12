@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
-import agisLogo from "@/assets/agis-logo.png";
 
 export const StickyHeader = ({ city }: { city: string }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -24,7 +23,9 @@ export const StickyHeader = ({ city }: { city: string }) => {
       }`}
     >
       <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-3">
-        <img src={agisLogo} alt="Agis Digital" className={`h-10 w-auto transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`} />
+        <span className={`text-lg font-bold text-deep-foreground transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`}>
+          Agis Digital
+        </span>
         <WhatsAppButton
           buttonId="cta_header"
           message={getMessage("cta_header", city)}
