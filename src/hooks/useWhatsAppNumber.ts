@@ -15,9 +15,8 @@ export function useWhatsAppNumber() {
         .maybeSingle();
       return ((data as any)?.value as string | null)?.replace(/\D/g, "") || null;
     },
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   return data || FALLBACK;
