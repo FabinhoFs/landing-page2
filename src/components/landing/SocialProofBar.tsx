@@ -12,16 +12,20 @@ export const SocialProofBar = () => {
   ];
 
   return (
-    <section className="bg-primary py-4">
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
-        <div className="flex flex-wrap gap-3 md:flex-nowrap md:gap-4">
+    <section className="bg-background py-8 md:py-12">
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {indicators.map((item, i) => (
             <div
               key={i}
-              className="flex basis-[calc(50%-0.375rem)] items-center justify-center gap-2 text-primary-foreground text-[11px] font-medium md:basis-0 md:flex-1 md:text-xs"
+              className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 md:p-6 text-center shadow-sm"
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              <span className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap">{item.text}</span>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15">
+                <item.icon className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs md:text-sm font-medium leading-snug text-card-foreground">
+                {item.text}
+              </span>
             </div>
           ))}
         </div>
@@ -29,4 +33,3 @@ export const SocialProofBar = () => {
     </section>
   );
 };
-
