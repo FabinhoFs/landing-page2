@@ -73,20 +73,71 @@ http://SEU_IP:3000
 
 ---
 
-## 4. Verificar Saúde do Container
+## 4. Healthcheck
 
-```bash
-# Status geral
-docker compose ps
+O healthcheck **não está embutido na imagem Docker**. Ele é definido exclusivamente nos arquivos de deploy (`docker-compose.yml` e `docker-stack.yml`), permitindo ajuste por ambiente sem rebuild.
 
-# Healthcheck detalhado
-docker compose ps --format "table {{.Name}}\t{{.Status}}"
+### 4.1 Comportamento padrão
 
-# Testar resposta HTTP (use a porta definida em APP_PORT, ex: 3000)
-curl -I http://localhost:3000
+```yaml
+healthcheck:
+  test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/"]
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 20s
 ```
 
-Deve retornar `HTTP/1.1 200 OK`.
+### 4.2 Verificar status
+
+```bash
+# Compose
+docker compose ps --format "table {{.Name}}\t{{.Status}}"
+
+# Swarm
+docker service ps agis_agis-lp
+docker inspect --format='{{json .State.Health}}' <CONTAINER_ID>
+```
+
+### 4.3 Desativar temporariamente (diagnóstico)
+
+Para impedir que o Swarm reinicie o container durante debug, substitua o bloco de healthcheck na stack por:
+
+```yaml
+healthcheck:
+  test: ["NONE"]
+```
+
+**No Portainer:** Stacks → agis → Editor → substitua o bloco → **Update the stack**.
+
+**Via CLI (Compose):**
+```bash
+# Edite deploy/docker-compose.yml com a alteração acima, depois:
+docker compose up -d
+```
+
+### 4.4 Reativar
+
+Restaure o bloco original do healthcheck e faça update da stack:
+
+**No Portainer:** Stacks → agis → Editor → restaure o bloco → **Update the stack**.
+
+**Via CLI:**
+```bash
+docker compose up -d
+# ou para Swarm:
+docker stack deploy -c deploy/docker-stack.yml agis
+```
+
+### 4.5 Ajustar por ambiente
+
+Você pode alterar `interval`, `timeout`, `retries` e `start_period` diretamente na stack do Portainer sem rebuild da imagem. Exemplos:
+
+| Ambiente | `interval` | `start_period` | `retries` |
+|----------|-----------|----------------|-----------|
+| Produção | `30s` | `20s` | `3` |
+| Staging | `60s` | `30s` | `5` |
+| Debug | desativado (`test: ["NONE"]`) | — | — |
 
 ---
 
