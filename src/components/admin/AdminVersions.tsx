@@ -76,7 +76,7 @@ export const AdminVersions = () => {
       return;
     }
     setSaving(true);
-    const { data: settingsData } = await supabase.from("site_settings" as any).select("key, value");
+    const { data: settingsData } = await supabase.from("site_settings" as any).select("key, value").eq("environment", "published");
     const snapshot: Record<string, string> = {};
     if (settingsData) {
       (settingsData as any[]).forEach((r: any) => { snapshot[r.key] = r.value; });
@@ -119,12 +119,13 @@ export const AdminVersions = () => {
       return;
     }
     const snapshot = (versionData as any).snapshot_json as Record<string, string>;
+    // Restore to draft environment
     const entries = Object.entries(snapshot).map(([key, value]) => ({
-      key, value, updated_at: new Date().toISOString(),
+      key, value, environment: "draft", updated_at: new Date().toISOString(),
     }));
     const { error } = await supabase
       .from("site_settings" as any)
-      .upsert(entries as any, { onConflict: "key" });
+      .upsert(entries as any, { onConflict: "key,environment" });
     if (error) {
       toast({ title: "Erro ao restaurar", description: error.message, variant: "destructive" });
       setRestoring(null);
@@ -142,7 +143,7 @@ export const AdminVersions = () => {
       new_value: name,
       metadata: { version_id: versionId },
     });
-    toast({ title: "Versão restaurada!", description: `"${name}" foi restaurada. A página será recarregada.` });
+    toast({ title: "Versão restaurada no rascunho!", description: `"${name}" foi restaurada como rascunho. Publique quando quiser colocar no ar. A página será recarregada.` });
     setTimeout(() => { window.location.reload(); }, 1200);
   };
 

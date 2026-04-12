@@ -30,7 +30,7 @@ export const AdminAlerts = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("site_settings" as any).select("key, value");
+      const { data } = await supabase.from("site_settings" as any).select("key, value").eq("environment", "draft");
       const map: Record<string, string> = {};
       if (data) (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
 

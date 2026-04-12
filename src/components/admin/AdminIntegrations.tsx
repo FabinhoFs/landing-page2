@@ -157,9 +157,10 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
-      const { data } = await supabase
-        .from("site_settings")
+      const { data } = await (supabase
+        .from("site_settings") as any)
         .select("key, value")
+        .eq("environment", "draft")
         .in("key", [...KEYS]);
 
       const loaded: Partial<Record<ConfigKeys, string>> = {};
@@ -183,11 +184,12 @@ export const AdminIntegrations = () => {
       const rows = KEYS.map((key) => ({
         key,
         value: values[key],
+        environment: "draft",
         updated_at: new Date().toISOString(),
       }));
-      const { error } = await supabase
-        .from("site_settings")
-        .upsert(rows, { onConflict: "key" });
+      const { error } = await (supabase
+        .from("site_settings") as any)
+        .upsert(rows, { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {

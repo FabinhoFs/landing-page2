@@ -8,9 +8,11 @@
 
 CREATE TABLE IF NOT EXISTS public.site_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  key text NOT NULL UNIQUE,
+  key text NOT NULL,
   value text NOT NULL,
-  updated_at timestamptz NOT NULL DEFAULT now()
+  environment text NOT NULL DEFAULT 'published',
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT site_settings_key_env_unique UNIQUE (key, environment)
 );
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
@@ -114,8 +116,8 @@ CREATE INDEX IF NOT EXISTS idx_page_versions_created ON public.page_versions(cre
 
 -- site_settings
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_settings' AND policyname='Public read all settings') THEN
-    CREATE POLICY "Public read all settings" ON public.site_settings FOR SELECT TO anon USING (true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_settings' AND policyname='Public read published settings') THEN
+    CREATE POLICY "Public read published settings" ON public.site_settings FOR SELECT TO anon USING (environment = 'published');
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_settings' AND policyname='Authenticated read all settings') THEN
     CREATE POLICY "Authenticated read all settings" ON public.site_settings FOR SELECT TO authenticated USING (true);
@@ -273,39 +275,44 @@ INSERT INTO public.faqs (question, answer, is_active, sort_order) VALUES
   ('Posso usar o certificado para o eSocial e SPED?', 'Sim! Nossos certificados são homologados pela ICP-Brasil e compatíveis com todas as obrigações fiscais, incluindo eSocial, SPED, NFe e muito mais.', true, 5)
 ON CONFLICT DO NOTHING;
 
--- Site Settings (UPSERT)
-INSERT INTO public.site_settings (key, value) VALUES
-  ('whatsapp_number', '5524974022516'),
-  ('popup_enabled', 'true'),
-  ('popup_discount', '20'),
-  ('popup_title', 'ESPERA! NÃO VÁ EMBORA.'),
-  ('popup_subtitle', 'Garanta um desconto exclusivo para emitir seu Certificado Digital agora.'),
-  ('bestseller_active', 'true'),
-  ('bestseller_product', 'cnpj'),
-  ('pricing_section_title', 'Escolha seu Certificado Digital e emita agora'),
-  ('benefit_1_title', 'Velocidade'),
-  ('benefit_1_desc', 'Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento.'),
-  ('benefit_2_title', 'Confiança'),
-  ('benefit_2_desc', 'Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados.'),
-  ('benefit_3_title', 'Atendimento Personalizado'),
-  ('benefit_3_desc', 'Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo.'),
-  ('benefit_4_title', 'Segurança'),
-  ('benefit_4_desc', 'Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital.'),
-  ('diff_1_icon', 'FastForward'),
-  ('diff_2_icon', 'ShieldCheck'),
-  ('diff_3_icon', 'HeadphonesIcon'),
-  ('diff_4_icon', 'Lock'),
-  ('social_proof_text', 'Sua identidade digital em boas mãos'),
-  ('social_authority_title', 'Atendimento rápido'),
-  ('social_experience_text', 'Milhares de certificados emitidos com segurança'),
-  ('social_support_text', 'Suporte completo e humanizado'),
-  ('support_text', 'Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.'),
-  ('cta_hero', 'Olá! Vi o topo do site e quero meu certificado em {cidade}.'),
-  ('cta_header', 'Olá! Quero emitir meu Certificado Digital em {cidade}.'),
-  ('cta_floating', 'Olá! Quero emitir meu Certificado Digital.'),
-  ('cta_sticky_mobile', 'Olá! Quero emitir meu Certificado Digital em {cidade}.'),
-  ('cta_bottom', 'Olá! Li as informações e quero iniciar meu atendimento agora.'),
-  ('cta_ecpf', 'Olá! Tenho interesse no e-CPF A1 que vi no site.'),
-  ('cta_ecnpj', 'Olá! Tenho interesse no e-CNPJ A1 que vi no site.'),
-  ('cta_exit_popup', 'Olá! Vi o desconto de R$ {valor},00 na página e quero aproveitar para emitir meu certificado.')
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
+-- Site Settings — published environment
+INSERT INTO public.site_settings (key, value, environment) VALUES
+  ('whatsapp_number', '5524974022516', 'published'),
+  ('popup_enabled', 'true', 'published'),
+  ('popup_discount', '20', 'published'),
+  ('popup_title', 'ESPERA! NÃO VÁ EMBORA.', 'published'),
+  ('popup_subtitle', 'Garanta um desconto exclusivo para emitir seu Certificado Digital agora.', 'published'),
+  ('bestseller_active', 'true', 'published'),
+  ('bestseller_product', 'cnpj', 'published'),
+  ('pricing_section_title', 'Escolha seu Certificado Digital e emita agora', 'published'),
+  ('benefit_1_title', 'Velocidade', 'published'),
+  ('benefit_1_desc', 'Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento.', 'published'),
+  ('benefit_2_title', 'Confiança', 'published'),
+  ('benefit_2_desc', 'Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados.', 'published'),
+  ('benefit_3_title', 'Atendimento Personalizado', 'published'),
+  ('benefit_3_desc', 'Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo.', 'published'),
+  ('benefit_4_title', 'Segurança', 'published'),
+  ('benefit_4_desc', 'Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital.', 'published'),
+  ('diff_1_icon', 'FastForward', 'published'),
+  ('diff_2_icon', 'ShieldCheck', 'published'),
+  ('diff_3_icon', 'HeadphonesIcon', 'published'),
+  ('diff_4_icon', 'Lock', 'published'),
+  ('social_proof_text', 'Sua identidade digital em boas mãos', 'published'),
+  ('social_authority_title', 'Atendimento rápido', 'published'),
+  ('social_experience_text', 'Milhares de certificados emitidos com segurança', 'published'),
+  ('social_support_text', 'Suporte completo e humanizado', 'published'),
+  ('support_text', 'Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.', 'published'),
+  ('cta_hero', 'Olá! Vi o topo do site e quero meu certificado em {cidade}.', 'published'),
+  ('cta_header', 'Olá! Quero emitir meu Certificado Digital em {cidade}.', 'published'),
+  ('cta_floating', 'Olá! Quero emitir meu Certificado Digital.', 'published'),
+  ('cta_sticky_mobile', 'Olá! Quero emitir meu Certificado Digital em {cidade}.', 'published'),
+  ('cta_bottom', 'Olá! Li as informações e quero iniciar meu atendimento agora.', 'published'),
+  ('cta_ecpf', 'Olá! Tenho interesse no e-CPF A1 que vi no site.', 'published'),
+  ('cta_ecnpj', 'Olá! Tenho interesse no e-CNPJ A1 que vi no site.', 'published'),
+  ('cta_exit_popup', 'Olá! Vi o desconto de R$ {valor},00 na página e quero aproveitar para emitir meu certificado.', 'published')
+ON CONFLICT (key, environment) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
+
+-- Site Settings — draft environment (mirror of published for initial install)
+INSERT INTO public.site_settings (key, value, environment)
+SELECT key, value, 'draft' FROM public.site_settings WHERE environment = 'published'
+ON CONFLICT (key, environment) DO NOTHING;
