@@ -2,10 +2,11 @@ import { Plus } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import { logAccess } from "@/lib/logAccess";
 
 const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,
@@ -86,6 +87,15 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
 
   const faqs = (dbFaqs && dbFaqs.length > 0) ? dbFaqs : FALLBACK_FAQS;
 
+  const handleAccordionChange = useCallback((value: string) => {
+    if (value) {
+      const faqId = value.replace("faq-", "");
+      const faq = faqs.find((f) => f.id === faqId);
+      const shortQ = faq ? faq.question.slice(0, 60) : faqId;
+      logAccess(`faq_open_${faqId}`);
+    }
+  }, [faqs]);
+
   return (
     <section id="faq" className="bg-card py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 md:px-6">
@@ -93,7 +103,7 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
           {sectionTitle}
         </h2>
 
-        <AccordionPrimitive.Root type="single" collapsible className="space-y-3 md:space-y-4">
+        <AccordionPrimitive.Root type="single" collapsible className="space-y-3 md:space-y-4" onValueChange={handleAccordionChange}>
           {faqs.map((faq) => (
             <AccordionItem key={faq.id} value={`faq-${faq.id}`}>
               <AccordionTrigger className="text-foreground hover:no-underline">
