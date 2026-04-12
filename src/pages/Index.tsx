@@ -8,6 +8,7 @@ import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { captureUtmParams } from "@/lib/logAccess";
 import { Skeleton } from "@/components/ui/skeleton";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy load below-the-fold sections to reduce initial JS bundle
 const PainSection = lazy(() => import("@/components/landing/PainSection").then(m => ({ default: m.PainSection })));
@@ -97,21 +98,23 @@ const Index = () => {
       <StickyHeader city={cityDisplay} />
       <HeroSection city={city} detected={detected} />
       <SocialProofBar />
-      <Suspense fallback={<SectionFallback />}>
-        <PainSection />
-        <HowItWorksSection />
-        <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
-        <BenefitsSection />
-        <TestimonialsSection />
-        <GuaranteeSection city={cityDisplay} />
-        <AuthoritySection />
-        <FAQSection city={cityDisplay} />
-        <CTASection city={cityDisplay} />
-        <Footer />
-        <FloatingWhatsApp />
-        <StickyMobileCTA city={cityDisplay} />
-        <ExitIntentPopup city={cityDisplay} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<SectionFallback />}>
+          <PainSection />
+          <HowItWorksSection />
+          <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
+          <BenefitsSection />
+          <TestimonialsSection />
+          <GuaranteeSection city={cityDisplay} />
+          <AuthoritySection />
+          <FAQSection city={cityDisplay} />
+          <CTASection city={cityDisplay} />
+          <Footer />
+          <FloatingWhatsApp />
+          <StickyMobileCTA city={cityDisplay} />
+          <ExitIntentPopup city={cityDisplay} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
