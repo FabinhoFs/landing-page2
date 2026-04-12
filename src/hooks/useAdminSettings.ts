@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logSettingsChanges } from "@/lib/auditLog";
 
 export function useAdminSettings() {
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [originalSettings, setOriginalSettings] = useState<Record<string, string>>({});
   const [fetching, setFetching] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -15,6 +17,7 @@ export function useAdminSettings() {
         const map: Record<string, string> = {};
         (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
         setSettings(map);
+        setOriginalSettings({ ...map });
       }
       setFetching(false);
     };
@@ -25,7 +28,7 @@ export function useAdminSettings() {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  const saveKeys = async (keys: string[], successMsg = "Salvo com sucesso!") => {
+  const saveKeys = async (keys: string[], successMsg = "Salvo com sucesso!", section?: string) => {
     setSaving(true);
     const payload = keys
       .filter(k => settings[k] !== undefined)
@@ -38,6 +41,23 @@ export function useAdminSettings() {
         setSaving(false);
         return false;
       }
+
+      // Log changes to audit
+      if (section) {
+        const changes = keys
+          .filter(k => settings[k] !== undefined)
+          .map(k => ({
+            key: k,
+            oldValue: originalSettings[k] ?? "",
+            newValue: settings[k] ?? "",
+          }));
+        await logSettingsChanges(section, changes);
+      }
+
+      // Update original snapshot
+      const updated = { ...originalSettings };
+      keys.forEach(k => { if (settings[k] !== undefined) updated[k] = settings[k]; });
+      setOriginalSettings(updated);
     }
     toast({ title: successMsg, description: "As alterações já estão ativas na Landing Page." });
     setSaving(false);
