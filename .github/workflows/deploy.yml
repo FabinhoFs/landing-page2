@@ -5,8 +5,9 @@
 #   VPS_HOST        — IP ou domínio da VPS
 #   VPS_USER        — usuário SSH (ex: root ou deploy)
 #   VPS_SSH_KEY     — chave privada SSH
-#   VITE_SUPABASE_URL
-#   VITE_SUPABASE_PUBLISHABLE_KEY
+#
+# Nota: credenciais do Supabase NÃO são necessárias aqui.
+# São injetadas em runtime via docker-entrypoint.sh.
 
 name: Build & Deploy
 
@@ -22,12 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: |
-          docker build \
-            --build-arg VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }} \
-            --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }} \
-            -f deploy/Dockerfile \
-            -t agis-lp:latest .
+        run: docker build -f deploy/Dockerfile -t agis-lp:latest .
 
       - name: Save image
         run: docker save agis-lp:latest | gzip > /tmp/agis-lp.tar.gz
