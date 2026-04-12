@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { checkRateLimit } from "@/lib/antiSpam";
 
 let cachedGeo: { ip?: string; city?: string; region?: string } | null = null;
 
