@@ -1,16 +1,21 @@
 import { ShieldCheck, Zap, MessageCircle, Video, Headphones } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import type { LucideIcon } from "lucide-react";
 
 interface HeroSectionProps {
   city: string | null;
   detected: boolean;
 }
 
-const bullets = [
-  { icon: MessageCircle, label: "Atendimento guiado no WhatsApp" },
-  { icon: Video, label: "Validação online sem sair de casa" },
-  { icon: Headphones, label: "Suporte humano em cada etapa" },
+const ICON_MAP: Record<string, LucideIcon> = {
+  MessageCircle, Video, Headphones, ShieldCheck, Zap,
+};
+
+const DEFAULT_BULLETS = [
+  { icon: "MessageCircle", label: "Atendimento guiado no WhatsApp" },
+  { icon: "Video", label: "Validação online sem sair de casa" },
+  { icon: "Headphones", label: "Suporte humano em cada etapa" },
 ];
 
 const DEFAULTS: Record<string, Record<string, string>> = {
@@ -66,6 +71,14 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
     ? dynamicLineTemplate.replace(/\{\{cidade\}\}/g, city)
     : fallbackLine;
 
+  // Bullets from admin or defaults
+  let bullets = DEFAULT_BULLETS;
+  if (settings.hero_bullets) {
+    try { bullets = JSON.parse(settings.hero_bullets); } catch { /* use default */ }
+  }
+
+  const trustLine = settings.hero_trust_line || "ICP-Brasil • Processo online • Atendimento humano";
+
   return (
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
       <div className="absolute inset-0" style={{
@@ -99,12 +112,15 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
 
           {/* Bullets */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            {bullets.map((b, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-deep-foreground/80">
-                <b.icon className="h-4 w-4 text-primary shrink-0" />
-                <span>{b.label}</span>
-              </div>
-            ))}
+            {bullets.map((b: any, i: number) => {
+              const Icon = (b.icon && ICON_MAP[b.icon]) || MessageCircle;
+              return (
+                <div key={i} className="flex items-center gap-2 text-sm text-deep-foreground/80">
+                  <Icon className="h-4 w-4 text-primary shrink-0" />
+                  <span>{b.label}</span>
+                </div>
+              );
+            })}
           </div>
 
           {/* CTAs */}
@@ -128,7 +144,7 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           {/* Trust line */}
           <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-deep-foreground/60 pt-2">
             <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-            <span>ICP-Brasil • Processo online • Atendimento humano</span>
+            <span>{trustLine}</span>
           </div>
         </div>
       </div>

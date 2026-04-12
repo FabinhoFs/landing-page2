@@ -42,14 +42,22 @@ export const AdminSettings = () => {
 
   const handleSave = async () => {
     setLoading(true);
-    const payload = Object.entries(settings).map(([key, value]) => ({
-      key, value, updated_at: new Date().toISOString(),
-    }));
-    const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
-    if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Configurações salvas!", description: "Todas as alterações já estão ativas." });
+    const keys = [
+      "whatsapp_number",
+      ...CTA_FIELDS.map(f => f.key),
+      "bestseller_active", "bestseller_product",
+    ];
+    const payload = keys
+      .filter(k => settings[k] !== undefined)
+      .map(key => ({ key, value: settings[key], updated_at: new Date().toISOString() }));
+
+    if (payload.length > 0) {
+      const { error } = await supabase.from("site_settings" as any).upsert(payload as any, { onConflict: "key" });
+      if (error) {
+        toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Configurações salvas!", description: "Todas as alterações já estão ativas." });
+      }
     }
     setLoading(false);
   };
@@ -96,7 +104,6 @@ export const AdminSettings = () => {
             <div key={field.key} className="space-y-1.5">
               <Label htmlFor={field.key} className="text-sm font-semibold">{field.label}</Label>
               <p className="text-xs text-muted-foreground">📍 {field.position}</p>
-              <p className="text-[11px] font-mono text-muted-foreground/60">Nome interno: <code className="bg-muted px-1 rounded">{field.key}</code></p>
               <Input
                 id={field.key}
                 value={settings[field.key] || ""}
@@ -138,86 +145,6 @@ export const AdminSettings = () => {
               <option value="cnpj">e-CNPJ A1</option>
             </select>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Support Text */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            Textos Adicionais
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="space-y-1.5">
-            <Label>Frase de Suporte</Label>
-            <Input
-              value={settings.support_text || ""}
-              onChange={(e) => updateField("support_text", e.target.value)}
-              placeholder="Suporte completo e humanizado..."
-            />
-            <p className="text-xs text-muted-foreground">📍 Aparece nos cards de preço e no pop-up de saída</p>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Título da Seção de Preços</Label>
-            <Input
-              value={settings.pricing_section_title || ""}
-              onChange={(e) => updateField("pricing_section_title", e.target.value)}
-              placeholder="Escolha a melhor modalidade de certificado para você"
-            />
-            <p className="text-xs text-muted-foreground">📍 Título acima dos cards de preço</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Popup Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Bell className="h-5 w-5 text-primary" />
-            Pop-up de Saída
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-semibold">Status do Pop-up</Label>
-              <p className="text-xs text-muted-foreground">Ativar ou desativar globalmente</p>
-            </div>
-            <Switch
-              checked={settings.popup_enabled === "true"}
-              onCheckedChange={(checked) => updateField("popup_enabled", checked ? "true" : "false")}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">Valor do Cupom (R$)</Label>
-            <Input
-              type="number"
-              value={settings.popup_discount || ""}
-              onChange={(e) => updateField("popup_discount", e.target.value.replace(/\D/g, ""))}
-              placeholder="20"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">Título do Pop-up</Label>
-            <Input
-              value={settings.popup_title || ""}
-              onChange={(e) => updateField("popup_title", e.target.value)}
-              placeholder="ESPERA! NÃO VÁ EMBORA."
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">Subtítulo do Pop-up</Label>
-            <Input
-              value={settings.popup_subtitle || ""}
-              onChange={(e) => updateField("popup_subtitle", e.target.value)}
-              placeholder="Garanta um desconto exclusivo..."
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            💡 Use <code className="bg-muted px-1 rounded">{"{valor}"}</code> na mensagem do pop-up para inserir o valor do cupom.
-          </p>
         </CardContent>
       </Card>
 

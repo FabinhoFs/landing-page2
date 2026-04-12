@@ -71,8 +71,9 @@ const Admin = () => {
       <main className="mx-auto max-w-5xl px-6 py-8">
         <Tabs defaultValue="hero">
           <TabsList className="mb-6 flex-wrap h-auto gap-1">
+            <TabsTrigger value="sections-header">00. Header</TabsTrigger>
             <TabsTrigger value="hero">01. Hero</TabsTrigger>
-            <TabsTrigger value="sections">02–13. Seções da LP</TabsTrigger>
+            <TabsTrigger value="sections-content">02–11. Seções</TabsTrigger>
             <TabsTrigger value="prices">04. Preços</TabsTrigger>
             <TabsTrigger value="diferenciais">05. Diferenciais</TabsTrigger>
             <TabsTrigger value="testimonials">06. Depoimentos</TabsTrigger>
@@ -83,8 +84,9 @@ const Admin = () => {
             <TabsTrigger value="dashboard">92. Inteligência</TabsTrigger>
             <TabsTrigger value="users">93. Administradores</TabsTrigger>
           </TabsList>
+          <TabsContent value="sections-header"><AdminSections filter="header" /></TabsContent>
           <TabsContent value="hero"><AdminHero /></TabsContent>
-          <TabsContent value="sections"><AdminSections /></TabsContent>
+          <TabsContent value="sections-content"><AdminSections filter="content" /></TabsContent>
           <TabsContent value="prices"><AdminPrices /></TabsContent>
           <TabsContent value="diferenciais"><AdminDiferenciais /></TabsContent>
           <TabsContent value="testimonials"><AdminTestimonials /></TabsContent>

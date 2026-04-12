@@ -24,6 +24,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   const title = settings.popup_title || "ESPERA! NÃO VÁ EMBORA.";
   const subtitle = settings.popup_subtitle || "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.";
   const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
+  const ctaButtonText = settings.popup_cta_text || "Quero falar no WhatsApp";
 
   const trigger = useCallback(() => {
     if (triggered || !popupEnabled) return;
@@ -37,13 +38,11 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   useEffect(() => {
     if (!popupEnabled) return;
 
-    // Desktop: mouse leave
     const handleMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 0) trigger();
     };
     document.addEventListener("mouseleave", handleMouseLeave);
 
-    // Mobile: inactivity timer (20s)
     let inactivityTimer = setTimeout(() => trigger(), 20000);
     const resetTimer = () => {
       clearTimeout(inactivityTimer);
@@ -52,7 +51,6 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
     window.addEventListener("scroll", resetTimer);
     window.addEventListener("touchstart", resetTimer);
 
-    // Mobile: rapid scroll up
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
       const delta = lastScrollY - window.scrollY;
@@ -70,7 +68,6 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
     };
   }, [popupEnabled, trigger]);
 
-  // Don't render anything if disabled
   if (!popupEnabled) return null;
 
   const ctaMessage = (getMessage("cta_exit_popup", city) || `Olá! Vi o desconto de R$ ${discount},00 na página e quero aproveitar para emitir meu certificado.`)
@@ -105,7 +102,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
           message={ctaMessage}
           className="w-full text-lg py-6"
         >
-          Quero falar no WhatsApp
+          {ctaButtonText}
         </WhatsAppButton>
 
         <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-2">

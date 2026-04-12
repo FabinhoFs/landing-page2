@@ -1,6 +1,7 @@
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { StickyHeader } from "@/components/landing/StickyHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { SocialProofBar } from "@/components/landing/SocialProofBar";
 import { PainSection } from "@/components/landing/PainSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PricingSection } from "@/components/landing/PricingSection";
@@ -39,42 +40,46 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* 00 — Header */}
       <StickyHeader city={cityDisplay} />
 
-      {/* 1 — Hero */}
+      {/* 01 — Hero */}
       <HeroSection city={city} detected={detected} />
 
-      {/* 2 — Dor e Urgência */}
+      {/* Barra de Prova Social */}
+      <SocialProofBar />
+
+      {/* 02 — Dores */}
       <PainSection />
 
-      {/* 3 — Como Funciona */}
+      {/* 03 — Como Funciona */}
       <HowItWorksSection />
 
-      {/* 4 — Ofertas / Produtos */}
+      {/* 04 — Ofertas */}
       <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
 
-      {/* 5 — Diferenciais */}
+      {/* 05 — Diferenciais */}
       <BenefitsSection />
 
-      {/* 6 — Depoimentos */}
+      {/* 06 — Depoimentos */}
       <TestimonialsSection />
 
-      {/* 7 — Garantia */}
+      {/* 07 — Segurança */}
       <GuaranteeSection city={cityDisplay} />
 
-      {/* 8 — Autoridade */}
+      {/* 08 — Institucional */}
       <AuthoritySection />
 
-      {/* 9 — FAQ */}
+      {/* 09 — FAQ */}
       <FAQSection city={cityDisplay} />
 
-      {/* 10 — CTA Final */}
+      {/* 11 — CTA Final */}
       <CTASection city={cityDisplay} />
 
-      {/* 11 — Rodapé */}
+      {/* 12 — Rodapé */}
       <Footer />
 
-      {/* Overlays */}
+      {/* 13 — WhatsApp Flutuante */}
       <FloatingWhatsApp />
       <StickyMobileCTA city={cityDisplay} />
       <ExitIntentPopup city={cityDisplay} />
