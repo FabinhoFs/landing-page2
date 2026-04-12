@@ -83,28 +83,38 @@ export function useTracking() {
     if (loaded) return;
     loaded = true;
 
-    (async () => {
-      const { data } = await supabase
-        .from("site_settings" as any)
-        .select("key, value")
-        .eq("environment", "published")
-        .in("key", ["g_tag_id", "g_ads_purchase_label", "meta_pixel_id", "g_tag_manager_id"]);
+    // Defer tracking scripts so they don't compete with LCP / hero paint
+    const bootstrap = () => {
+      (async () => {
+        const { data } = await supabase
+          .from("site_settings" as any)
+          .select("key, value")
+          .eq("environment", "published")
+          .in("key", ["g_tag_id", "g_ads_purchase_label", "meta_pixel_id", "g_tag_manager_id"]);
 
-      const cfg: TrackingConfig = {
-        g_tag_id: "",
-        g_ads_purchase_label: "",
-        meta_pixel_id: "",
-        g_tag_manager_id: "",
-      };
-      (data as any[])?.forEach((r: any) => {
-        if (r.key in cfg) (cfg as any)[r.key] = r.value;
-      });
-      configRef.current = cfg;
+        const cfg: TrackingConfig = {
+          g_tag_id: "",
+          g_ads_purchase_label: "",
+          meta_pixel_id: "",
+          g_tag_manager_id: "",
+        };
+        (data as any[])?.forEach((r: any) => {
+          if (r.key in cfg) (cfg as any)[r.key] = r.value;
+        });
+        configRef.current = cfg;
 
-      if (cfg.g_tag_id) injectGtag(cfg.g_tag_id);
-      if (cfg.g_tag_manager_id) injectGTM(cfg.g_tag_manager_id);
-      if (cfg.meta_pixel_id) injectMetaPixel(cfg.meta_pixel_id);
-    })();
+        if (cfg.g_tag_id) injectGtag(cfg.g_tag_id);
+        if (cfg.g_tag_manager_id) injectGTM(cfg.g_tag_manager_id);
+        if (cfg.meta_pixel_id) injectMetaPixel(cfg.meta_pixel_id);
+      })();
+    };
+
+    // Use requestIdleCallback where available, else setTimeout 2s
+    if ("requestIdleCallback" in window) {
+      (window as any).requestIdleCallback(bootstrap, { timeout: 3000 });
+    } else {
+      setTimeout(bootstrap, 2000);
+    }
   }, []);
 
   const trackPurchase = useCallback((value: number, productName: string) => {

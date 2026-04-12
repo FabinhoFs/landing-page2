@@ -1,6 +1,6 @@
 import { ShieldCheck, Zap, Users, Headphones } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
-import { getIconComponent } from "@/components/admin/IconPicker";
+import { getLandingIcon } from "@/lib/iconMap";
 
 const DEFAULT_ITEMS = [
   { icon: "ShieldCheck", text: "Emissão oficial ICP-Brasil" },
@@ -30,7 +30,7 @@ export const SocialProofBar = () => {
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {items.map((item, i) => {
-            const Icon = getIconComponent(item.icon) || ShieldCheck;
+            const Icon = getLandingIcon(item.icon) || ShieldCheck;
             return (
               <div
                 key={i}

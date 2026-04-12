@@ -3,7 +3,7 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { useExperiment } from "@/hooks/useExperiment";
 import { useUtmPersonalization } from "@/hooks/useUtmPersonalization";
-import { getIconComponent } from "@/components/admin/IconPicker";
+import { getLandingIcon } from "@/lib/iconMap";
 
 interface HeroSectionProps {
   city: string | null;
@@ -154,7 +154,7 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
           {bullets.map((b: any, i: number) => {
-              const Icon = (b.icon && getIconComponent(b.icon)) || MessageCircle;
+              const Icon = (b.icon && getLandingIcon(b.icon)) || MessageCircle;
               return (
                 <div key={i} className="flex items-center gap-2 text-sm text-deep-foreground/80">
                   <Icon className="h-4 w-4 text-primary shrink-0" />
