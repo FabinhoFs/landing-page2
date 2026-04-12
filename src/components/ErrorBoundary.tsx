@@ -9,6 +9,9 @@ interface State {
   hasError: boolean;
 }
 
+const RELOAD_KEY = "error_boundary_reload_count";
+const MAX_RELOADS = 2;
+
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -25,8 +28,14 @@ class ErrorBoundary extends Component<Props, State> {
       /dynamically imported module|Failed to fetch/i.test(error.message);
 
     if (isChunkError) {
-      window.location.reload();
-      return;
+      const count = parseInt(sessionStorage.getItem(RELOAD_KEY) || "0", 10);
+      if (count < MAX_RELOADS) {
+        sessionStorage.setItem(RELOAD_KEY, String(count + 1));
+        window.location.reload();
+        return;
+      }
+      // Max reloads reached — fall through to error UI
+      sessionStorage.removeItem(RELOAD_KEY);
     }
 
     console.error("[ErrorBoundary]", error, info);
@@ -45,7 +54,10 @@ class ErrorBoundary extends Component<Props, State> {
             Ocorreu um erro inesperado.
           </p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              sessionStorage.removeItem(RELOAD_KEY);
+              window.location.reload();
+            }}
             className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
           >
             Recarregar página
