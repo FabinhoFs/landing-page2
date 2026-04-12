@@ -86,8 +86,16 @@ const Index = () => {
     return <PageSkeleton />;
   }
 
+  // Show preview banner if viewing draft
+  const isPreview = new URLSearchParams(window.location.search).get("preview") === "draft";
+
   return (
     <div className="min-h-screen bg-background">
+      {isPreview && (
+        <div className="sticky top-0 z-[100] bg-amber-500 text-amber-950 text-center text-sm font-semibold py-2 px-4">
+          ⚠️ MODO PRÉVIA — Você está visualizando o <strong>rascunho</strong>. Esta versão NÃO está pública.
+        </div>
+      )}
       <StickyHeader city={cityDisplay} />
       <HeroSection city={city} detected={detected} />
       <SocialProofBar />
