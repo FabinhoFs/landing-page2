@@ -8,9 +8,17 @@ import { toast } from "sonner";
 import {
   Save, Globe, ShoppingCart, Facebook, ShieldAlert, CheckCircle2,
   AlertCircle, XCircle, HelpCircle, ExternalLink, ClipboardCopy,
-  Zap, Info,
+  Zap, Info, MapPin,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +32,9 @@ const KEYS = [
   "meta_pixel_id",
   "g_tag_manager_id",
 ] as const;
+
+const GEO_KEYS = ["geo_provider", "geo_api_key", "geo_fallback"] as const;
+type GeoKeys = (typeof GEO_KEYS)[number];
 
 type ConfigKeys = (typeof KEYS)[number];
 
