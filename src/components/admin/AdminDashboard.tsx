@@ -9,6 +9,7 @@ import {
   Download, Trash2, BarChart3, MapPin, MousePointerClick, TrendingUp,
   Trophy, Target, Filter, FileText, Smartphone, Monitor, Layers,
   Clock, CalendarDays, Activity, Zap, Globe, MessageSquare, Flame,
+  Award, Medal,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -84,6 +85,9 @@ const SECTION_COLORS: Record<string, string> = {
   Outros: "hsl(0, 0%, 60%)",
 };
 
+const MEDAL_COLORS = ["hsl(45, 100%, 50%)", "hsl(0, 0%, 75%)", "hsl(25, 60%, 45%)"];
+const MEDAL_ICONS = ["🥇", "🥈", "🥉"];
+
 const periodLabel: Record<Period, string> = {
   today: "Hoje",
   "7d": "Últimos 7 dias",
@@ -112,7 +116,6 @@ const filterByProduct = (logs: LogEntry[], filter: ProductFilter) => {
   return logs.filter((l) => l.button_id.toLowerCase().includes("cnpj"));
 };
 
-// Truncate helper with full text available
 const TruncatedText = ({ text, maxLen = 28 }: { text: string; maxLen?: number }) => {
   if (text.length <= maxLen) return <span>{text}</span>;
   return (
@@ -222,6 +225,11 @@ export const AdminDashboard = () => {
       .sort((a, b) => b.value - a.value);
   }, [logs]);
 
+  // Top section
+  const topSection = useMemo(() => {
+    return sectionData.length > 0 ? sectionData[0] : null;
+  }, [sectionData]);
+
   // Per-CTA bar chart
   const buttonData = useMemo(() => {
     const map: Record<string, number> = {};
@@ -243,7 +251,7 @@ export const AdminDashboard = () => {
     return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => a.name.localeCompare(b.name));
   }, [logs, period]);
 
-  // City data — full city + UF
+  // City data
   const cityData = useMemo(() => {
     const map: Record<string, number> = {};
     logs.forEach((l) => {
@@ -273,7 +281,7 @@ export const AdminDashboard = () => {
     return days;
   }, [logs]);
 
-  // Product breakdown (e-CPF vs e-CNPJ vs other)
+  // Product breakdown
   const productData = useMemo(() => {
     let cpf = 0, cnpj = 0, other = 0;
     logs.forEach((l) => {
@@ -367,6 +375,18 @@ export const AdminDashboard = () => {
     color: "hsl(var(--foreground))",
   };
 
+  // Best hour
+  const bestHour = useMemo(() => {
+    const best = hourlyData.reduce((a, b) => a.total > b.total ? a : b, hourlyData[0]);
+    return best.total > 0 ? best : null;
+  }, [hourlyData]);
+
+  // Best day
+  const bestDay = useMemo(() => {
+    const best = dayOfWeekData.reduce((a, b) => a.total > b.total ? a : b, dayOfWeekData[0]);
+    return best.total > 0 ? best : null;
+  }, [dayOfWeekData]);
+
   // ─── Export CSV ─────────────
   const exportCSV = () => {
     const header = "Data,CTA (técnico),CTA (amigável),Seção,Cidade,UF,Dispositivo,IP\n";
@@ -397,6 +417,7 @@ export const AdminDashboard = () => {
     pdf.setFontSize(10); pdf.setTextColor(60);
     pdf.text(`Total de Cliques: ${totalClicks}`, m, y); y += 6;
     pdf.text(`CTA Mais Clicado: ${topCta?.name || "—"} (${topCta?.count || 0} cliques)`, m, y); y += 6;
+    pdf.text(`Seção Campeã: ${topSection?.name || "—"} (${topSection?.value || 0} cliques)`, m, y); y += 6;
     pdf.text(`Cidade Líder: ${topCity?.name || "—"} (${topCity?.count || 0} cliques)`, m, y); y += 6;
     pdf.text(`Mobile: ${deviceStats.mobile} (${deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%)  |  Desktop: ${deviceStats.desktop} (${deviceStats.total ? Math.round(deviceStats.desktop / deviceStats.total * 100) : 0}%)`, m, y);
     y += 10;
@@ -405,11 +426,12 @@ export const AdminDashboard = () => {
     pdf.setFontSize(8); pdf.setTextColor(255, 255, 255);
     pdf.setFillColor(60, 60, 60);
     pdf.rect(m, y - 4, w - 2 * m, 7, "F");
-    const cols = [m, m + 60, m + 90, m + 115];
-    pdf.text("CTA", cols[0] + 1, y);
-    pdf.text("Seção", cols[1] + 1, y);
-    pdf.text("Cliques", cols[2] + 1, y);
-    pdf.text("%", cols[3] + 1, y);
+    const cols = [m, m + 10, m + 70, m + 100, m + 125];
+    pdf.text("#", cols[0] + 1, y);
+    pdf.text("CTA", cols[1] + 1, y);
+    pdf.text("Seção", cols[2] + 1, y);
+    pdf.text("Cliques", cols[3] + 1, y);
+    pdf.text("%", cols[4] + 1, y);
     y += 6;
     pdf.setTextColor(50);
     ctaTableData.forEach((row, i) => {
@@ -417,10 +439,11 @@ export const AdminDashboard = () => {
       if (y > 270) { pdf.addPage(); y = 15; }
       if (i % 2 === 0) { pdf.setFillColor(245, 245, 245); pdf.rect(m, y - 4, w - 2 * m, 6, "F"); }
       pdf.setFontSize(7);
-      pdf.text(row.label, cols[0] + 1, y);
-      pdf.text(row.section, cols[1] + 1, y);
-      pdf.text(String(row.clicks), cols[2] + 1, y);
-      pdf.text(row.pct.toFixed(1) + "%", cols[3] + 1, y);
+      pdf.text(String(i + 1), cols[0] + 1, y);
+      pdf.text(row.label, cols[1] + 1, y);
+      pdf.text(row.section, cols[2] + 1, y);
+      pdf.text(String(row.clicks), cols[3] + 1, y);
+      pdf.text(row.pct.toFixed(1) + "%", cols[4] + 1, y);
       y += 6;
     });
     pdf.save(`relatorio_${period}_${product}.pdf`);
@@ -435,18 +458,6 @@ export const AdminDashboard = () => {
     else { toast({ title: "Logs antigos removidos!" }); fetchLogs(); }
   };
 
-  // Best hour
-  const bestHour = useMemo(() => {
-    const best = hourlyData.reduce((a, b) => a.total > b.total ? a : b, hourlyData[0]);
-    return best.total > 0 ? best : null;
-  }, [hourlyData]);
-
-  // Best day
-  const bestDay = useMemo(() => {
-    const best = dayOfWeekData.reduce((a, b) => a.total > b.total ? a : b, dayOfWeekData[0]);
-    return best.total > 0 ? best : null;
-  }, [dayOfWeekData]);
-
   return (
     <div className="space-y-6">
       {/* Header + Filters */}
@@ -454,7 +465,7 @@ export const AdminDashboard = () => {
         <div>
           <h2 className="text-lg font-bold text-foreground">📊 Inteligência de Conversão</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Analise quais CTAs, seções, horários e origens geram mais cliques na sua landing page.
+            Analise quais CTAs, seções e origens geram mais cliques na sua landing page.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -477,100 +488,59 @@ export const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* ─── SUMMARY CARDS — 2 ROWS of 3 ──────────── */}
-      <div className="space-y-4">
-        {/* Row 1 */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 hover:scale-110 hover:rotate-3">
-                <MousePointerClick className="h-6 w-6 text-primary animate-[bounce_2s_ease-in-out_infinite]" />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-3xl font-bold text-foreground leading-none">{totalClicks}</p>
-                <p className="text-sm font-medium text-muted-foreground">Total de Cliques</p>
-                <p className="text-xs text-muted-foreground/60">Todos os CTAs no período</p>
-              </div>
-            </CardContent>
-          </Card>
+      {/* ═══════════════════════════════════════════════════
+          BLOCO 1 — CAMPEÕES (Seção + CTA + Total)
+          ═══════════════════════════════════════════════════ */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        <Card className="border-2 border-primary/20 bg-primary/5">
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+              <Trophy className="h-7 w-7 text-primary animate-[pulse_3s_ease-in-out_infinite]" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary/70">Seção Campeã</p>
+              <p className="text-xl font-bold text-foreground leading-tight">
+                {topSection?.name || "—"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {topSection ? `${topSection.value} cliques (${totalClicks > 0 ? (topSection.value / totalClicks * 100).toFixed(1) : 0}%)` : "Sem dados"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:-rotate-3" style={{ backgroundColor: "hsla(142, 70%, 40%, 0.1)" }}>
-                <Trophy className="h-6 w-6 animate-[pulse_3s_ease-in-out_infinite]" style={{ color: "hsl(142, 70%, 40%)" }} />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-base font-bold text-foreground leading-snug">
-                  <TruncatedText text={topCta?.name || "—"} maxLen={32} />
-                </p>
-                <p className="text-sm font-medium text-muted-foreground">CTA Mais Clicado</p>
-                <p className="text-xs text-muted-foreground/60">{topCta ? `${topCta.count} cliques no período` : "Sem dados"}</p>
-              </div>
-            </CardContent>
-          </Card>
+        <Card className="border-2 border-primary/20 bg-primary/5">
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+              <Award className="h-7 w-7 text-primary animate-[bounce_2s_ease-in-out_infinite]" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary/70">CTA Campeão</p>
+              <p className="text-base font-bold text-foreground leading-snug">
+                <TruncatedText text={topCta?.name || "—"} maxLen={28} />
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {topCta ? `${topCta.count} cliques no período` : "Sem dados"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:rotate-3" style={{ backgroundColor: "hsla(200, 60%, 50%, 0.1)" }}>
-                <MapPin className="h-6 w-6 animate-[bounce_2.5s_ease-in-out_infinite_0.5s]" style={{ color: "hsl(200, 60%, 50%)" }} />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-base font-bold text-foreground leading-snug">
-                  <TruncatedText text={topCity?.name || "—"} maxLen={32} />
-                </p>
-                <p className="text-sm font-medium text-muted-foreground">Cidade Líder</p>
-                <p className="text-xs text-muted-foreground/60">{topCity ? `${topCity.count} interações` : "Sem dados"}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Row 2 */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:-rotate-3" style={{ backgroundColor: "hsla(30, 80%, 55%, 0.1)" }}>
-                <Smartphone className="h-6 w-6 animate-[pulse_2.5s_ease-in-out_infinite_0.3s]" style={{ color: "hsl(30, 80%, 55%)" }} />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-3xl font-bold text-foreground leading-none">
-                  {deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%
-                </p>
-                <p className="text-sm font-medium text-muted-foreground">Acessos Mobile</p>
-                <p className="text-xs text-muted-foreground/60">{deviceStats.mobile} mobile · {deviceStats.desktop} desktop</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:rotate-6" style={{ backgroundColor: "hsla(280, 54%, 33%, 0.1)" }}>
-                <Clock className="h-6 w-6 animate-[spin_8s_linear_infinite]" style={{ color: "hsl(280, 54%, 33%)" }} />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-3xl font-bold text-foreground leading-none">{bestHour ? bestHour.hour : "—"}</p>
-                <p className="text-sm font-medium text-muted-foreground">Melhor Horário</p>
-                <p className="text-xs text-muted-foreground/60">{bestHour ? `${bestHour.total} cliques neste horário` : "Sem dados"}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:-rotate-6" style={{ backgroundColor: "hsla(350, 65%, 50%, 0.1)" }}>
-                <CalendarDays className="h-6 w-6 animate-[pulse_3s_ease-in-out_infinite_0.8s]" style={{ color: "hsl(350, 65%, 50%)" }} />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-3xl font-bold text-foreground leading-none">{bestDay ? bestDay.name : "—"}</p>
-                <p className="text-sm font-medium text-muted-foreground">Melhor Dia da Semana</p>
-                <p className="text-xs text-muted-foreground/60">{bestDay ? `${bestDay.total} cliques neste dia` : "Sem dados"}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <MousePointerClick className="h-7 w-7 text-primary animate-[bounce_2s_ease-in-out_infinite]" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total de Cliques</p>
+              <p className="text-3xl font-bold text-foreground leading-none">{totalClicks}</p>
+              <p className="text-sm text-muted-foreground">Todos os CTAs no período</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* ─── LAST INTERACTION ──────────────────────── */}
+      {/* Last interaction */}
       {lastInteraction && (
         <Card className="border-dashed">
           <CardContent className="flex flex-wrap items-center gap-4 py-3">
@@ -583,20 +553,157 @@ export const AdminDashboard = () => {
         </Card>
       )}
 
-      {/* ─── CTA TABLE ──────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════
+          BLOCO 2 — MAPA DE CALOR POR SEÇÃO
+          ═══════════════════════════════════════════════════ */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Target className="h-4 w-4" />
-            Mapa Completo de CTAs Rastreados
+            <Flame className="h-4 w-4" />
+            Mapa de Calor — Participação por Seção
           </CardTitle>
-          <CardDescription>Todos os pontos de conversão da landing page com cliques, seção e participação relativa.</CardDescription>
+          <CardDescription>Visualize de imediato onde a landing page mais converte. Quanto mais quente a cor, maior a participação da seção.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {heatmapData.map((s, idx) => {
+              const isChampion = idx === 0 && sectionData.length > 0 && s.clicks > 0 && s.name === sectionData[0]?.name;
+              const hue = s.intensity > 0.6 ? 0 : s.intensity > 0.3 ? 30 : 200;
+              const sat = Math.round(40 + s.intensity * 50);
+              const light = Math.round(55 - s.intensity * 15);
+              const barColor = s.clicks > 0 ? `hsl(${hue}, ${sat}%, ${light}%)` : "hsl(var(--muted))";
+              const bgOpacity = 0.08 + s.intensity * 0.15;
+
+              return (
+                <div
+                  key={s.name}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all hover:scale-[1.01] ${isChampion ? "ring-2 ring-primary/30" : ""}`}
+                  style={{ backgroundColor: s.clicks > 0 ? `hsla(${hue}, ${sat}%, ${light}%, ${bgOpacity})` : undefined }}
+                >
+                  <div className="w-24 shrink-0 flex items-center gap-2">
+                    {isChampion && <span className="text-sm">🏆</span>}
+                    <span className="text-sm font-semibold text-foreground">{s.name}</span>
+                  </div>
+                  <div className="flex-1 h-5 rounded-full bg-muted/50 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.max(s.pct, s.clicks > 0 ? 2 : 0)}%`, backgroundColor: barColor }}
+                    />
+                  </div>
+                  <div className="w-20 text-right">
+                    <span className="text-sm font-bold text-foreground">{s.pct.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-20 text-right">
+                    <span className="text-xs text-muted-foreground">{s.clicks} cliques</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ═══════════════════════════════════════════════════
+          BLOCO 3 — CONVERSÃO POR SEÇÃO (gráfico + barras)
+          ═══════════════════════════════════════════════════ */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Layers className="h-4 w-4" />
+              Conversão por Seção da Página
+            </CardTitle>
+            <CardDescription>Distribuição dos cliques por área. Priorize otimizações nas seções com maior participação.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {sectionData.length > 0 ? (
+              <div className="space-y-3">
+                {sectionData.map((s, idx) => {
+                  const pct = totalClicks > 0 ? (s.value / totalClicks * 100) : 0;
+                  return (
+                    <div key={s.name} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground flex items-center gap-2">
+                          {idx < 3 && <span className="text-sm">{MEDAL_ICONS[idx]}</span>}
+                          {s.name}
+                        </span>
+                        <span className="text-muted-foreground">{s.value} cliques ({pct.toFixed(1)}%)</span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: s.fill }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="py-10 text-center text-muted-foreground">Sem dados no período.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Section pie chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Target className="h-4 w-4" />
+              Distribuição Visual por Seção
+            </CardTitle>
+            <CardDescription>Visão proporcional: qual fatia da conversão cada seção representa.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {sectionData.length > 0 ? (
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={sectionData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%" cy="50%"
+                      outerRadius={90}
+                      innerRadius={40}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {sectionData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionData.map((s) => (
+                    <div key={s.name} className="flex items-center gap-2 text-xs">
+                      <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: s.fill }} />
+                      <span className="text-foreground font-medium">{s.name}</span>
+                      <span className="text-muted-foreground ml-auto">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════
+          BLOCO 4 — RANKING COMPLETO DE CTAs
+          ═══════════════════════════════════════════════════ */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BarChart3 className="h-4 w-4" />
+            Ranking Completo de CTAs
+          </CardTitle>
+          <CardDescription>Todos os pontos de conversão da landing page, ordenados por cliques. Nome amigável, seção e participação relativa.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
+                  <th className="py-2 pr-2 font-semibold text-muted-foreground w-10">#</th>
                   <th className="py-2 pr-3 font-semibold text-muted-foreground">CTA</th>
                   <th className="py-2 pr-3 font-semibold text-muted-foreground">Seção</th>
                   <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Cliques</th>
@@ -605,8 +712,15 @@ export const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {ctaTableData.map((row) => (
-                  <tr key={row.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                {ctaTableData.map((row, idx) => (
+                  <tr key={row.id} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${idx < 3 && row.clicks > 0 ? "bg-primary/5" : ""}`}>
+                    <td className="py-2.5 pr-2 text-center">
+                      {idx < 3 && row.clicks > 0 ? (
+                        <span className="text-base">{MEDAL_ICONS[idx]}</span>
+                      ) : (
+                        <span className="text-xs font-mono text-muted-foreground">{idx + 1}</span>
+                      )}
+                    </td>
                     <td className="py-2.5 pr-3">
                       <div>
                         <p className="font-medium text-foreground whitespace-nowrap">
@@ -628,7 +742,7 @@ export const AdminDashboard = () => {
                     <td className="py-2.5">
                       <div className="h-2 w-full max-w-[120px] rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all"
+                          className="h-full rounded-full transition-all duration-500"
                           style={{
                             width: `${Math.min(row.pct, 100)}%`,
                             backgroundColor: SECTION_COLORS[row.section] || "hsl(var(--primary))",
@@ -644,180 +758,15 @@ export const AdminDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* ─── SECTION + GEOGRAPHIC ──────────────────── */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Section aggregation */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Layers className="h-4 w-4" />
-              Conversão por Seção da Página
-            </CardTitle>
-            <CardDescription>Qual área da landing page gera mais cliques? Ajuda a priorizar otimizações.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {sectionData.length > 0 ? (
-              <div className="space-y-3">
-                {sectionData.map((s) => {
-                  const pct = totalClicks > 0 ? (s.value / totalClicks * 100) : 0;
-                  return (
-                    <div key={s.name} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-foreground">{s.name}</span>
-                        <span className="text-muted-foreground">{s.value} cliques ({pct.toFixed(1)}%)</span>
-                      </div>
-                      <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: s.fill }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="py-10 text-center text-muted-foreground">Sem dados no período.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Geographic — chart + ranking table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <MapPin className="h-4 w-4" />
-              Origem Geográfica — Top 10 Cidades
-            </CardTitle>
-            <CardDescription>Cidades com mais interações (Cidade, UF).</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {cityData.length > 0 ? (
-              <div className="space-y-4">
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie data={cityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={false}>
-                      {cityData.map((_, i) => <Cell key={i} fill={COLORS_MIXED[i % COLORS_MIXED.length]} />)}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Ranking table */}
-                <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
-                  {cityData.map((c, i) => {
-                    const pct = totalClicks > 0 ? (c.value / totalClicks * 100) : 0;
-                    return (
-                      <div key={c.name} className="flex items-center gap-2 text-sm">
-                        <span className="w-5 text-right text-muted-foreground font-mono text-xs">{i + 1}.</span>
-                        <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS_MIXED[i % COLORS_MIXED.length] }} />
-                        <span className="font-medium text-foreground flex-1 min-w-0">
-                          <TruncatedText text={c.name} maxLen={30} />
-                        </span>
-                        <span className="text-muted-foreground whitespace-nowrap">{c.value} ({pct.toFixed(1)}%)</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ─── HOURLY + DAY OF WEEK ──────────────────── */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Hourly distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-4 w-4" />
-              Distribuição por Hora do Dia
-            </CardTitle>
-            <CardDescription>Em quais horários os visitantes mais clicam? Ajuda a programar campanhas.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {logs.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={hourlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="hour" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval={1} />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="total" fill="hsl(280, 54%, 33%)" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Day of week */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CalendarDays className="h-4 w-4" />
-              Distribuição por Dia da Semana
-            </CardTitle>
-            <CardDescription>Quais dias geram mais cliques? Ajuda a ajustar orçamento de mídia.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {logs.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={dayOfWeekData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="total" fill="hsl(350, 65%, 50%)" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ─── VOLUME TIMELINE ──────────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingUp className="h-4 w-4" />
-            Evolução Temporal — {period === "today" ? "Cliques por Hora" : "Cliques por Dia"}
-          </CardTitle>
-          <CardDescription>
-            {period === "today"
-              ? "Distribuição dos cliques ao longo do dia."
-              : "Tendência de cliques no período. Identifique picos e quedas para avaliar o impacto de alterações na LP ou nas campanhas."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {volumeData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={volumeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Line type="monotone" dataKey="total" stroke="hsl(200, 60%, 50%)" strokeWidth={2} dot={{ fill: "hsl(200, 60%, 50%)", r: 4 }} activeDot={{ r: 6 }} name="Cliques" />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="py-10 text-center text-muted-foreground">{loading ? "Carregando..." : "Sem dados no período."}</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ─── CTA BAR + PRODUCT BREAKDOWN ──────────── */}
+      {/* ─── CTA BAR CHART + PRODUCT BREAKDOWN ──────── */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* CTA bar chart — 2 cols */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <BarChart3 className="h-4 w-4" />
-              Ranking de CTAs por Cliques
+              Comparativo Visual de CTAs
             </CardTitle>
-            <CardDescription>Comparação direta entre todos os botões de conversão. O mais longo = mais clicado.</CardDescription>
+            <CardDescription>Comparação direta entre todos os botões de conversão.</CardDescription>
           </CardHeader>
           <CardContent>
             {buttonData.length > 0 ? (
@@ -838,14 +787,13 @@ export const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Product breakdown */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Zap className="h-4 w-4" />
               Interesse por Produto
             </CardTitle>
-            <CardDescription>e-CPF vs e-CNPJ — qual produto gera mais intenção de compra?</CardDescription>
+            <CardDescription>e-CPF vs e-CNPJ — qual produto gera mais intenção?</CardDescription>
           </CardHeader>
           <CardContent>
             {productData.length > 0 ? (
@@ -877,63 +825,6 @@ export const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* ─── DEVICE BREAKDOWN ──────────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <Smartphone className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-xl font-bold text-foreground">{deviceStats.mobile}</p>
-              <p className="text-sm text-muted-foreground">Cliques via Mobile ({deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}%)</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <Monitor className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-xl font-bold text-foreground">{deviceStats.desktop}</p>
-              <p className="text-sm text-muted-foreground">Cliques via Desktop ({deviceStats.total ? Math.round(deviceStats.desktop / deviceStats.total * 100) : 0}%)</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ─── HEATMAP VISUAL ────────────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Flame className="h-4 w-4" />
-            Mapa de Calor por Seção
-          </CardTitle>
-          <CardDescription>Intensidade de cliques em cada área da landing page. Quanto mais quente, mais cliques.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {heatmapData.map((s) => {
-              const r = Math.round(255 * s.intensity);
-              const g = Math.round(100 * (1 - s.intensity));
-              const b = Math.round(50 * (1 - s.intensity));
-              const bgColor = s.clicks > 0
-                ? `rgba(${r}, ${g}, ${b}, ${0.15 + s.intensity * 0.6})`
-                : "hsl(var(--muted))";
-              const textColor = s.intensity > 0.5 ? `rgb(${r}, ${g}, ${b})` : "hsl(var(--foreground))";
-              return (
-                <div
-                  key={s.name}
-                  className="rounded-lg p-4 text-center transition-all hover:scale-105"
-                  style={{ backgroundColor: bgColor }}
-                >
-                  <p className="text-2xl font-bold" style={{ color: textColor }}>{s.pct.toFixed(0)}%</p>
-                  <p className="text-xs font-medium text-muted-foreground mt-1">{s.name}</p>
-                  <p className="text-xs text-muted-foreground/60">{s.clicks} cliques</p>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* ─── CTA MESSAGE RANKING ──────────────────── */}
       <Card>
         <CardHeader>
@@ -949,7 +840,7 @@ export const AdminDashboard = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left">
-                    <th className="py-2 pr-3 font-semibold text-muted-foreground">#</th>
+                    <th className="py-2 pr-2 font-semibold text-muted-foreground w-10">#</th>
                     <th className="py-2 pr-3 font-semibold text-muted-foreground">CTA</th>
                     <th className="py-2 pr-3 font-semibold text-muted-foreground">Mensagem</th>
                     <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Cliques</th>
@@ -957,8 +848,10 @@ export const AdminDashboard = () => {
                 </thead>
                 <tbody>
                   {ctaMessageRanking.map((row, i) => (
-                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                      <td className="py-2.5 pr-3 font-mono text-xs text-muted-foreground">{i + 1}</td>
+                    <tr key={i} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i < 3 ? "bg-primary/5" : ""}`}>
+                      <td className="py-2.5 pr-2 text-center">
+                        {i < 3 ? <span className="text-base">{MEDAL_ICONS[i]}</span> : <span className="text-xs font-mono text-muted-foreground">{i + 1}</span>}
+                      </td>
                       <td className="py-2.5 pr-3">
                         <p className="font-medium text-foreground text-xs">{row.ctaLabel}</p>
                         <Badge variant="outline" className="text-[10px] mt-0.5">{row.section}</Badge>
@@ -980,6 +873,173 @@ export const AdminDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* ─── SUMMARY CARDS — Row 2 ──────────── */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-4">
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <MapPin className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground leading-snug">
+                <TruncatedText text={topCity?.name || "—"} maxLen={20} />
+              </p>
+              <p className="text-xs text-muted-foreground">Cidade líder</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Smartphone className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}% Mobile</p>
+              <p className="text-xs text-muted-foreground">{deviceStats.mobile} mob · {deviceStats.desktop} desk</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Clock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{bestHour ? bestHour.hour : "—"}</p>
+              <p className="text-xs text-muted-foreground">Melhor horário</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <CalendarDays className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{bestDay ? bestDay.name : "—"}</p>
+              <p className="text-xs text-muted-foreground">Melhor dia</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ─── GEOGRAPHIC ──────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MapPin className="h-4 w-4" />
+            Origem Geográfica — Top 10 Cidades
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {cityData.length > 0 ? (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie data={cityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={false}>
+                    {cityData.map((_, i) => <Cell key={i} fill={COLORS_MIXED[i % COLORS_MIXED.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-1.5 max-h-[220px] overflow-y-auto">
+                {cityData.map((c, i) => {
+                  const pct = totalClicks > 0 ? (c.value / totalClicks * 100) : 0;
+                  return (
+                    <div key={c.name} className="flex items-center gap-2 text-sm">
+                      <span className="w-5 text-right text-muted-foreground font-mono text-xs">{i + 1}.</span>
+                      <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS_MIXED[i % COLORS_MIXED.length] }} />
+                      <span className="font-medium text-foreground flex-1 min-w-0">
+                        <TruncatedText text={c.name} maxLen={30} />
+                      </span>
+                      <span className="text-muted-foreground whitespace-nowrap">{c.value} ({pct.toFixed(1)}%)</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ─── HOURLY + DAY OF WEEK ──────────────────── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4" />
+              Distribuição por Hora do Dia
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {logs.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={hourlyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="hour" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval={1} />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="total" fill="hsl(280, 54%, 33%)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CalendarDays className="h-4 w-4" />
+              Distribuição por Dia da Semana
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {logs.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={dayOfWeekData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="total" fill="hsl(350, 65%, 50%)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-10 text-center text-muted-foreground">Sem dados.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ─── VOLUME TIMELINE ──────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <TrendingUp className="h-4 w-4" />
+            Evolução Temporal — {period === "today" ? "Cliques por Hora" : "Cliques por Dia"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {volumeData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={volumeData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line type="monotone" dataKey="total" stroke="hsl(200, 60%, 50%)" strokeWidth={2} dot={{ fill: "hsl(200, 60%, 50%)", r: 4 }} activeDot={{ r: 6 }} name="Cliques" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="py-10 text-center text-muted-foreground">{loading ? "Carregando..." : "Sem dados no período."}</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* ─── UTM ANALYTICS ────────────────────────── */}
       {utmData.utmCount > 0 && (
         <Card>
@@ -989,12 +1049,11 @@ export const AdminDashboard = () => {
               Análise de UTMs — Origem do Tráfego
             </CardTitle>
             <CardDescription>
-              {utmData.utmCount} cliques com UTM detectados. Entenda de onde vem o tráfego pago.
+              {utmData.utmCount} cliques com UTM detectados.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 lg:grid-cols-3">
-              {/* Sources */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Origens (utm_source)</h4>
                 {utmData.sources.length > 0 ? (
@@ -1008,7 +1067,6 @@ export const AdminDashboard = () => {
                   </div>
                 ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
               </div>
-              {/* Mediums */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Mídia (utm_medium)</h4>
                 {utmData.mediums.length > 0 ? (
@@ -1022,7 +1080,6 @@ export const AdminDashboard = () => {
                   </div>
                 ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
               </div>
-              {/* Campaigns */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Campanhas (utm_campaign)</h4>
                 {utmData.campaigns.length > 0 ? (
