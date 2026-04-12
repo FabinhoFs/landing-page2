@@ -1,0 +1,83 @@
+# ============================================
+# Agis Digital LP — Docker Swarm Stack
+# Para uso com: docker stack deploy / Portainer
+# ============================================
+#
+# Uso via CLI:
+#   docker stack deploy -c deploy/docker-stack.yml agis
+#
+# Uso via Portainer:
+#   Stacks → Add stack → Upload ou colar este arquivo
+#   Definir variáveis de ambiente na UI do Portainer
+#
+# Variáveis obrigatórias (definir como env ou no Portainer):
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_PUBLISHABLE_KEY
+#
+# IMPORTANTE: Docker Swarm NÃO suporta "build" inline.
+# A imagem deve ser construída ANTES do deploy:
+#   docker build --build-arg VITE_SUPABASE_URL=... \
+#                --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... \
+#                -f deploy/Dockerfile -t agis-lp:latest .
+
+version: "3.8"
+
+services:
+  agis-lp:
+    image: agis-lp:latest
+    ports:
+      - target: 80
+        published: ${APP_PORT:-3000}
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5
+        window: 60s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        order: stop-first
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.50"
+        reservations:
+          memory: 32M
+          cpus: "0.10"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - app-network
+
+    # ── Para uso com Traefik ──
+    # 1. Remova a seção "ports" acima
+    # 2. Descomente as labels abaixo
+    # 3. Descomente a rede "traefik-public" e adicione ao serviço
+    #
+    # deploy:
+    #   labels:
+    #     - "traefik.enable=true"
+    #     - "traefik.http.routers.agis-lp.rule=Host(`seudominio.com.br`)"
+    #     - "traefik.http.routers.agis-lp.entrypoints=websecure"
+    #     - "traefik.http.routers.agis-lp.tls.certresolver=letsencrypt"
+    #     - "traefik.http.services.agis-lp.loadbalancer.server.port=80"
+    #     - "traefik.docker.network=traefik-public"
+
+networks:
+  app-network:
+    driver: overlay
+  # traefik-public:
+  #   external: true
