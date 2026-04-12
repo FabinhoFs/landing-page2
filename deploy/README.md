@@ -204,11 +204,11 @@ sudo certbot --nginx -d seudominio.com.br -d www.seudominio.com.br
 
 ### Opção C: Traefik (Docker Swarm)
 
-Edite o `docker-compose.yml`:
+Edite o `deploy/docker-stack.yml`:
 1. Remova a seção `ports`
 2. Descomente as labels do Traefik e a rede `traefik-public`
 3. Substitua `seudominio.com.br` pelo seu domínio
-4. Suba com `docker stack deploy -c deploy/docker-compose.yml agis`
+4. Suba com `docker stack deploy -c deploy/docker-stack.yml agis`
 
 ---
 
@@ -255,7 +255,95 @@ O painel `/admin` usa Supabase Auth com email/senha e `localStorage` para persis
 
 ---
 
-## 10. Banco de Dados (Primeira Instalação)
+## 10. Deploy via Docker Swarm / Portainer
+
+O projeto inclui `deploy/docker-stack.yml` otimizado para Swarm.
+
+### 10.1 Pré-requisito: Build da Imagem
+
+Docker Swarm **não suporta `build` inline**. Construa a imagem antes:
+
+```bash
+docker build \
+  --build-arg VITE_SUPABASE_URL="https://xxx.supabase.co" \
+  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY="eyJ..." \
+  -f deploy/Dockerfile \
+  -t agis-lp:latest .
+```
+
+> Em clusters multi-node, publique a imagem num registry (Docker Hub, GitHub Container Registry, registry privado) e atualize o campo `image:` no stack file.
+
+### 10.2 Deploy via CLI
+
+```bash
+docker stack deploy -c deploy/docker-stack.yml agis
+```
+
+### 10.3 Deploy via Portainer
+
+1. Acesse **Stacks → Add stack**
+2. Cole o conteúdo de `deploy/docker-stack.yml` ou faça upload
+3. Em **Environment variables**, defina:
+   - `APP_PORT` — porta de publicação (padrão: `3000`)
+4. Clique em **Deploy the stack**
+
+> As variáveis Vite (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) são embutidas no build. Elas **não são** variáveis de runtime — defina apenas `APP_PORT` no Portainer.
+
+### 10.4 Verificar
+
+```bash
+docker service ls
+docker service logs agis_agis-lp --tail 50
+curl -I http://localhost:3000
+```
+
+### 10.5 Atualizar a Stack
+
+Após rebuild da imagem:
+
+```bash
+docker service update --image agis-lp:latest agis_agis-lp
+```
+
+Ou via Portainer: **Stacks → agis → Update the stack** (com `Re-pull image` marcado).
+
+O `update_config` garante **zero-downtime** com `order: start-first` — o novo container sobe antes do antigo ser removido.
+
+### 10.6 Rollback
+
+```bash
+docker service rollback agis_agis-lp
+```
+
+Ou via Portainer: **Services → agis_agis-lp → Rollback**.
+
+O `rollback_config` está configurado com `order: stop-first` para liberar recursos rapidamente.
+
+### 10.7 Usar com Traefik no Swarm
+
+No `docker-stack.yml`:
+1. Remova a seção `ports`
+2. Descomente as labels do Traefik no bloco `deploy`
+3. Descomente a rede `traefik-public`
+4. Substitua `seudominio.com.br` pelo seu domínio
+5. Deploy: `docker stack deploy -c deploy/docker-stack.yml agis`
+
+### 10.8 Diferenças: Compose vs Swarm
+
+| Aspecto | `docker-compose.yml` | `docker-stack.yml` |
+|---------|---------------------|--------------------|
+| Modo | `docker compose up -d` | `docker stack deploy` |
+| Build | Suporta `build:` inline | Requer imagem pré-construída |
+| Restart | `restart: unless-stopped` | `deploy.restart_policy` |
+| Update | Rebuild + recreate | Rolling update com rollback |
+| Rede | `bridge` | `overlay` |
+| Healthcheck | Container-level | Orchestrator-managed |
+| Rollback | Manual (git checkout) | `docker service rollback` |
+| Porta | `ports: "3000:80"` | `mode: ingress` (load balanced) |
+
+---
+
+## 11. Banco de Dados (Primeira Instalação)
 
 Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar tabelas, RLS e dados iniciais.
 
