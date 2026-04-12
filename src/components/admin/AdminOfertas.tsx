@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Save, ShoppingBag, Plus, Trash2, Loader2 } from "lucide-react";
+import { Save, ShoppingBag, Plus, Trash2, Loader2, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 const DEFAULT_SECTION_TITLE = "Escolha seu Certificado Digital e inicie sua emissão agora";
@@ -59,6 +60,7 @@ export const AdminOfertas = () => {
   const allKeys = [
     "pricing_section_title", "pricing_cpf_ideal", "pricing_cnpj_ideal",
     "pricing_cta_cpf", "pricing_cta_cnpj", "pricing_micro", "support_text",
+    "bestseller_active", "bestseller_product",
     ...Array.from({ length: 10 }, (_, i) => `cpf_uso_${i + 1}`),
     ...Array.from({ length: 10 }, (_, i) => `cnpj_uso_${i + 1}`),
     ...Array.from({ length: 10 }, (_, i) => `incluso_${i + 1}`),
@@ -125,6 +127,31 @@ export const AdminOfertas = () => {
         <CardHeader><CardTitle className="text-base">Bloco "Incluso" (ambos os cards)</CardTitle></CardHeader>
         <CardContent>
           <ListEditor prefix="incluso" defaults={DEFAULT_INCLUSO} settings={settings} updateField={updateField} />
+        </CardContent>
+      </Card>
+
+      {/* Badge "Mais Vendido" */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Bell className="h-5 w-5 text-primary" />
+            Badge "Mais Vendido"
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">Exibe um selo "⭐ Mais Vendido" sobre o card escolhido na seção de preços.</p>
+          <div className="flex items-center gap-3">
+            <Switch checked={settings.bestseller_active === "true"} onCheckedChange={(v) => updateField("bestseller_active", v ? "true" : "false")} />
+            <span className="text-sm text-muted-foreground">Badge ativo</span>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Exibir no produto</Label>
+            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={settings.bestseller_product || "cnpj"} onChange={(e) => updateField("bestseller_product", e.target.value)}>
+              <option value="cpf">e-CPF A1</option>
+              <option value="cnpj">e-CNPJ A1</option>
+            </select>
+          </div>
         </CardContent>
       </Card>
 
