@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
+import { useFavicon } from "@/hooks/useFavicon";
 import { captureUtmParams } from "@/lib/logAccess";
 import { Skeleton } from "@/components/ui/skeleton";
 
