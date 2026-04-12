@@ -432,6 +432,22 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- system_errors
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='system_errors' AND policyname='Anyone can insert errors') THEN
+    CREATE POLICY "Anyone can insert errors" ON public.system_errors FOR INSERT TO anon, authenticated WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='system_errors' AND policyname='Authenticated can read errors') THEN
+    CREATE POLICY "Authenticated can read errors" ON public.system_errors FOR SELECT TO authenticated USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='system_errors' AND policyname='Authenticated can update errors') THEN
+    CREATE POLICY "Authenticated can update errors" ON public.system_errors FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='system_errors' AND policyname='Authenticated can delete errors') THEN
+    CREATE POLICY "Authenticated can delete errors" ON public.system_errors FOR DELETE TO authenticated USING (true);
+  END IF;
+END $$;
+
 -- 3. DADOS INICIAIS ───────────────────────────
 
 -- Depoimentos (9 avaliações Google)
