@@ -1,11 +1,6 @@
-import { Zap, Headphones, Video, ShieldCheck, Clock, Lock, Target, Rocket, Star, Heart, CheckCircle, Globe, Eye, Sparkles, Shield, Award, Fingerprint, FileCheck, UserCheck, FastForward } from "lucide-react";
+import { Zap, Headphones, Video, ShieldCheck } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
-import type { LucideIcon } from "lucide-react";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Zap, Headphones, Video, ShieldCheck, Clock, Lock, Target, Rocket, Star, Heart,
-  CheckCircle, Globe, Eye, Sparkles, Shield, Award, Fingerprint, FileCheck, UserCheck, FastForward,
-};
+import { getIconComponent } from "@/components/admin/IconPicker";
 
 const DEFAULT_BENEFITS = [
   { title: "Atendimento imediato", desc: "Você fala com uma equipe preparada para orientar seu processo com mais agilidade.", icon: "FastForward" },
@@ -14,7 +9,7 @@ const DEFAULT_BENEFITS = [
   { title: "Processo seguro e homologado", desc: "A emissão segue um fluxo estruturado, com foco em conformidade, segurança e clareza.", icon: "Lock" },
 ];
 
-const FALLBACK_ICONS = [Zap, Headphones, Video, ShieldCheck];
+const FALLBACK_ICONS = [Zap, Headphones, Video, ShieldCheck] as const;
 
 export const BenefitsSection = () => {
   const { settings } = useCtaMessages();
@@ -44,7 +39,7 @@ export const BenefitsSection = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
           {benefits.map((b: any, i: number) => {
-            const Icon = (b.icon && ICON_MAP[b.icon]) || FALLBACK_ICONS[i % FALLBACK_ICONS.length];
+            const Icon = (b.icon && getIconComponent(b.icon)) || FALLBACK_ICONS[i % FALLBACK_ICONS.length];
             return (
               <div
                 key={i}
