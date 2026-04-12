@@ -53,7 +53,7 @@ export const PainSection = () => {
         <p className="mt-10 text-sm md:text-base text-muted-foreground max-w-xl mx-auto">{subtitle}</p>
 
         <div className="mt-6">
-          <WhatsAppButton buttonId="cta_pain" message={getMessage("cta_hero")} className="text-base px-8 py-4 font-bold">
+          <WhatsAppButton buttonId="cta_pain" message={getMessage("cta_pain")} className="text-base px-8 py-4 font-bold">
             {ctaText}
           </WhatsAppButton>
         </div>
