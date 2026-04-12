@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +14,23 @@ const DEFAULT_MICRO = "Atendimento humano • Processo simples • Emissão com 
 const DEFAULT_BULLETS = ["Processo online", "Validação rápida", "Atendimento no WhatsApp"];
 
 export const AdminCTAFinal = () => {
-  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
+  const { settings, fetching, saving, updateField, saveKeys, setSettings } = useAdminSettings();
+  const seeded = useRef(false);
+
+  // Seed defaults into settings once after fetching
+  useEffect(() => {
+    if (!fetching && !seeded.current) {
+      seeded.current = true;
+      const hasAny = Array.from({ length: 6 }, (_, i) => settings[`cta_bullet_${i + 1}`]).some(v => v !== undefined && v !== "");
+      if (!hasAny) {
+        setSettings(prev => {
+          const next = { ...prev };
+          DEFAULT_BULLETS.forEach((b, idx) => { next[`cta_bullet_${idx + 1}`] = b; });
+          return next;
+        });
+      }
+    }
+  }, [fetching]);
 
   if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
@@ -23,14 +40,7 @@ export const AdminCTAFinal = () => {
       const val = settings[`cta_bullet_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    if (items.length > 0) return items;
-
-    // Seed defaults into settings so edits don't lose other items
-    DEFAULT_BULLETS.forEach((b, idx) => {
-      const key = `cta_bullet_${idx + 1}`;
-      if (settings[key] === undefined) settings[key] = b;
-    });
-    return DEFAULT_BULLETS;
+    return items.length > 0 ? items : DEFAULT_BULLETS;
   };
   const items = getItems();
 

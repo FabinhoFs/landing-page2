@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +20,23 @@ const DEFAULT_PAINS = [
 ];
 
 export const AdminDores = () => {
-  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
+  const { settings, fetching, saving, updateField, saveKeys, setSettings } = useAdminSettings();
+  const seeded = useRef(false);
+
+  // Seed defaults into settings once after fetching
+  useEffect(() => {
+    if (!fetching && !seeded.current) {
+      seeded.current = true;
+      const hasAny = Array.from({ length: 10 }, (_, i) => settings[`pain_item_${i + 1}`]).some(v => v !== undefined && v !== "");
+      if (!hasAny) {
+        setSettings(prev => {
+          const next = { ...prev };
+          DEFAULT_PAINS.forEach((p, idx) => { next[`pain_item_${idx + 1}`] = p; });
+          return next;
+        });
+      }
+    }
+  }, [fetching]);
 
   if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
@@ -29,14 +46,7 @@ export const AdminDores = () => {
       const val = settings[`pain_item_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    if (items.length > 0) return items;
-
-    // Seed defaults into settings so edits don't lose other items
-    DEFAULT_PAINS.forEach((p, idx) => {
-      const key = `pain_item_${idx + 1}`;
-      if (settings[key] === undefined) settings[key] = p;
-    });
-    return DEFAULT_PAINS;
+    return items.length > 0 ? items : DEFAULT_PAINS;
   };
 
   const items = getItems();
