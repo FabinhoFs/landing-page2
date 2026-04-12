@@ -101,26 +101,36 @@ export const AdminPublishBar = () => {
       }
 
       const now = new Date().toISOString();
-      const entries = (draftOnly as any[]).map((r: any) => ({
-        key: r.key,
-        value: r.value,
-        environment: "published",
-        updated_at: now,
-      }));
 
-      // Also save the publish timestamp
-      entries.push({
+      // Build deduplicated map keyed by "key|environment" to prevent
+      // ON CONFLICT duplicate-row errors in the upsert batch.
+      const entryMap = new Map<string, { key: string; value: string; environment: string; updated_at: string }>();
+
+      // 1) Copy every draft key → published
+      (draftOnly as any[]).forEach((r: any) => {
+        entryMap.set(`${r.key}|published`, {
+          key: r.key,
+          value: r.value,
+          environment: "published",
+          updated_at: now,
+        });
+      });
+
+      // 2) Overwrite __last_published_at for both environments (safe: map deduplicates)
+      entryMap.set("__last_published_at|published", {
         key: "__last_published_at",
         value: now,
         environment: "published",
         updated_at: now,
       });
-      entries.push({
+      entryMap.set("__last_published_at|draft", {
         key: "__last_published_at",
         value: now,
         environment: "draft",
         updated_at: now,
       });
+
+      const entries = Array.from(entryMap.values());
 
       const { error } = await supabase
         .from("site_settings" as any)
