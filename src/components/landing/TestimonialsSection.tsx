@@ -70,29 +70,21 @@ export const TestimonialsSection = () => {
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-deep py-24 md:py-32">
+    <section className="bg-deep py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
-          O que dizem nossos clientes
+          O que nossos clientes dizem no Google
         </h2>
 
         <Carousel
           setApi={setApi}
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          plugins={[
-            Autoplay({ delay: 5000, stopOnInteraction: true }),
-          ]}
+          opts={{ align: "start", loop: true }}
+          plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
           className="w-full"
         >
           <CarouselContent className="-ml-4">
             {items.map((t) => (
-              <CarouselItem
-                key={t.id}
-                className="pl-4 basis-full md:basis-1/2 lg:basis-1/3"
-              >
+              <CarouselItem key={t.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                 <TestimonialCard testimonial={t} />
               </CarouselItem>
             ))}
@@ -102,7 +94,6 @@ export const TestimonialsSection = () => {
           <CarouselNext className="-right-4 md:-right-5 bg-white/10 border-primary/30 text-deep-foreground hover:bg-white/20" />
         </Carousel>
 
-        {/* Dots */}
         {count > 1 && (
           <div className="flex justify-center gap-2 mt-6">
             {Array.from({ length: count }).map((_, i) => (
@@ -124,16 +115,13 @@ export const TestimonialsSection = () => {
 function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
   return (
     <div className="rounded-2xl border border-primary/20 bg-white/5 backdrop-blur-lg shadow-lg shadow-primary/10 p-5 md:p-6 flex flex-col h-full">
-      {/* Header: stars left, Google icon right */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-0.5">
           {[...Array(5)].map((_, j) => (
             <Star
               key={j}
               className={`h-4 w-4 ${
-                 j < t.rating
-                   ? "fill-[#FBBC05] text-[#FBBC05]"
-                   : "text-deep-foreground/30"
+                j < t.rating ? "fill-[#FBBC05] text-[#FBBC05]" : "text-deep-foreground/30"
               }`}
             />
           ))}
@@ -141,23 +129,15 @@ function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
         {t.is_google_review && <GoogleIcon className="h-5 w-5" />}
       </div>
 
-      {/* Text */}
-      <p className="text-sm text-deep-foreground/80 leading-relaxed flex-1">
-        "{t.text}"
-      </p>
+      <p className="text-sm text-deep-foreground/80 leading-relaxed flex-1">"{t.text}"</p>
 
-      {/* Author */}
       <div className="mt-4 flex items-center gap-2">
         <div>
           <div className="flex items-center gap-1.5">
             <p className="font-bold text-deep-foreground text-sm">{t.name}</p>
-            {t.is_google_review && (
-              <BadgeCheck className="h-4 w-4 text-primary" />
-            )}
+            {t.is_google_review && <BadgeCheck className="h-4 w-4 text-primary" />}
           </div>
-          {t.role && (
-            <p className="text-xs text-deep-foreground/60">{t.role}</p>
-          )}
+          {t.role && <p className="text-xs text-deep-foreground/60">{t.role}</p>}
         </div>
       </div>
     </div>

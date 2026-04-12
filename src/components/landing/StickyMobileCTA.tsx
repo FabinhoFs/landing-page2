@@ -11,7 +11,7 @@ export const StickyMobileCTA = ({ city }: { city: string }) => {
         message={getMessage("cta_sticky_mobile", city)}
         className="w-full text-base py-4 font-bold"
       >
-        Emitir Certificado Agora
+        Iniciar minha emissão agora
       </WhatsAppButton>
     </div>
   );

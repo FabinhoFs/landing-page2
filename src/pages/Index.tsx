@@ -1,10 +1,15 @@
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { StickyHeader } from "@/components/landing/StickyHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { PainSection } from "@/components/landing/PainSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { BenefitsSection } from "@/components/landing/BenefitsSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
+import { GuaranteeSection } from "@/components/landing/GuaranteeSection";
+import { AuthoritySection } from "@/components/landing/AuthoritySection";
 import { FAQSection } from "@/components/landing/FAQSection";
+import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
 import { FloatingWhatsApp } from "@/components/landing/FloatingWhatsApp";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
@@ -26,8 +31,8 @@ const Index = () => {
       metaDesc.setAttribute(
         "content",
         detected
-          ? `Emita seu Certificado Digital em ${city}. Emissão rápida, 100% online, com suporte especializado.`
-          : "Emita seu Certificado Digital 100% online. Emissão rápida com suporte especializado. Certificação ICP-Brasil."
+          ? `Emita seu Certificado Digital em ${city}. Validação rápida, 100% online, com suporte especializado.`
+          : "Emita seu Certificado Digital 100% online. Validação rápida com suporte especializado. Certificação ICP-Brasil."
       );
     }
   }, [city, detected]);
@@ -36,22 +41,37 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <StickyHeader city={cityDisplay} />
 
-      {/* 1ª Dobra — Hero */}
+      {/* 1 — Hero */}
       <HeroSection city={city} detected={detected} />
 
-      {/* 2ª Dobra — Preços */}
+      {/* 2 — Dor e Urgência */}
+      <PainSection />
+
+      {/* 3 — Como Funciona */}
+      <HowItWorksSection />
+
+      {/* 4 — Ofertas / Produtos */}
       <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
 
-      {/* 3ª Dobra — Diferenciais / Prova Social */}
+      {/* 5 — Diferenciais */}
       <BenefitsSection />
 
-      {/* 4ª Dobra — Depoimentos */}
+      {/* 6 — Depoimentos */}
       <TestimonialsSection />
 
-      {/* 5ª Dobra — FAQ */}
+      {/* 7 — Garantia */}
+      <GuaranteeSection city={cityDisplay} />
+
+      {/* 8 — Autoridade */}
+      <AuthoritySection />
+
+      {/* 9 — FAQ */}
       <FAQSection city={cityDisplay} />
 
-      {/* 6ª Dobra — Rodapé */}
+      {/* 10 — CTA Final */}
+      <CTASection city={cityDisplay} />
+
+      {/* 11 — Rodapé */}
       <Footer />
 
       {/* Overlays */}

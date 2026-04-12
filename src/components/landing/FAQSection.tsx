@@ -1,5 +1,4 @@
 import { Plus } from "lucide-react";
-import { ShieldCheck } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { cn } from "@/lib/utils";
@@ -53,9 +52,15 @@ interface FAQSectionProps {
 }
 
 const FALLBACK_FAQS = [
-  { id: "1", question: "O certificado tem validade jurídica em todo o Brasil?", answer: "Sim! Todos os nossos certificados são emitidos sob a infraestrutura da ICP-Brasil, garantindo validade jurídica em todo o território nacional." },
-  { id: "2", question: "Realmente não preciso sair de casa para emitir?", answer: "Exatamente. Todo o processo é feito via videoconferência. Você só precisa de um celular ou computador com câmera e seus documentos em mãos." },
-  { id: "3", question: "Quanto tempo demora para ficar pronto?", answer: "Após a videoconferência (que dura cerca de 10 a 15 minutos), seu certificado é liberado para emissão imediata." },
+  { id: "1", question: "Como funciona a emissão do Certificado Digital?", answer: "Você escolhe o certificado, envia os dados necessários, faz a validação por videoconferência e conclui sua emissão com orientação da nossa equipe." },
+  { id: "2", question: "Em quanto tempo consigo fazer a validação?", answer: "A validação por videoconferência pode acontecer em poucos minutos, conforme disponibilidade e conferência dos dados." },
+  { id: "3", question: "A emissão pode ser concluída no mesmo dia?", answer: "Em muitos casos, sim. A conclusão depende do andamento correto das etapas e da aprovação do processo." },
+  { id: "4", question: "Preciso ir presencialmente para emitir?", answer: "Não necessariamente. O processo pode ocorrer online, conforme o fluxo aplicável." },
+  { id: "5", question: "Posso fazer tudo pelo celular?", answer: "Em muitos casos, sim. Também é possível utilizar notebook para mais conforto durante o processo." },
+  { id: "6", question: "Quais documentos são necessários?", answer: "Os documentos variam conforme o tipo de certificado. Nossa equipe orienta você no início do atendimento." },
+  { id: "7", question: "O certificado funciona para e-CAC, eSocial, SPED e NF-e?", answer: "Sim, desde que você escolha o certificado adequado para sua necessidade. Nossa equipe pode orientar essa escolha." },
+  { id: "8", question: "Vocês fazem a emissão por mim?", answer: "Não. A emissão é realizada pelo titular ou responsável pelo certificado, com suporte e orientação da nossa equipe durante o processo." },
+  { id: "9", question: "Vocês ajudam na instalação e no uso?", answer: "Sim. Oferecemos orientação para instalação e uso, sempre preservando a segurança do processo e o controle do titular sobre seus dados de acesso." },
 ];
 
 export const FAQSection = ({ city }: FAQSectionProps) => {
@@ -75,7 +80,7 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
   const faqs = (dbFaqs && dbFaqs.length > 0) ? dbFaqs : FALLBACK_FAQS;
 
   return (
-    <section id="faq" className="bg-card py-16 md:py-20">
+    <section id="faq" className="bg-card py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 md:px-6">
         <h2 className="text-center text-2xl font-bold text-card-foreground md:text-4xl mb-10 md:mb-12">
           Perguntas Frequentes
@@ -94,15 +99,7 @@ export const FAQSection = ({ city }: FAQSectionProps) => {
           ))}
         </AccordionPrimitive.Root>
 
-        <div className="mt-10 md:mt-12 flex flex-col items-center gap-5 md:gap-6">
-          <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-5 md:px-6 py-4">
-            <ShieldCheck className="h-7 w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
-            <div>
-              <p className="font-bold text-foreground text-sm">Garantia de Satisfação</p>
-              <p className="text-xs text-muted-foreground">Satisfação garantida ou seu dinheiro de volta.</p>
-            </div>
-          </div>
-
+        <div className="mt-10 md:mt-12 flex flex-col items-center gap-5">
           <p className="text-muted-foreground text-sm">Ainda tem dúvidas?</p>
           <WhatsAppButton
             buttonId="faq_duvidas"
