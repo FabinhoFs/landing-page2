@@ -248,6 +248,58 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- experiments
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiments' AND policyname='Anon read active experiments') THEN
+    CREATE POLICY "Anon read active experiments" ON public.experiments FOR SELECT TO anon USING (status = 'active');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiments' AND policyname='Auth read all experiments') THEN
+    CREATE POLICY "Auth read all experiments" ON public.experiments FOR SELECT TO authenticated USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiments' AND policyname='Auth insert experiments') THEN
+    CREATE POLICY "Auth insert experiments" ON public.experiments FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiments' AND policyname='Auth update experiments') THEN
+    CREATE POLICY "Auth update experiments" ON public.experiments FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiments' AND policyname='Auth delete experiments') THEN
+    CREATE POLICY "Auth delete experiments" ON public.experiments FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+  END IF;
+END $$;
+
+-- experiment_variants
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_variants' AND policyname='Anon read active variants') THEN
+    CREATE POLICY "Anon read active variants" ON public.experiment_variants FOR SELECT TO anon
+      USING (EXISTS (SELECT 1 FROM public.experiments e WHERE e.id = experiment_id AND e.status = 'active'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_variants' AND policyname='Auth read all variants') THEN
+    CREATE POLICY "Auth read all variants" ON public.experiment_variants FOR SELECT TO authenticated USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_variants' AND policyname='Auth insert variants') THEN
+    CREATE POLICY "Auth insert variants" ON public.experiment_variants FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_variants' AND policyname='Auth update variants') THEN
+    CREATE POLICY "Auth update variants" ON public.experiment_variants FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_variants' AND policyname='Auth delete variants') THEN
+    CREATE POLICY "Auth delete variants" ON public.experiment_variants FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+  END IF;
+END $$;
+
+-- experiment_events
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_events' AND policyname='Anyone can insert experiment events') THEN
+    CREATE POLICY "Anyone can insert experiment events" ON public.experiment_events FOR INSERT TO public WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_events' AND policyname='Auth read experiment events') THEN
+    CREATE POLICY "Auth read experiment events" ON public.experiment_events FOR SELECT TO authenticated USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='experiment_events' AND policyname='Auth delete experiment events') THEN
+    CREATE POLICY "Auth delete experiment events" ON public.experiment_events FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+  END IF;
+END $$;
+
 -- access_logs
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='access_logs' AND policyname='Anyone can insert access logs') THEN
