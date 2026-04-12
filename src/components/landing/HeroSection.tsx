@@ -1,6 +1,7 @@
 import { ShieldCheck, Zap, MessageCircle } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import { useExperiment } from "@/hooks/useExperiment";
 import { getIconComponent } from "@/components/admin/IconPicker";
 
 interface HeroSectionProps {
@@ -52,9 +53,15 @@ const DEFAULTS: Record<string, Record<string, string>> = {
 
 export const HeroSection = ({ city, detected }: HeroSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
+  const { isExperimentActive, variantConfig, trackClick } = useExperiment("hero");
+  const { isExperimentActive: isCtaExp, variantConfig: ctaConfig, trackClick: trackCtaClick } = useExperiment("cta_hero");
+
   const heroMsg = getMessage("cta_hero", city);
 
-  const activeVariant = settings.hero_active_variant || "1";
+  // Determine active variant: experiment overrides settings
+  const activeVariant = isExperimentActive && variantConfig.hero_active_variant
+    ? variantConfig.hero_active_variant
+    : settings.hero_active_variant || "1";
   const defaults = DEFAULTS[activeVariant] || DEFAULTS["1"];
 
   const get = (field: string) =>
@@ -66,8 +73,13 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
   const line1Color = get("line1_color") || DEFAULT_LINE1_COLOR;
   const line2Color = get("line2_color") || DEFAULT_LINE2_COLOR;
   const subheadline = get("subheadline");
-  const ctaPrimary = get("cta_primary");
+
+  // CTA text: experiment can override
+  const ctaPrimary = (isCtaExp && ctaConfig.cta_text) ? ctaConfig.cta_text : get("cta_primary");
   const ctaSecondary = get("cta_secondary");
+
+  // CTA message: experiment can override
+  const ctaMessage = (isCtaExp && ctaConfig.cta_message) ? ctaConfig.cta_message.replace(/\{cidade\}/g, city || "Brasil") : heroMsg;
 
   const dynamicLineTemplate = get("dynamic_line");
   const fallbackLine = get("fallback_line");
@@ -76,7 +88,6 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
     ? dynamicLineTemplate.replace(/\{\{cidade\}\}/g, city)
     : fallbackLine;
 
-  // Bullets from structured fields first, then JSON fallback
   let bullets = DEFAULT_BULLETS;
   const structuredBullets: { icon: string; label: string }[] = [];
   for (let i = 1; i <= 6; i++) {
@@ -93,6 +104,16 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
 
   const showTrustLine = settings.hero_show_trust_line !== "false";
   const trustLine = settings.hero_trust_line || "ICP-Brasil • Processo online • Atendimento humano";
+
+  const handlePrimaryClick = () => {
+    if (isExperimentActive) trackClick("cta_hero_primary");
+    if (isCtaExp) trackCtaClick("cta_hero_primary");
+  };
+
+  const handleSecondaryClick = () => {
+    if (isExperimentActive) trackClick("cta_hero_secondary");
+    if (isCtaExp) trackCtaClick("cta_hero_secondary");
+  };
 
   return (
     <section className="relative bg-deep text-deep-foreground overflow-hidden pt-20">
@@ -136,11 +157,12 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-            <WhatsAppButton buttonId="cta_hero_primary" message={heroMsg} className="text-base px-6 md:px-8 py-4 md:py-5 font-bold">
+            <WhatsAppButton buttonId="cta_hero_primary" message={ctaMessage} className="text-base px-6 md:px-8 py-4 md:py-5 font-bold" onBeforeNavigate={handlePrimaryClick}>
               {ctaPrimary}
             </WhatsAppButton>
             <WhatsAppButton buttonId="cta_hero_secondary" message={getMessage("cta_header", city)}
-              className="text-base px-6 md:px-8 py-4 md:py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10">
+              className="text-base px-6 md:px-8 py-4 md:py-5 font-bold bg-transparent border-2 border-deep-foreground/30 text-deep-foreground hover:bg-deep-foreground/10"
+              onBeforeNavigate={handleSecondaryClick}>
               {ctaSecondary}
             </WhatsAppButton>
           </div>
