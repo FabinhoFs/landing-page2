@@ -1,17 +1,23 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Save, Award, Users, Loader2 } from "lucide-react";
+import { Save, Award, Users, Loader2, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 import { IconPicker } from "./IconPicker";
 
-const SOCIAL_DEFAULTS = [
-  { key: "social_experience_text", label: "Ícone 1 — Certificação", hint: "📍 1ª posição da barra", default: "Certificação ICP-Brasil" },
-  { key: "social_authority_title", label: "Ícone 2 — Rapidez", hint: "📍 2ª posição da barra", default: "Emissão rápida" },
-  { key: "social_proof_text", label: "Ícone 3 — Prova Social", hint: "📍 3ª posição da barra", default: "Clientes atendidos" },
-  { key: "social_support_text", label: "Ícone 4 — Suporte", hint: "📍 4ª posição da barra", default: "Suporte humano" },
+interface SocialItem {
+  icon: string;
+  text: string;
+}
+
+const DEFAULT_SOCIAL_ITEMS: SocialItem[] = [
+  { icon: "ShieldCheck", text: "Emissão oficial ICP-Brasil" },
+  { icon: "Zap", text: "Rapidez e Segurança" },
+  { icon: "Users", text: "Junte-se a quem confia em nossa emissão oficial." },
+  { icon: "Headphones", text: "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim." },
 ];
 
 const BENEFITS_FIELDS = [
@@ -22,12 +28,55 @@ const BENEFITS_FIELDS = [
 ];
 
 export const AdminDiferenciais = () => {
-  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
+  const { settings, fetching, saving, updateField, saveKeys, setSettings } = useAdminSettings();
+
+  // Parse social proof items from settings or use defaults
+  const getSocialItems = (): SocialItem[] => {
+    if (settings.social_proof_items) {
+      try {
+        const parsed = JSON.parse(settings.social_proof_items);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+    return DEFAULT_SOCIAL_ITEMS;
+  };
+
+  const [socialItems, setSocialItems] = useState<SocialItem[] | null>(null);
+
+  // Initialize from settings once loaded
+  const items = socialItems ?? getSocialItems();
+
+  const updateSocialItems = (newItems: SocialItem[]) => {
+    setSocialItems(newItems);
+    updateField("social_proof_items", JSON.stringify(newItems));
+  };
+
+  const addItem = () => {
+    updateSocialItems([...items, { icon: "Star", text: "Novo bloco" }]);
+  };
+
+  const removeItem = (index: number) => {
+    updateSocialItems(items.filter((_, i) => i !== index));
+  };
+
+  const moveItem = (index: number, direction: -1 | 1) => {
+    const newItems = [...items];
+    const target = index + direction;
+    if (target < 0 || target >= newItems.length) return;
+    [newItems[index], newItems[target]] = [newItems[target], newItems[index]];
+    updateSocialItems(newItems);
+  };
+
+  const updateItem = (index: number, field: keyof SocialItem, value: string) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    updateSocialItems(newItems);
+  };
 
   if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   const allKeys = [
-    ...SOCIAL_DEFAULTS.map(f => f.key),
+    "social_proof_items",
     ...BENEFITS_FIELDS.flatMap(f => [f.titleKey, f.descKey, f.iconKey]),
   ];
 
@@ -41,20 +90,40 @@ export const AdminDiferenciais = () => {
             Barra de Prova Social (abaixo do Hero)
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4">
           <p className="text-xs text-muted-foreground">
-            Estas frases aparecem na barra de ícones logo abaixo do topo da página.
+            Blocos de confiança exibidos logo abaixo do Hero. Adicione, remova ou reordene livremente.
           </p>
-          {SOCIAL_DEFAULTS.map((field) => (
-            <div key={field.key} className="space-y-1.5">
-              <Label>{field.label}</Label>
-              <Input
-                value={settings[field.key] ?? field.default}
-                onChange={(e) => updateField(field.key, e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">{field.hint}</p>
+
+          {items.map((item, index) => (
+            <div key={index} className="flex items-start gap-3 border border-border rounded-xl p-4 bg-muted/30">
+              <div className="flex flex-col gap-1 pt-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveItem(index, -1)} disabled={index === 0}>
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveItem(index, 1)} disabled={index === items.length - 1}>
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Ícone</Label>
+                  <IconPicker value={item.icon} onChange={(v) => updateItem(index, "icon", v)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Texto</Label>
+                  <Input value={item.text} onChange={(e) => updateItem(index, "text", e.target.value)} />
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive shrink-0 mt-1" onClick={() => removeItem(index)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           ))}
+
+          <Button variant="outline" className="w-full" onClick={addItem}>
+            <Plus className="mr-2 h-4 w-4" /> Adicionar Bloco
+          </Button>
         </CardContent>
       </Card>
 
@@ -74,7 +143,6 @@ export const AdminDiferenciais = () => {
             <div key={field.titleKey} className="space-y-3 border-b border-border pb-4 last:border-0">
               <Label className="font-semibold">{field.label}</Label>
 
-              {/* Icon Picker */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Ícone</Label>
                 <IconPicker
