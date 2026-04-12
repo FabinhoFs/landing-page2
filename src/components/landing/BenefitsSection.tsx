@@ -1,70 +1,51 @@
-import {
-  Zap, Lock, FastForward, HeadphonesIcon, ShieldCheck,
-  Headphones, Clock, Target, Rocket, Star, Heart,
-  CheckCircle, Globe, Eye, Sparkles, Shield,
-  Award, Fingerprint, FileCheck, UserCheck,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import benefitsHero from "@/assets/benefits-hero.jpg";
-import { useCtaMessages } from "@/hooks/useCtaMessages";
+import { Zap, Headphones, Video, ShieldCheck } from "lucide-react";
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  FastForward, ShieldCheck, Headphones, HeadphonesIcon, Lock,
-  Clock, Zap, Target, Rocket, Star, Heart, CheckCircle,
-  Globe, Eye, Sparkles, Shield, Award, Fingerprint, FileCheck, UserCheck,
-};
-
-const DEFAULT_BENEFITS = [
-  { iconName: "FastForward", title: "Velocidade", desc: "Com facilidade e comodismo, você pode emitir seu Certificado Digital com velocidade em tempo recorde através do nosso atendimento." },
-  { iconName: "ShieldCheck", title: "Confiança", desc: "Somos uma Autoridade de Registro com vasta experiência de mais de 5 anos no mercado e centenas de profissionais satisfeitos com a emissão de seus Certificados." },
-  { iconName: "HeadphonesIcon", title: "Atendimento Personalizado", desc: "Temos pessoas preparadas a todo vapor para te atender da forma mais simples possível com cordialidade e compromisso com o seu objetivo." },
-  { iconName: "Lock", title: "Segurança", desc: "Emitir seu Certificado com a Agis é garantia de segurança, nós somos devidamente credenciados pelo Instituto Nacional de tecnologia da Informação (ITI), oferecendo soluções completas em Certificação Digital." },
+const benefits = [
+  {
+    icon: Zap,
+    title: "Atendimento imediato",
+    desc: "Você fala com uma equipe preparada para orientar seu processo com mais agilidade.",
+  },
+  {
+    icon: Headphones,
+    title: "Suporte do início ao fim",
+    desc: "Nossa equipe acompanha cada etapa para reduzir dúvidas, erro e retrabalho.",
+  },
+  {
+    icon: Video,
+    title: "Validação online com praticidade",
+    desc: "Você realiza a validação por videoconferência, com mais comodidade e segurança.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Processo seguro e homologado",
+    desc: "A emissão segue um fluxo estruturado, com foco em conformidade, segurança e clareza.",
+  },
 ];
 
 export const BenefitsSection = () => {
-  const { settings } = useCtaMessages();
-
-  const benefits = DEFAULT_BENEFITS.map((b, i) => {
-    const iconName = settings[`diff_${i + 1}_icon`] || b.iconName;
-    const IconComponent = ICON_MAP[iconName] || ICON_MAP[b.iconName] || FastForward;
-    return {
-      icon: IconComponent,
-      title: settings[`benefit_${i + 1}_title`] || b.title,
-      desc: settings[`benefit_${i + 1}_desc`] || b.desc,
-    };
-  });
-
   return (
-    <section className="bg-deep text-deep-foreground py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
-        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
-          Por que escolher a Agis Digital
+    <section className="bg-card py-16 md:py-24">
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        <h2 className="text-center text-2xl font-bold text-card-foreground md:text-4xl mb-10 md:mb-14">
+          Por que emitir com a Agis Digital
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-          <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-6">
-            {benefits.map((b, i) => (
-              <div
-                key={i}
-                className="flex flex-col md:flex-row gap-3 md:gap-4 rounded-xl bg-deep-foreground/5 border border-deep-foreground/10 p-4 md:p-5"
-              >
-                <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 mx-auto md:mx-0">
-                  <b.icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
-                <div className="text-center md:text-left">
-                  <h3 className="text-sm md:text-lg font-bold text-primary">{b.title}</h3>
-                  <p className="text-xs md:text-sm text-deep-foreground/70 mt-1 leading-relaxed hidden md:block">{b.desc}</p>
-                </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+          {benefits.map((b, i) => (
+            <div
+              key={i}
+              className="flex gap-4 rounded-2xl border border-border bg-background p-6 md:p-8"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+                <b.icon className="h-6 w-6 text-primary" />
               </div>
-            ))}
-          </div>
-          <div className="hidden md:flex justify-center">
-            <img
-              src={benefitsHero}
-              alt="Segurança digital biometria"
-              className="max-h-[500px] object-contain rounded-2xl"
-              loading="lazy"
-            />
-          </div>
+              <div>
+                <h3 className="text-base md:text-lg font-bold text-foreground">{b.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{b.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

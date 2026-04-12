@@ -1,43 +1,62 @@
-import step1 from "@/assets/step-1-solicitacao.jpg";
-import step2 from "@/assets/step-2-documentos.jpg";
-import step3 from "@/assets/step-3-videoconferencia.jpg";
-import step4 from "@/assets/step-4-emissao.jpg";
+import { ListChecks, FileText, Video, CheckCircle } from "lucide-react";
 
 const steps = [
-  { img: step1, title: "Passo 1", desc: "Solicitação" },
-  { img: step2, title: "Passo 2", desc: "Envio de documentos" },
-  { img: step3, title: "Passo 3", desc: "Videoconferência" },
-  { img: step4, title: "Passo 4", desc: "Emissão do certificado" },
+  {
+    icon: ListChecks,
+    title: "Escolha o certificado ideal",
+    desc: "Selecione o e-CPF A1 ou e-CNPJ A1 conforme sua necessidade.",
+  },
+  {
+    icon: FileText,
+    title: "Envie os dados e documentos necessários",
+    desc: "Nossa equipe orienta o que é preciso para seguir corretamente.",
+  },
+  {
+    icon: Video,
+    title: "Faça a validação por videoconferência",
+    desc: "A validação acontece online, com segurança e confirmação das informações exigidas.",
+  },
+  {
+    icon: CheckCircle,
+    title: "Conclua sua emissão",
+    desc: "Após a validação e aprovação do processo, você conclui sua emissão com suporte da nossa equipe.",
+  },
 ];
 
 export const HowItWorksSection = () => {
   return (
-    <section className="bg-card py-20">
-      <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-bold text-card-foreground md:text-4xl mb-12">
-          Veja o passo a passo simples para emitir seu certificado
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <section className="bg-deep text-deep-foreground py-16 md:py-24">
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl font-bold md:text-4xl mb-3">
+            Veja como funciona a emissão
+          </h2>
+          <p className="text-sm md:text-base text-deep-foreground/70">
+            Você faz o processo online com orientação em cada etapa.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {steps.map((step, i) => (
-            <div key={i} className="rounded-xl overflow-hidden bg-deep shadow-md">
-              <div className="bg-primary px-4 py-3">
-                <p className="font-bold text-primary-foreground text-lg">{step.title}</p>
+            <div
+              key={i}
+              className="relative flex flex-col items-center text-center gap-4 rounded-2xl bg-deep-foreground/5 border border-deep-foreground/10 p-6"
+            >
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                {i + 1}
               </div>
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={step.img}
-                  alt={step.desc}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 mt-2">
+                <step.icon className="h-6 w-6 text-primary" />
               </div>
-              <div className="px-4 py-3 flex items-center gap-2">
-                <span className="text-primary">▼</span>
-                <p className="text-sm font-medium text-deep-foreground">{step.desc}</p>
-              </div>
+              <h3 className="text-sm font-bold text-deep-foreground">{step.title}</h3>
+              <p className="text-xs text-deep-foreground/70 leading-relaxed">{step.desc}</p>
             </div>
           ))}
         </div>
+
+        <p className="mt-8 text-center text-xs md:text-sm text-deep-foreground/60 italic">
+          O processo é realizado pelo titular ou responsável pelo certificado, com orientação especializada do início ao fim.
+        </p>
       </div>
     </section>
   );

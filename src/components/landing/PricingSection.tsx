@@ -76,9 +76,30 @@ const ICON_MAP: Record<string, typeof CheckSquare> = {
   headphones: Headphones,
 };
 
+const CARD_DESCRIPTIONS: Record<string, { idealPara: string; usos: string[] }> = {
+  cpf: {
+    idealPara: "Pessoa física, profissionais liberais e quem precisa acessar sistemas oficiais, assinar documentos e operar com mais praticidade no ambiente digital.",
+    usos: [
+      "Assinatura digital de documentos",
+      "Acesso ao e-CAC da Receita Federal",
+      "Declaração de Imposto de Renda",
+      "Rotinas digitais com mais segurança",
+    ],
+  },
+  cnpj: {
+    idealPara: "Empresas que precisam emitir notas, cumprir obrigações fiscais e acessar sistemas com segurança e agilidade.",
+    usos: [
+      "Emissão de notas fiscais",
+      "eSocial e obrigações fiscais",
+      "Assinatura digital de documentos",
+      "Acesso a sistemas públicos e privados",
+    ],
+  },
+};
+
 export const PricingSection = ({ city, detected = false, onTrackPurchase }: PricingSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
-  const sectionTitle = settings.pricing_section_title || "Escolha a melhor modalidade de certificado para você";
+  const sectionTitle = settings.pricing_section_title || "Escolha o certificado ideal para sua necessidade";
 
   const { data: prices } = useQuery({
     queryKey: ["certificate_prices"],
@@ -107,9 +128,9 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
   const bestsellerProduct = settings.bestseller_product || "cnpj";
 
   return (
-    <section className="bg-background py-16 md:py-20">
+    <section className="bg-background py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
-        <h2 className="mb-12 text-center text-xl font-bold text-foreground sm:text-2xl md:text-3xl lg:text-4xl whitespace-normal md:whitespace-nowrap">
+        <h2 className="mb-12 text-center text-xl font-bold text-foreground sm:text-2xl md:text-3xl lg:text-4xl">
           {sectionTitle}
         </h2>
 
@@ -120,9 +141,13 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
               .filter(f => f.certificate_id === product.id)
               .sort((a, b) => a.sort_order - b.sort_order);
 
+            const isCpf = product.name.toLowerCase().includes("cpf");
+            const type = isCpf ? "cpf" : "cnpj";
+            const cardInfo = CARD_DESCRIPTIONS[type];
+
             const isBestseller = bestsellerActive && (
-              (bestsellerProduct === "cpf" && product.name.toLowerCase().includes("cpf")) ||
-              (bestsellerProduct === "cnpj" && product.name.toLowerCase().includes("cnpj"))
+              (bestsellerProduct === "cpf" && isCpf) ||
+              (bestsellerProduct === "cnpj" && !isCpf)
             );
 
             return (
@@ -138,6 +163,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                 <h3 className="text-2xl font-bold text-card-foreground text-center">
                   {product.name}
                 </h3>
+
+                <p className="mt-3 text-xs text-muted-foreground text-center leading-relaxed">
+                  {cardInfo.idealPara}
+                </p>
 
                 <div className="mt-4 text-center">
                   {promoActive ? (
@@ -160,23 +189,42 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                   <Countdown expiresAt={product.promo_expires_at} />
                 )}
 
-                <ul className="mt-6 space-y-3 flex-1">
-                  {productFeatures.map((feat) => {
-                    const Icon = ICON_MAP[feat.icon] || CheckSquare;
-                    return (
-                      <li key={feat.id} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                        <span className="whitespace-nowrap">{feat.text}</span>
+                {/* Uses */}
+                <div className="mt-5">
+                  <p className="text-xs font-semibold text-card-foreground mb-2">Principais usos:</p>
+                  <ul className="space-y-2">
+                    {cardInfo.usos.map((uso, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <CheckSquare className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                        <span>{uso}</span>
                       </li>
-                    );
-                  })}
-                </ul>
+                    ))}
+                  </ul>
+                </div>
 
-                <div className="pt-6">
+                {/* DB features */}
+                {productFeatures.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold text-card-foreground mb-2">Incluso:</p>
+                    <ul className="space-y-2">
+                      {productFeatures.map((feat) => {
+                        const Icon = ICON_MAP[feat.icon] || CheckSquare;
+                        return (
+                          <li key={feat.id} className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <Icon className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                            <span>{feat.text}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="pt-6 mt-auto">
                   <WhatsAppButton
                     buttonId={`cta_pricing_${product.name.toLowerCase().replace(/\s+/g, "")}`}
                     message={
-                      product.name.toLowerCase().includes("cpf")
+                      isCpf
                         ? getMessage("cta_ecpf", city)
                         : getMessage("cta_ecnpj", city)
                     }
@@ -186,10 +234,10 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
                       onTrackPurchase?.(price, product.name);
                     }}
                   >
-                    Quero meu {product.name}
+                    Quero iniciar meu {product.name}
                   </WhatsAppButton>
                   <p className="mt-2 text-center text-xs text-muted-foreground">
-                    Clique para iniciar via WhatsApp • Atendimento imediato
+                    Atendimento guiado • Validação online • Suporte durante o processo
                   </p>
                 </div>
               </div>
@@ -199,7 +247,7 @@ export const PricingSection = ({ city, detected = false, onTrackPurchase }: Pric
 
         <div className="mt-10 flex items-center justify-center gap-2 text-sm md:text-base font-medium text-foreground text-center">
           <Headphones className="h-5 w-5 text-primary shrink-0" />
-          <span>{settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim."}</span>
+          <span>{settings.support_text || "Atendimento humano e orientação em todas as etapas do processo."}</span>
         </div>
       </div>
     </section>

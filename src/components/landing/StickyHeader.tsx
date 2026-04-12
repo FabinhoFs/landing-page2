@@ -29,7 +29,7 @@ export const StickyHeader = ({ city }: { city: string }) => {
           size="sm"
           className="text-sm px-4 py-2"
         >
-          Emitir Certificado
+          Iniciar emissão
         </WhatsAppButton>
       </div>
     </header>
