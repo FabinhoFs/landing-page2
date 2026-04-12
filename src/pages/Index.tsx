@@ -8,6 +8,7 @@ import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { captureUtmParams } from "@/lib/logAccess";
 import { Skeleton } from "@/components/ui/skeleton";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy load below-the-fold sections to reduce initial JS bundle
 const PainSection = lazy(() => import("@/components/landing/PainSection").then(m => ({ default: m.PainSection })));
