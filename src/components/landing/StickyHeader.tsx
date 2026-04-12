@@ -10,7 +10,7 @@ export const StickyHeader = ({ city }: { city: string }) => {
   const phone = useWhatsAppNumber();
 
   const ctaText = settings.header_cta_text || "Iniciar emissão";
-  const logoUrl = settings.header_logo_url || "";
+  const logoUrl = settings.header_logo_url || "/logo-agis-digital.png";
   const showLogo = settings.header_show_logo !== "false";
   const showPhone = settings.header_show_phone !== "false";
   const phoneDisplay = settings.header_phone_display || formatPhone(phone);
