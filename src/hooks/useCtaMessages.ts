@@ -16,18 +16,15 @@ const DEFAULT_CTA_MESSAGES: Record<string, string> = {
 };
 
 export function useCtaMessages() {
-  // Determine if we're in preview mode (admin viewing draft)
   const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "draft";
   const env = isPreview ? "draft" : "published";
 
   const { data, isLoading } = useQuery({
     queryKey: ["site_settings", env],
     queryFn: async () => {
-      // For draft preview, verify admin auth first
       if (isPreview) {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-          // Not authenticated — fallback to published
           const { data: pubData } = await supabase
             .from("site_settings" as any)
             .select("key, value")
@@ -50,9 +47,11 @@ export function useCtaMessages() {
       }
       return map;
     },
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    // Published content: cache 60s (rarely changes mid-session)
+    // Draft content: always fresh for admin preview
+    staleTime: isPreview ? 0 : 60_000,
+    refetchOnMount: isPreview ? "always" : true,
+    refetchOnWindowFocus: isPreview,
   });
 
   const getMessage = (ctaKey: string, city?: string | null) => {
