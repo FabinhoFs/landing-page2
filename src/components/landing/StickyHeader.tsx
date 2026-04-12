@@ -23,9 +23,7 @@ export const StickyHeader = ({ city }: { city: string }) => {
       }`}
     >
       <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-3">
-        <span className={`text-lg font-bold text-deep-foreground transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`}>
-          Agis Digital
-        </span>
+        <div className="w-1" />
         <WhatsAppButton
           buttonId="cta_header"
           message={getMessage("cta_header", city)}
