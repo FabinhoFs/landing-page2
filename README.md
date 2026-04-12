@@ -69,10 +69,11 @@ Consulte **[deploy/README.md](deploy/README.md)** para o guia completo de:
 | **WhatsApp dinâmico** | Número e mensagens configuráveis por CTA |
 | **SEO / Open Graph** | Meta tags gerenciáveis pelo admin |
 | **Multi-tenant** | Uma imagem Docker serve vários clientes (runtime config) |
+| **Diagnóstico de Erros** | Central de monitoramento de falhas de frontend e integrações |
 
 ## Segurança
 
-- RLS em todas as tabelas (13 tabelas)
+- RLS em todas as tabelas (14 tabelas)
 - RBAC via `has_role()` (SECURITY DEFINER)
 - Bootstrap seguro do primeiro admin via RPC com chave
 - Input validation com Zod
