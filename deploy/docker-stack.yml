@@ -10,15 +10,12 @@
 #   Stacks → Add stack → Upload ou colar este arquivo
 #   Definir variáveis de ambiente na UI do Portainer
 #
-# Variáveis obrigatórias (definir como env ou no Portainer):
-#   VITE_SUPABASE_URL
-#   VITE_SUPABASE_PUBLISHABLE_KEY
+# Variáveis obrigatórias (runtime — NÃO precisam de rebuild):
+#   SUPABASE_URL
+#   SUPABASE_PUBLISHABLE_KEY
 #
-# IMPORTANTE: Docker Swarm NÃO suporta "build" inline.
-# A imagem deve ser construída ANTES do deploy:
-#   docker build --build-arg VITE_SUPABASE_URL=... \
-#                --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... \
-#                -f deploy/Dockerfile -t agis-lp:latest .
+# A MESMA imagem serve para vários clientes.
+# Basta mudar as variáveis de ambiente em cada stack.
 
 version: "3.8"
 
@@ -30,6 +27,9 @@ services:
         published: ${APP_PORT:-3000}
         protocol: tcp
         mode: ingress
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY}
     deploy:
       replicas: 1
       restart_policy:
