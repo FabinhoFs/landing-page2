@@ -1054,71 +1054,247 @@ export const AdminDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* ─── UTM ANALYTICS ────────────────────────── */}
-      {utmData.utmCount > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Globe className="h-4 w-4" />
-              Análise de UTMs — Origem do Tráfego
-            </CardTitle>
-            <CardDescription>
-              {utmData.utmCount} cliques com UTM detectados.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Origens (utm_source)</h4>
-                {utmData.sources.length > 0 ? (
+      {/* ═══════════════════════════════════════════════════
+          BLOCO UTM — Análise Completa de Tráfego Pago
+          ═══════════════════════════════════════════════════ */}
+      {utmData.utmCount > 0 ? (
+        <>
+          {/* UTM Champion cards */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <Card className="border-2 border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary/70 mb-1">🏆 Campanha Campeã</p>
+                <p className="text-base font-bold text-foreground truncate" title={utmData.campaigns[0]?.[0]}>
+                  {utmData.campaigns[0]?.[0] || "—"}
+                </p>
+                <p className="text-sm text-muted-foreground">{utmData.campaigns[0]?.[1] || 0} cliques</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary/70 mb-1">🏆 Origem Campeã</p>
+                <p className="text-base font-bold text-foreground truncate" title={utmData.sources[0]?.[0]}>
+                  {utmData.sources[0]?.[0] || "—"}
+                </p>
+                <p className="text-sm text-muted-foreground">{utmData.sources[0]?.[1] || 0} cliques</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary/70 mb-1">🏆 Mídia Campeã</p>
+                <p className="text-base font-bold text-foreground truncate" title={utmData.mediums[0]?.[0]}>
+                  {utmData.mediums[0]?.[0] || "—"}
+                </p>
+                <p className="text-sm text-muted-foreground">{utmData.mediums[0]?.[1] || 0} cliques</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* UTM Rankings — source, medium, campaign with bars */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Globe className="h-4 w-4" />
+                Ranking de Tráfego por UTM
+              </CardTitle>
+              <CardDescription>
+                {utmData.utmCount} cliques com parâmetros UTM. Identifique quais campanhas, origens e mídias trazem mais interação.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-8 lg:grid-cols-3">
+                {/* Sources */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-primary" /> Origem (utm_source)
+                  </h4>
                   <div className="space-y-2">
-                    {utmData.sources.map(([name, count]) => (
-                      <div key={name} className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-foreground">{name}</span>
-                        <Badge variant="secondary" className="text-xs">{count}</Badge>
-                      </div>
-                    ))}
+                    {utmData.sources.map(([name, count], i) => {
+                      const pct = utmData.utmCount > 0 ? (count / utmData.utmCount * 100) : 0;
+                      return (
+                        <div key={name} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground flex items-center gap-1.5">
+                              {i < 3 && <span className="text-xs">{MEDAL_ICONS[i]}</span>}
+                              {name}
+                            </span>
+                            <span className="text-muted-foreground text-xs">{count} ({pct.toFixed(0)}%)</span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full bg-primary/70 transition-all duration-500" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {utmData.sources.length === 0 && <p className="text-xs text-muted-foreground">Sem dados</p>}
                   </div>
-                ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Mídia (utm_medium)</h4>
-                {utmData.mediums.length > 0 ? (
+                </div>
+                {/* Mediums */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "hsl(200, 60%, 50%)" }} /> Mídia (utm_medium)
+                  </h4>
                   <div className="space-y-2">
-                    {utmData.mediums.map(([name, count]) => (
-                      <div key={name} className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-foreground">{name}</span>
-                        <Badge variant="secondary" className="text-xs">{count}</Badge>
-                      </div>
-                    ))}
+                    {utmData.mediums.map(([name, count], i) => {
+                      const pct = utmData.utmCount > 0 ? (count / utmData.utmCount * 100) : 0;
+                      return (
+                        <div key={name} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground flex items-center gap-1.5">
+                              {i < 3 && <span className="text-xs">{MEDAL_ICONS[i]}</span>}
+                              {name}
+                            </span>
+                            <span className="text-muted-foreground text-xs">{count} ({pct.toFixed(0)}%)</span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: "hsl(200, 60%, 50%)" }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {utmData.mediums.length === 0 && <p className="text-xs text-muted-foreground">Sem dados</p>}
                   </div>
-                ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Campanhas (utm_campaign)</h4>
-                {utmData.campaigns.length > 0 ? (
+                </div>
+                {/* Campaigns */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "hsl(142, 70%, 40%)" }} /> Campanha (utm_campaign)
+                  </h4>
                   <div className="space-y-2">
-                    {utmData.campaigns.map(([name, count]) => (
-                      <div key={name} className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-foreground truncate max-w-[150px]" title={name}>{name}</span>
-                        <Badge variant="secondary" className="text-xs">{count}</Badge>
-                      </div>
-                    ))}
+                    {utmData.campaigns.map(([name, count], i) => {
+                      const pct = utmData.utmCount > 0 ? (count / utmData.utmCount * 100) : 0;
+                      return (
+                        <div key={name} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground flex items-center gap-1.5 truncate max-w-[180px]" title={name}>
+                              {i < 3 && <span className="text-xs">{MEDAL_ICONS[i]}</span>}
+                              {name}
+                            </span>
+                            <span className="text-muted-foreground text-xs whitespace-nowrap">{count} ({pct.toFixed(0)}%)</span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: "hsl(142, 70%, 40%)" }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {utmData.campaigns.length === 0 && <p className="text-xs text-muted-foreground">Sem dados</p>}
                   </div>
-                ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
+                </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* utm_content + utm_term */}
+          {(utmData.contents.length > 0 || utmData.terms.length > 0) && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              {utmData.contents.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Conteúdo (utm_content)</CardTitle>
+                    <CardDescription>Qual variação de anúncio ou criativo gera mais clique?</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {utmData.contents.map(([name, count], i) => {
+                        const pct = utmData.utmCount > 0 ? (count / utmData.utmCount * 100) : 0;
+                        return (
+                          <div key={name} className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground flex items-center gap-1.5">
+                              {i < 3 && <span className="text-xs">{MEDAL_ICONS[i]}</span>}
+                              <span className="truncate max-w-[200px]" title={name}>{name}</span>
+                            </span>
+                            <span className="text-muted-foreground text-xs whitespace-nowrap">{count} ({pct.toFixed(0)}%)</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {utmData.terms.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Termo (utm_term)</CardTitle>
+                    <CardDescription>Palavras-chave associadas aos cliques de campanha.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {utmData.terms.map(([name, count], i) => {
+                        const pct = utmData.utmCount > 0 ? (count / utmData.utmCount * 100) : 0;
+                        return (
+                          <div key={name} className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground flex items-center gap-1.5">
+                              {i < 3 && <span className="text-xs">{MEDAL_ICONS[i]}</span>}
+                              <span className="truncate max-w-[200px]" title={name}>{name}</span>
+                            </span>
+                            <span className="text-muted-foreground text-xs whitespace-nowrap">{count} ({pct.toFixed(0)}%)</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      )}
-      {utmData.utmCount === 0 && (
+          )}
+
+          {/* Full UTM combination table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Layers className="h-4 w-4" />
+                Tabela Completa — Combinações UTM
+              </CardTitle>
+              <CardDescription>Todas as combinações de origem + mídia + campanha detectadas, ordenadas por volume.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left">
+                      <th className="py-2 pr-2 font-semibold text-muted-foreground w-10">#</th>
+                      <th className="py-2 pr-3 font-semibold text-muted-foreground">Origem</th>
+                      <th className="py-2 pr-3 font-semibold text-muted-foreground">Mídia</th>
+                      <th className="py-2 pr-3 font-semibold text-muted-foreground">Campanha</th>
+                      <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Cliques</th>
+                      <th className="py-2 font-semibold text-muted-foreground text-right">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {utmData.combos.map((row, i) => {
+                      const pct = utmData.utmCount > 0 ? (row.count / utmData.utmCount * 100) : 0;
+                      return (
+                        <tr key={i} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i < 3 ? "bg-primary/5" : ""}`}>
+                          <td className="py-2.5 pr-2 text-center">
+                            {i < 3 ? <span className="text-base">{MEDAL_ICONS[i]}</span> : <span className="text-xs font-mono text-muted-foreground">{i + 1}</span>}
+                          </td>
+                          <td className="py-2.5 pr-3 font-medium text-foreground">{row.source}</td>
+                          <td className="py-2.5 pr-3">
+                            <Badge variant="outline" className="text-[11px]">{row.medium}</Badge>
+                          </td>
+                          <td className="py-2.5 pr-3">
+                            <span className="text-foreground truncate max-w-[200px] inline-block" title={row.campaign}>{row.campaign}</span>
+                          </td>
+                          <td className="py-2.5 pr-3 text-right font-bold text-foreground">{row.count}</td>
+                          <td className="py-2.5 text-right text-muted-foreground">{pct.toFixed(1)}%</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      ) : (
         <Card className="border-dashed">
           <CardContent className="flex items-center gap-3 py-4">
             <Globe className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium text-foreground">UTM não detectado</p>
+              <p className="text-sm font-medium text-foreground">Nenhum UTM detectado neste período</p>
               <p className="text-xs text-muted-foreground">
-                Adicione ?utm_source=google&utm_medium=cpc&utm_campaign=nome nos links das campanhas para rastrear origens.
+                Adicione parâmetros UTM nos links das campanhas: <code className="text-[11px] bg-muted px-1 py-0.5 rounded">?utm_source=google&amp;utm_medium=cpc&amp;utm_campaign=nome</code>
               </p>
             </div>
           </CardContent>
