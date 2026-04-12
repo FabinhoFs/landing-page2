@@ -404,6 +404,56 @@ No `docker-stack.yml`:
 
 Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar tabelas, RLS e dados iniciais.
 
+> **Pré-requisito:** A função `public.has_role()` e a tabela `user_roles` devem existir antes de executar a migration. Elas são necessárias para as policies de governança (audit log e versionamento).
+
+---
+
+## 12. Governança — Histórico e Versionamento
+
+O projeto inclui duas tabelas de governança protegidas por RLS (somente admins):
+
+| Tabela | Finalidade |
+|--------|-----------|
+| `admin_audit_log` | Registra todas as alterações feitas no painel admin |
+| `page_versions` | Snapshots completos da configuração para restauração |
+
+### Funcionalidades no Admin
+
+| Recurso | Aba | Descrição |
+|---------|-----|-----------|
+| Histórico de alterações | 18. Histórico | Log de quem alterou, quando, o quê, valor anterior/novo |
+| Excluir registro individual | 18. Histórico | Botão 🗑️ com confirmação |
+| Limpar histórico por período | 18. Histórico | Escolha 30/60/90/180 dias, remove registros anteriores |
+| Limpar todo o histórico | 18. Histórico | Botão destructive com confirmação forte |
+| Salvar versão | 17. Versões | Snapshot de todas as `site_settings` |
+| Restaurar versão | 17. Versões | Upsert do snapshot + reload automático |
+| Excluir versão individual | 17. Versões | Botão 🗑️ com confirmação (bloqueia exclusão da última) |
+| Limpeza inteligente de versões | 17. Versões | Manter últimas 3/5/10/20, remover o restante |
+
+### Retenção recomendada
+
+- **Histórico:** limpar registros acima de 90 dias periodicamente
+- **Versões:** manter no máximo 10 versões ativas
+
+### Validação pós-instalação
+
+```sql
+-- Verificar tabelas existem
+SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('admin_audit_log', 'page_versions');
+
+-- Verificar RLS está ativo
+SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('admin_audit_log', 'page_versions');
+
+-- Verificar policies existem (deve retornar 3 para audit_log, 4 para page_versions)
+SELECT tablename, count(*) FROM pg_policies WHERE tablename IN ('admin_audit_log', 'page_versions') GROUP BY tablename;
+```
+
+### Testar permissões
+
+1. Faça login como admin → vá em **17. Versões** → salve uma versão → restaure → exclua
+2. Vá em **18. Histórico** → verifique que as ações aparecem → exclua um registro → limpe por período
+3. Abra o site em aba anônima → confirme que não há acesso às tabelas de governança
+
 ---
 
 ## Comandos Rápidos
@@ -432,6 +482,9 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 - [ ] Site URL configurada no Supabase Dashboard
 - [ ] Redirect URLs configuradas no Supabase Dashboard
 - [ ] Leaked Password Protection ativada
-- [ ] Migration SQL executada no Supabase
+- [ ] Migration SQL executada no Supabase (`migration-master.sql`)
+- [ ] Função `has_role()` e tabela `user_roles` existem
+- [ ] Tabelas `admin_audit_log` e `page_versions` criadas com RLS
 - [ ] Bootstrap do primeiro admin concluído
 - [ ] Login em `/admin/login` funcionando
+- [ ] Histórico e versionamento funcionando no admin
