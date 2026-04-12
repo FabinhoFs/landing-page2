@@ -243,6 +243,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_exists: { Args: never; Returns: boolean }
       bootstrap_first_admin: {
         Args: { _bootstrap_key: string }
         Returns: undefined
