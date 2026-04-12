@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -72,7 +73,26 @@ const DEFAULT_BULLETS = [
 const DEFAULT_TRUST_LINE = "ICP-Brasil • Processo online • Atendimento humano";
 
 export const AdminHero = () => {
-  const { settings, fetching, saving, updateField, saveKeys } = useAdminSettings();
+  const { settings, fetching, saving, updateField, saveKeys, setSettings } = useAdminSettings();
+  const seededBullets = useRef(false);
+
+  // Seed default bullets into settings once after fetching
+  useEffect(() => {
+    if (!fetching && !seededBullets.current) {
+      seededBullets.current = true;
+      const hasAny = Array.from({ length: 6 }, (_, i) => settings[`hero_bullet_${i + 1}_label`]).some(v => v !== undefined && v !== "");
+      if (!hasAny) {
+        setSettings(prev => {
+          const next = { ...prev };
+          DEFAULT_BULLETS.forEach((b, idx) => {
+            next[`hero_bullet_${idx + 1}_label`] = b.label;
+            next[`hero_bullet_${idx + 1}_icon`] = b.icon;
+          });
+          return next;
+        });
+      }
+    }
+  }, [fetching]);
 
   if (fetching) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
@@ -86,7 +106,6 @@ export const AdminHero = () => {
     updateField(`hero_v${variant}_${field}`, value);
   };
 
-  // Bullets as individual fields
   const getBullets = (): { icon: string; label: string }[] => {
     const items: { icon: string; label: string }[] = [];
     for (let i = 1; i <= 6; i++) {
@@ -95,8 +114,7 @@ export const AdminHero = () => {
         items.push({ icon: settings[`hero_bullet_${i}_icon`] || "MessageCircle", label });
       }
     }
-    if (items.length > 0) return items;
-    return DEFAULT_BULLETS;
+    return items.length > 0 ? items : DEFAULT_BULLETS;
   };
   const bullets = getBullets();
 
