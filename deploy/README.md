@@ -167,6 +167,41 @@ docker compose up -d
 
 ---
 
+## 6.1 Upgrade de Banco Existente (Rascunho/Publicação)
+
+Se o banco já existia **antes** da feature de rascunho/publicação, a coluna `environment` não existe na tabela `site_settings`. Isso causa o erro:
+
+```
+Could not find the 'environment' column of 'site_settings' in the schema cache
+```
+
+### Correção
+
+Execute o script de upgrade no **SQL Editor do Supabase**:
+
+```bash
+# O arquivo está em: deploy/upgrade-add-environment.sql
+```
+
+O script faz:
+1. Adiciona a coluna `environment` com default `'published'`
+2. Troca a constraint `UNIQUE(key)` por `UNIQUE(key, environment)`
+3. Duplica todos os registros existentes como `'draft'` para o admin editar
+4. Atualiza RLS para que `anon` só leia `environment = 'published'`
+
+### Validação
+
+Após executar, verifique:
+```sql
+SELECT key, environment, value FROM site_settings ORDER BY key, environment;
+```
+
+Cada chave deve ter **duas linhas**: uma `draft` e uma `published`.
+
+> ⚠️ Para bancos **novos**, use `migration-master.sql` diretamente — ele já inclui tudo.
+
+---
+
 ## 7. Rollback Simples
 
 Se a nova versão apresentar problemas:
