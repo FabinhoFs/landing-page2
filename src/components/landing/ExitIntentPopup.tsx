@@ -105,7 +105,7 @@ export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
           message={ctaMessage}
           className="w-full text-lg py-6"
         >
-          Garantir meu desconto agora!
+          Quero falar no WhatsApp
         </WhatsAppButton>
 
         <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-2">
