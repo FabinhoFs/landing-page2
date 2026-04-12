@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/lib/logError";
 
 const STORAGE_KEY = "dtr_city";
 const SAFE_FALLBACK = "sua região";
@@ -114,6 +115,10 @@ export const useGeolocation = () => {
         }
       }
       // All failed — city stays null, cityDisplay will use SAFE_FALLBACK
+      logError("useGeolocation", "All geo providers failed", {
+        chain,
+        provider: config.provider,
+      });
     })();
 
     return () => controller.abort();

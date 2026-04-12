@@ -1,6 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logAccess } from "@/lib/logAccess";
+import { logError } from "@/lib/logError";
 import { useWhatsAppNumber } from "@/hooks/useWhatsAppNumber";
 
 interface WhatsAppButtonProps {
@@ -24,10 +25,17 @@ export const WhatsAppButton = ({
   const phone = useWhatsAppNumber();
 
   const handleClick = async () => {
-    if (typeof window !== "undefined" && (window as any).dataLayer) {
-      (window as any).dataLayer.push({
-        event: "conversion_whatsapp",
-        button_id: buttonId,
+    try {
+      if (typeof window !== "undefined" && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: "conversion_whatsapp",
+          button_id: buttonId,
+        });
+      }
+    } catch (err) {
+      logError("WhatsAppButton", "Falha ao disparar evento de conversão", {
+        buttonId,
+        error: String(err),
       });
     }
 

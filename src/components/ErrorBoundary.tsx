@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { logError } from "@/lib/logError";
 
 interface Props {
   children: ReactNode;
@@ -29,6 +30,11 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     console.error("[ErrorBoundary]", error, info);
+    logError("ErrorBoundary", error.message, {
+      name: error.name,
+      stack: error.stack?.slice(0, 500),
+      componentStack: info.componentStack?.slice(0, 500),
+    });
   }
 
   render() {
