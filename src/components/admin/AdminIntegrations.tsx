@@ -429,6 +429,69 @@ export const AdminIntegrations = () => {
           );
         })}
 
+        {/* Geolocation Settings Card */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <CardTitle className="text-base">Geolocalização</CardTitle>
+                <CardDescription>
+                  Provedor de IP para detecção de cidade. Suporta fallback automático contra erro 429.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Provedor</Label>
+              <Select
+                value={geoValues.geo_provider}
+                onValueChange={(v) => setGeoValues((prev) => ({ ...prev, geo_provider: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ipapi">ipapi.co (padrão)</SelectItem>
+                  <SelectItem value="ip-api">ip-api.com (gratuito)</SelectItem>
+                  <SelectItem value="cloudflare">Cloudflare Headers (requer CF)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                O provedor principal para detectar a cidade do visitante.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Chave PRO (opcional)</Label>
+              <Input
+                placeholder="Sua chave de API PRO"
+                value={geoValues.geo_api_key}
+                onChange={(e) => setGeoValues((prev) => ({ ...prev, geo_api_key: e.target.value.trim() }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Chave PRO do ipapi.co para evitar limites de requisição. Deixe vazio para plano gratuito.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Fallback multi-provedor</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Se o provedor principal falhar (erro 429), tenta os outros automaticamente.
+                </p>
+              </div>
+              <Switch
+                checked={geoValues.geo_fallback === "true"}
+                onCheckedChange={(checked) =>
+                  setGeoValues((prev) => ({ ...prev, geo_fallback: checked ? "true" : "false" }))
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Salvando..." : "Salvar Integrações"}
