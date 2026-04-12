@@ -1,9 +1,10 @@
-import { Star, BadgeCheck } from "lucide-react";
+import { Star, BadgeCheck, Award } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import { logAccess } from "@/lib/logAccess";
 import {
   Carousel,
   CarouselContent,
@@ -20,6 +21,7 @@ interface Testimonial {
   text: string;
   rating: number;
   is_google_review: boolean;
+  sort_order: number;
 }
 
 const GoogleIcon = ({ className }: { className?: string }) => (
@@ -36,6 +38,8 @@ export const TestimonialsSection = () => {
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
   const { settings } = useCtaMessages();
+  const trackedRef = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const sectionTitle = settings.testimonials_title || "O que nossos clientes dizem no Google";
 
@@ -53,6 +57,32 @@ export const TestimonialsSection = () => {
   });
 
   const items = testimonials || [];
+
+  // Find the strongest testimonial (5 stars, longest text, Google review preferred)
+  const strongestId = items.length > 0
+    ? items.reduce((best, t) => {
+        const score = t.rating * 100 + t.text.length + (t.is_google_review ? 500 : 0);
+        const bestScore = best.rating * 100 + best.text.length + (best.is_google_review ? 500 : 0);
+        return score > bestScore ? t : best;
+      }, items[0]).id
+    : null;
+
+  // Track section view once
+  useEffect(() => {
+    if (!sectionRef.current || trackedRef.current || items.length === 0) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !trackedRef.current) {
+          trackedRef.current = true;
+          logAccess("section_view_testimonials");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [items.length]);
 
   const onSelect = useCallback(() => {
     if (!api) return;
@@ -73,12 +103,37 @@ export const TestimonialsSection = () => {
 
   if (items.length === 0) return null;
 
+  // Stats bar
+  const avgRating = items.length > 0 ? (items.reduce((s, t) => s + t.rating, 0) / items.length).toFixed(1) : "0";
+  const googleCount = items.filter((t) => t.is_google_review).length;
+  const fiveStarCount = items.filter((t) => t.rating === 5).length;
+
   return (
-    <section className="bg-deep py-16 md:py-24">
+    <section ref={sectionRef} className="bg-deep py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
-        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-10 md:mb-12">
+        <h2 className="text-center text-2xl font-bold text-deep-foreground md:text-4xl mb-4 md:mb-6">
           {sectionTitle}
         </h2>
+
+        {/* Social proof stats bar */}
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mb-10 md:mb-12">
+          <div className="flex items-center gap-1.5 text-sm text-deep-foreground/80">
+            <Star className="h-4 w-4 fill-[#FBBC05] text-[#FBBC05]" />
+            <span className="font-bold text-deep-foreground">{avgRating}</span>
+            <span>média</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-deep-foreground/80">
+            <span className="font-bold text-deep-foreground">{fiveStarCount}</span>
+            <span>avaliações 5 estrelas</span>
+          </div>
+          {googleCount > 0 && (
+            <div className="flex items-center gap-1.5 text-sm text-deep-foreground/80">
+              <GoogleIcon className="h-4 w-4" />
+              <span className="font-bold text-deep-foreground">{googleCount}</span>
+              <span>do Google</span>
+            </div>
+          )}
+        </div>
 
         <Carousel
           setApi={setApi}
@@ -89,7 +144,7 @@ export const TestimonialsSection = () => {
           <CarouselContent className="-ml-4">
             {items.map((t) => (
               <CarouselItem key={t.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                <TestimonialCard testimonial={t} />
+                <TestimonialCard testimonial={t} isStrongest={t.id === strongestId} />
               </CarouselItem>
             ))}
           </CarouselContent>
@@ -116,9 +171,15 @@ export const TestimonialsSection = () => {
   );
 };
 
-function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
+function TestimonialCard({ testimonial: t, isStrongest }: { testimonial: Testimonial; isStrongest?: boolean }) {
   return (
-    <div className="rounded-2xl border border-primary/20 bg-white/5 backdrop-blur-lg shadow-lg shadow-primary/10 p-5 md:p-6 flex flex-col h-full">
+    <div className={`rounded-2xl border ${isStrongest ? "border-primary/50 ring-1 ring-primary/20" : "border-primary/20"} bg-white/5 backdrop-blur-lg shadow-lg shadow-primary/10 p-5 md:p-6 flex flex-col h-full relative`}>
+      {isStrongest && (
+        <div className="absolute -top-2.5 left-4 flex items-center gap-1 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+          <Award className="h-3 w-3" />
+          Destaque
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-0.5">
           {[...Array(5)].map((_, j) => (
