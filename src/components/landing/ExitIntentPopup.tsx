@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,64 +9,109 @@ import {
 import { WhatsAppButton } from "./WhatsAppButton";
 import { Gift, Timer, Headphones } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ExitIntentPopupProps {
   city: string;
 }
 
+const SESSION_KEY = "exit_intent_shown";
+
 export const ExitIntentPopup = ({ city }: ExitIntentPopupProps) => {
   const [open, setOpen] = useState(false);
   const [triggered, setTriggered] = useState(false);
   const { settings, getMessage } = useCtaMessages();
+  const isMobile = useIsMobile();
+  const scrollRef = useRef({ lastY: 0, lastTime: 0 });
+  const backStateRef = useRef(false);
 
-  const popupEnabled = settings.popup_enabled === "true";
-  const discount = settings.popup_discount || "20";
+  const popupEnabled = settings.popup_enabled !== "false";
+  const triggerDesktop = settings.popup_trigger_desktop !== "false";
+  const triggerMobileScroll = settings.popup_trigger_mobile_scroll !== "false";
+  const triggerMobileBack = settings.popup_trigger_mobile_back === "true";
+  const discount = settings.popup_discount_value || settings.popup_discount || "20";
   const title = settings.popup_title || "ESPERA! NÃO VÁ EMBORA.";
   const subtitle = settings.popup_subtitle || "Garanta um desconto exclusivo para emitir seu Certificado Digital agora.";
   const supportText = settings.support_text || "Suporte completo e humanizado: em caso de qualquer dúvida, conte conosco do início ao fim.";
   const ctaButtonText = settings.popup_cta_text || "Quero falar no WhatsApp";
 
+  const alreadyShown = typeof window !== "undefined" && sessionStorage.getItem(SESSION_KEY) === "1";
+
   const trigger = useCallback(() => {
-    if (triggered || !popupEnabled) return;
+    if (triggered || !popupEnabled || alreadyShown) return;
     setTriggered(true);
     setOpen(true);
+    sessionStorage.setItem(SESSION_KEY, "1");
     if ((window as any).dataLayer) {
       (window as any).dataLayer.push({ event: "exit_intent_popup", city });
     }
-  }, [triggered, popupEnabled, city]);
+  }, [triggered, popupEnabled, alreadyShown, city]);
 
   useEffect(() => {
-    if (!popupEnabled) return;
+    if (!popupEnabled || alreadyShown) return;
 
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0) trigger();
-    };
-    document.addEventListener("mouseleave", handleMouseLeave);
+    const cleanups: (() => void)[] = [];
 
+    // Desktop: mouse leaves top of viewport
+    if (!isMobile && triggerDesktop) {
+      const handleMouseLeave = (e: MouseEvent) => {
+        if (e.clientY <= 0) trigger();
+      };
+      document.addEventListener("mouseleave", handleMouseLeave);
+      cleanups.push(() => document.removeEventListener("mouseleave", handleMouseLeave));
+    }
+
+    // Mobile: fast scroll up detection
+    if (isMobile && triggerMobileScroll) {
+      scrollRef.current = { lastY: window.scrollY, lastTime: Date.now() };
+      const handleScroll = () => {
+        const now = Date.now();
+        const currentY = window.scrollY;
+        const deltaY = scrollRef.current.lastY - currentY;
+        const deltaTime = now - scrollRef.current.lastTime;
+
+        if (deltaY > 150 && deltaTime < 200 && currentY < 400) {
+          trigger();
+        }
+
+        scrollRef.current = { lastY: currentY, lastTime: now };
+      };
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      cleanups.push(() => window.removeEventListener("scroll", handleScroll));
+    }
+
+    // Mobile: back button interception
+    if (isMobile && triggerMobileBack && !backStateRef.current) {
+      backStateRef.current = true;
+      window.history.pushState({ exitIntent: true }, "");
+      const handlePopState = (e: PopStateEvent) => {
+        if (e.state?.exitIntent) return;
+        trigger();
+        // Re-push state so user can still navigate back after dismissal
+        if (!sessionStorage.getItem(SESSION_KEY)) {
+          window.history.pushState({ exitIntent: true }, "");
+        }
+      };
+      window.addEventListener("popstate", handlePopState);
+      cleanups.push(() => window.removeEventListener("popstate", handlePopState));
+    }
+
+    // Inactivity timer (20s)
     let inactivityTimer = setTimeout(() => trigger(), 20000);
     const resetTimer = () => {
       clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => trigger(), 20000);
     };
-    window.addEventListener("scroll", resetTimer);
-    window.addEventListener("touchstart", resetTimer);
-
-    let lastScrollY = window.scrollY;
-    const handleScroll = () => {
-      const delta = lastScrollY - window.scrollY;
-      if (delta > 200 && window.scrollY < 300) trigger();
-      lastScrollY = window.scrollY;
-    };
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      document.removeEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("scroll", resetTimer, { passive: true });
+    window.addEventListener("touchstart", resetTimer, { passive: true });
+    cleanups.push(() => {
+      clearTimeout(inactivityTimer);
       window.removeEventListener("scroll", resetTimer);
       window.removeEventListener("touchstart", resetTimer);
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(inactivityTimer);
-    };
-  }, [popupEnabled, trigger]);
+    });
+
+    return () => cleanups.forEach((fn) => fn());
+  }, [popupEnabled, trigger, isMobile, triggerDesktop, triggerMobileScroll, triggerMobileBack, alreadyShown]);
 
   if (!popupEnabled) return null;
 
