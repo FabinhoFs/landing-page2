@@ -1,73 +1,78 @@
-# Welcome to your Lovable project
+# Agis Digital — Landing Page
 
-## Project info
+Landing page de alta conversão para emissão de Certificados Digitais, com painel administrativo completo, personalização por UTM, testes A/B/C e governança de conteúdo.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack
 
-## How can I edit this code?
+- **Frontend:** Vite + React 18 + TypeScript + Tailwind CSS + shadcn/ui
+- **Backend:** Supabase (PostgreSQL + Auth + RLS)
+- **Deploy:** Docker + Nginx (runtime config, sem rebuild para trocar Supabase)
 
-There are several ways of editing your application.
+## Estrutura do Projeto
 
-**Use Lovable**
+```
+src/
+├── pages/           # Index (landing), Admin, AdminLogin, NotFound
+├── components/
+│   ├── landing/     # Seções da landing page (Hero, Pricing, FAQ, etc.)
+│   ├── admin/       # Abas do painel administrativo (20 abas)
+│   └── ui/          # Componentes shadcn/ui
+├── hooks/           # useCtaMessages, useExperiment, useUtmPersonalization, etc.
+├── lib/             # auditLog, logAccess, checkIsAdmin, runtimeConfig
+└── integrations/    # Cliente Supabase
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+deploy/
+├── Dockerfile           # Build multi-stage (Node → Nginx)
+├── docker-compose.yml   # Deploy standalone
+├── docker-stack.yml     # Deploy Swarm / Portainer
+├── docker-entrypoint.sh # Injeção de runtime-config.js
+├── nginx.conf           # Configuração SPA
+├── migration-master.sql # SQL completo para banco novo
+├── upgrade-add-environment.sql
+├── upgrade-add-experiments.sql
+└── upgrade-add-utm-rules.sql
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+## Desenvolvimento Local
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Deploy em Produção
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Consulte **[deploy/README.md](deploy/README.md)** para o guia completo de:
 
-**Use GitHub Codespaces**
+- Build e push da imagem Docker
+- Deploy em Docker Compose, Swarm ou Portainer
+- Configuração de banco (instalação nova e upgrade)
+- Checklist de produção e smoke test
+- Configuração de domínio e HTTPS
+- Troubleshooting
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Funcionalidades
 
-## What technologies are used for this project?
+| Recurso | Descrição |
+|---------|-----------|
+| **Landing page dinâmica** | Conteúdo 100% gerenciável pelo admin |
+| **Draft / Publish** | Rascunho separado do conteúdo público |
+| **Previsualização** | Preview do rascunho com `?preview=draft` (admin-only) |
+| **Histórico** | Log de todas as alterações com quem/quando/o quê |
+| **Versionamento** | Snapshots restauráveis do conteúdo publicado |
+| **Experimentos A/B/C** | Testes de variantes com tracking por sessão |
+| **Personalização UTM** | Conteúdo personalizado por campanha |
+| **Tracking / Inteligência** | Dashboard de CTAs, dispositivos, cidades, conversão |
+| **Geolocalização** | Cidade detectada automaticamente para personalização |
+| **WhatsApp dinâmico** | Número e mensagens configuráveis por CTA |
+| **SEO / Open Graph** | Meta tags gerenciáveis pelo admin |
+| **Multi-tenant** | Uma imagem Docker serve vários clientes (runtime config) |
 
-This project is built with:
+## Segurança
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- RLS em todas as tabelas (13 tabelas)
+- RBAC via `has_role()` (SECURITY DEFINER)
+- Bootstrap seguro do primeiro admin via RPC com chave
+- Input validation com Zod
+- Anon só lê dados públicos/publicados/ativos
+- Admin protegido por Supabase Auth + role check

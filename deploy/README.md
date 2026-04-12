@@ -1,6 +1,29 @@
 # 🚀 Deploy — Agis Digital LP
 
-Guia completo para deploy em VPS Ubuntu/Debian com Docker.
+Guia completo para deploy em produção com Docker.
+
+---
+
+## Índice
+
+1. [Pré-requisitos](#pré-requisitos)
+2. [Configurar variáveis de ambiente](#2-configurar-variáveis-de-ambiente)
+3. [Banco de dados](#3-banco-de-dados)
+4. [Build da imagem Docker](#4-build-da-imagem-docker)
+5. [Push para Docker Hub / Registry](#5-push-para-docker-hub--registry)
+6. [Deploy com Docker Compose](#6-deploy-com-docker-compose)
+7. [Deploy com Docker Swarm / Portainer](#7-deploy-com-docker-swarm--portainer)
+8. [Verificações pós-deploy](#8-verificações-pós-deploy)
+9. [Smoke test final](#9-smoke-test-final)
+10. [Domínio e HTTPS](#10-domínio-e-https)
+11. [Configurar Supabase para produção](#11-configurar-supabase-para-produção)
+12. [Governança (Draft/Publish, Histórico, Versões)](#12-governança)
+13. [Experimentos A/B/C](#13-experimentos-abc)
+14. [Personalização por UTM](#14-personalização-por-utm)
+15. [Atualização e rollback](#15-atualização-e-rollback)
+16. [Checklist final de produção](#16-checklist-final-de-produção)
+17. [Comandos rápidos](#17-comandos-rápidos)
+18. [Troubleshooting](#18-troubleshooting)
 
 ---
 
@@ -17,15 +40,6 @@ sudo usermod -aG docker $USER
 
 ---
 
-## 1. Clonar o Repositório
-
-```bash
-git clone https://github.com/SEU_USUARIO/agis-digital-lp.git
-cd agis-digital-lp
-```
-
----
-
 ## 2. Configurar Variáveis de Ambiente
 
 ```bash
@@ -33,31 +47,181 @@ cp .env.example .env
 nano .env
 ```
 
-| Variável | Tipo | Descrição | Onde encontrar |
-|----------|------|-----------|----------------|
-| `SUPABASE_URL` | **Runtime** | URL do projeto Supabase | Dashboard → Settings → API |
-| `SUPABASE_PUBLISHABLE_KEY` | **Runtime** | Chave anon/pública | Dashboard → Settings → API |
-| `APP_PORT` | **Runtime** | Porta local (padrão: 3000) | Sua preferência |
+| Variável | Descrição | Onde encontrar |
+|----------|-----------|----------------|
+| `SUPABASE_URL` | URL do projeto Supabase | Dashboard → Settings → API |
+| `SUPABASE_PUBLISHABLE_KEY` | Chave anon/pública | Dashboard → Settings → API |
+| `APP_PORT` | Porta local (padrão: 3000) | Sua preferência |
 
 > ⚠️ **NUNCA** coloque a `service_role` key no `.env`. Ela dá acesso total ao banco.
 
 ### Arquitetura de Runtime Config
 
-A imagem Docker é **genérica** — não contém credenciais Supabase. A configuração é injetada em runtime:
+A imagem Docker é **genérica** — não contém credenciais. A configuração é injetada em runtime:
 
-1. O container inicia e executa `docker-entrypoint.sh`
-2. O script gera `/usr/share/nginx/html/runtime-config.js` a partir das variáveis de ambiente
-3. O `index.html` carrega `runtime-config.js` antes do bundle da aplicação
-4. O app React lê `window.RUNTIME_CONFIG` em vez de `import.meta.env`
+1. Container inicia → executa `docker-entrypoint.sh`
+2. Script gera `/usr/share/nginx/html/runtime-config.js` com as variáveis
+3. `index.html` carrega `runtime-config.js` antes do bundle React
+4. App lê `window.RUNTIME_CONFIG` em vez de `import.meta.env`
 
-**Benefícios:**
-- Uma única imagem serve para **vários clientes** — mude apenas as variáveis
-- Trocar de servidor Supabase **não requer rebuild**
-- Secrets não ficam embutidas no bundle JavaScript
+**Benefício:** Uma única imagem serve para vários clientes — mude apenas as variáveis, sem rebuild.
 
 ---
 
-## 3. Build e Subir em Produção
+## 3. Banco de Dados
+
+### 3.1 Banco Novo (primeira instalação)
+
+**Pré-requisito:** Crie a função `has_role()` e a tabela `user_roles` primeiro:
+
+```sql
+-- 1. Criar enum de roles
+CREATE TYPE public.app_role AS ENUM ('admin', 'moderator', 'user');
+
+-- 2. Criar tabela user_roles
+CREATE TABLE public.user_roles (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    role app_role NOT NULL,
+    UNIQUE (user_id, role)
+);
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+-- 3. Criar função has_role (SECURITY DEFINER)
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles
+    WHERE user_id = _user_id AND role = _role
+  )
+$$;
+
+-- 4. Criar RPC admin_exists
+CREATE OR REPLACE FUNCTION public.admin_exists()
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE role = 'admin')
+$$;
+
+-- 5. Criar RPC bootstrap_first_admin (configure BOOTSTRAP_KEY)
+CREATE OR REPLACE FUNCTION public.bootstrap_first_admin(_bootstrap_key text)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.user_roles WHERE role = 'admin') THEN
+    RAISE EXCEPTION 'Administrador já existe';
+  END IF;
+  IF _bootstrap_key != 'SUA_CHAVE_SECRETA_AQUI' THEN
+    RAISE EXCEPTION 'Chave de bootstrap inválida';
+  END IF;
+  INSERT INTO public.user_roles (user_id, role) VALUES (auth.uid(), 'admin');
+END;
+$$;
+```
+
+Depois execute `deploy/migration-master.sql` no SQL Editor do Supabase.
+
+### 3.2 Upgrade de Banco Existente
+
+Execute os scripts de upgrade **na ordem**, conforme necessário:
+
+| Script | Quando usar |
+|--------|-------------|
+| `deploy/upgrade-add-environment.sql` | Banco sem coluna `environment` em `site_settings` |
+| `deploy/upgrade-add-experiments.sql` | Banco sem tabelas de experimentos A/B/C |
+| `deploy/upgrade-add-utm-rules.sql` | Banco sem tabelas de personalização UTM |
+
+> Cada script é idempotente — pode ser executado mais de uma vez sem erro.
+
+### 3.3 Validação pós-banco
+
+```sql
+-- Verificar que todas as tabelas existem
+SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+  AND tablename IN ('site_settings', 'testimonials', 'certificate_prices',
+    'certificate_features', 'faqs', 'access_logs', 'admin_audit_log',
+    'page_versions', 'experiments', 'experiment_variants',
+    'experiment_events', 'utm_rules', 'utm_events', 'user_roles');
+
+-- Verificar RLS ativo em todas
+SELECT tablename, rowsecurity FROM pg_tables
+  WHERE schemaname = 'public' AND rowsecurity = true;
+
+-- Verificar que site_settings tem draft e published
+SELECT environment, COUNT(*) FROM site_settings GROUP BY environment;
+
+-- Verificar função has_role existe
+SELECT proname FROM pg_proc WHERE proname = 'has_role';
+```
+
+---
+
+## 4. Build da Imagem Docker
+
+### Build padrão
+
+```bash
+cd /caminho/do/projeto
+docker build -f deploy/Dockerfile -t agis-lp:latest .
+```
+
+### Build sem cache (garantir imagem limpa)
+
+```bash
+docker build -f deploy/Dockerfile -t agis-lp:latest --no-cache .
+```
+
+### Build com tag de versão
+
+```bash
+docker build -f deploy/Dockerfile -t agis-lp:1.0.0 -t agis-lp:latest .
+```
+
+---
+
+## 5. Push para Docker Hub / Registry
+
+### Docker Hub
+
+```bash
+# 1. Login
+docker login
+
+# 2. Tag com seu usuário/organização
+docker tag agis-lp:latest seuusuario/agis-lp:latest
+docker tag agis-lp:latest seuusuario/agis-lp:1.0.0
+
+# 3. Push
+docker push seuusuario/agis-lp:latest
+docker push seuusuario/agis-lp:1.0.0
+```
+
+### Registry privado
+
+```bash
+docker tag agis-lp:latest registry.seudominio.com/agis-lp:latest
+docker push registry.seudominio.com/agis-lp:latest
+```
+
+### Atualizar imagem após mudança no código
+
+```bash
+cd /caminho/do/projeto
+git pull origin main
+docker build -f deploy/Dockerfile -t agis-lp:latest --no-cache .
+docker tag agis-lp:latest seuusuario/agis-lp:latest
+docker push seuusuario/agis-lp:latest
+```
+
+---
+
+## 6. Deploy com Docker Compose
+
+### Subir
 
 ```bash
 cd deploy
@@ -65,181 +229,212 @@ docker compose build
 docker compose up -d
 ```
 
-A aplicação estará acessível na porta definida em `APP_PORT`. Exemplo com `APP_PORT=3000`:
+### Verificar
 
+```bash
+docker compose ps
+docker compose logs --tail=20
+curl -I http://localhost:3000
 ```
-http://SEU_IP:3000
+
+### Trocar Supabase sem rebuild
+
+```bash
+# Edite .env com as novas credenciais
+nano .env
+docker compose restart
 ```
 
 ---
 
-## 4. Healthcheck
+## 7. Deploy com Docker Swarm / Portainer
 
-O healthcheck **não está embutido na imagem Docker**. Ele é definido exclusivamente nos arquivos de deploy (`docker-compose.yml` e `docker-stack.yml`), permitindo ajuste por ambiente sem rebuild.
+### 7.1 Via CLI (Docker Stack)
 
-### 4.1 Comportamento padrão
-
-```yaml
-healthcheck:
-  test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/"]
-  interval: 30s
-  timeout: 5s
-  retries: 3
-  start_period: 20s
+```bash
+# Se a imagem está no Docker Hub:
+SUPABASE_URL="https://xxx.supabase.co" \
+SUPABASE_PUBLISHABLE_KEY="eyJ..." \
+docker stack deploy -c deploy/docker-stack.yml agis
 ```
 
-### 4.2 Verificar status
+### 7.2 Via Portainer
+
+1. Acesse **Stacks → Add stack**
+2. Cole o conteúdo de `deploy/docker-stack.yml` ou faça upload
+3. Em **Environment variables**, defina:
+   - `SUPABASE_URL`
+   - `SUPABASE_PUBLISHABLE_KEY`
+   - `APP_PORT` (padrão: `3000`)
+4. Clique em **Deploy the stack**
+
+### 7.3 Atualizar stack com nova imagem
+
+**Via CLI:**
+```bash
+# Rebuildar e pushar
+docker build -f deploy/Dockerfile -t seuusuario/agis-lp:latest --no-cache .
+docker push seuusuario/agis-lp:latest
+
+# Atualizar o serviço
+docker service update --image seuusuario/agis-lp:latest agis_agis-lp --force
+```
+
+**Via Portainer:**
+1. Stacks → agis → **Update the stack**
+2. Marque **Re-pull image**
+3. Clique **Update**
+
+### 7.4 Trocar Supabase sem rebuild
+
+**Via Portainer:** Stacks → agis → Environment → editar variáveis → Update
+
+**Via CLI:**
+```bash
+SUPABASE_URL="https://novo.supabase.co" \
+SUPABASE_PUBLISHABLE_KEY="eyJ_nova..." \
+docker stack deploy -c deploy/docker-stack.yml agis
+```
+
+### 7.5 Rollback
+
+```bash
+docker service rollback agis_agis-lp
+```
+
+Ou via Portainer: Services → agis_agis-lp → Rollback.
+
+### 7.6 Multi-tenant
+
+```
+┌─────────────────────────────────────────────────┐
+│               agis-lp:latest                    │
+│          (imagem Docker genérica)                │
+└──────────┬──────────────┬───────────────┬───────┘
+           │              │               │
+    ┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼──────┐
+    │ Stack: A    │ │ Stack: B   │ │ Stack: C    │
+    │ SUPABASE_URL│ │ SUPABASE_  │ │ SUPABASE_   │
+    │ =cliente-a  │ │ URL=cli-b  │ │ URL=cli-c   │
+    │ PORT=3001   │ │ PORT=3002  │ │ PORT=3003   │
+    └─────────────┘ └────────────┘ └─────────────┘
+```
+
+### Compose vs Swarm
+
+| Aspecto | `docker-compose.yml` | `docker-stack.yml` |
+|---------|---------------------|--------------------|
+| Modo | `docker compose up -d` | `docker stack deploy` |
+| Build | Suporta `build:` inline | Requer imagem pré-construída |
+| Restart | `restart: unless-stopped` | `deploy.restart_policy` |
+| Update | Rebuild + recreate | Rolling update com rollback |
+| Rede | `bridge` | `overlay` |
+
+---
+
+## 8. Verificações Pós-Deploy
+
+### Verificar serviço (Swarm)
+
+```bash
+# Listar serviços
+docker service ls
+
+# Ver réplicas e status
+docker service ps agis_agis-lp
+
+# Logs do serviço
+docker service logs agis_agis-lp --tail 50
+
+# Logs em tempo real
+docker service logs agis_agis-lp -f
+```
+
+### Verificar container (Compose)
+
+```bash
+docker compose ps
+docker compose logs --tail 50
+```
+
+### Verificar HTTP
+
+```bash
+# Deve retornar 200
+curl -I http://localhost:3000
+
+# Verificar que runtime-config.js foi gerado
+curl -s http://localhost:3000/runtime-config.js | head -5
+
+# Verificar que a página carrega
+curl -s http://localhost:3000 | grep -o "<title>.*</title>"
+```
+
+### Verificar healthcheck
 
 ```bash
 # Compose
 docker compose ps --format "table {{.Name}}\t{{.Status}}"
 
-# Swarm
-docker service ps agis_agis-lp
-docker inspect --format='{{json .State.Health}}' <CONTAINER_ID>
-```
-
-### 4.3 Desativar temporariamente (diagnóstico)
-
-Para impedir que o Swarm reinicie o container durante debug, substitua o bloco de healthcheck na stack por:
-
-```yaml
-healthcheck:
-  test: ["NONE"]
-```
-
-**No Portainer:** Stacks → agis → Editor → substitua o bloco → **Update the stack**.
-
-**Via CLI (Compose):**
-```bash
-# Edite deploy/docker-compose.yml com a alteração acima, depois:
-docker compose up -d
-```
-
-### 4.4 Reativar
-
-Restaure o bloco original do healthcheck e faça update da stack:
-
-**No Portainer:** Stacks → agis → Editor → restaure o bloco → **Update the stack**.
-
-**Via CLI:**
-```bash
-docker compose up -d
-# ou para Swarm:
-docker stack deploy -c deploy/docker-stack.yml agis
-```
-
-### 4.5 Ajustar por ambiente
-
-Você pode alterar `interval`, `timeout`, `retries` e `start_period` diretamente na stack do Portainer sem rebuild da imagem. Exemplos:
-
-| Ambiente | `interval` | `start_period` | `retries` |
-|----------|-----------|----------------|-----------|
-| Produção | `30s` | `20s` | `3` |
-| Staging | `60s` | `30s` | `5` |
-| Debug | desativado (`test: ["NONE"]`) | — | — |
-
----
-
-## 5. Ver Logs
-
-```bash
-# Tempo real
-docker compose logs -f
-
-# Últimas 100 linhas
-docker compose logs --tail=100
+# Swarm — inspecionar saúde do container
+docker inspect --format='{{json .State.Health}}' $(docker ps -q -f name=agis)
 ```
 
 ---
 
-## 6. Atualizar a Aplicação
+## 9. Smoke Test Final
 
-```bash
-cd agis-digital-lp
-git pull origin main
-cd deploy
-docker compose build --no-cache
-docker compose up -d
-```
+Após deploy, execute este checklist para validar que tudo funciona:
 
-> **Nota:** Rebuild é necessário apenas para mudanças no código. Para trocar a URL/chave do Supabase, basta atualizar o `.env` e reiniciar: `docker compose restart`
+### 9.1 Landing Page Pública
 
----
+- [ ] Acessar `https://seudominio.com.br` — página carrega sem erro
+- [ ] Hero exibe título, subtítulo e CTAs
+- [ ] Seções carregam: preços, diferenciais, depoimentos, FAQ
+- [ ] Botões de WhatsApp abrem `wa.me` com número correto
+- [ ] Botão flutuante do WhatsApp aparece
+- [ ] Mobile: CTA fixo no rodapé funciona
+- [ ] SEO: título e meta description corretos (`<title>`, `<meta name="description">`)
+- [ ] Favicon carrega corretamente
+- [ ] Open Graph: `<meta property="og:title">` e `og:image` presentes
 
-## 6.1 Upgrade de Banco Existente (Rascunho/Publicação)
+### 9.2 Admin
 
-Se o banco já existia **antes** da feature de rascunho/publicação, a coluna `environment` não existe na tabela `site_settings`. Isso causa o erro:
+- [ ] Acessar `/admin/login` — tela de login aparece
+- [ ] Login com credenciais de admin funciona
+- [ ] Painel admin carrega com todas as 20 abas
+- [ ] Editar um campo → salvar → mensagem "Salvo com sucesso"
 
-```
-Could not find the 'environment' column of 'site_settings' in the schema cache
-```
+### 9.3 Draft / Publish
 
-### Correção
+- [ ] Salvar rascunho → barra mostra "X alterações não publicadas"
+- [ ] Clicar **Previsualizar** → nova aba com rascunho + badge "PRÉVIA DO RASCUNHO"
+- [ ] Clicar **Publicar** → página pública atualiza
+- [ ] Publicar de novo (segunda vez seguida) → sem erro
+- [ ] Descartar rascunho → conteúdo volta ao publicado
 
-Execute o script de upgrade no **SQL Editor do Supabase**:
+### 9.4 Governança
 
-```bash
-# O arquivo está em: deploy/upgrade-add-environment.sql
-```
+- [ ] Aba Versões: salvar versão funciona
+- [ ] Aba Versões: restaurar versão funciona (vai para rascunho)
+- [ ] Aba Histórico: alterações aparecem com data/hora/usuário
 
-O script faz:
-1. Adiciona a coluna `environment` com default `'published'`
-2. Troca a constraint `UNIQUE(key)` por `UNIQUE(key, environment)`
-3. Duplica todos os registros existentes como `'draft'` para o admin editar
-4. Atualiza RLS para que `anon` só leia `environment = 'published'`
+### 9.5 Inteligência / Tracking
 
-### Validação
+- [ ] Aba Inteligência: dashboard carrega com gráficos
+- [ ] Clicar em CTA na landing page → registro aparece em access_logs
+- [ ] UTMs na URL (`?utm_source=teste`) → registrado no tracking
 
-Após executar, verifique:
-```sql
-SELECT key, environment, value FROM site_settings ORDER BY key, environment;
-```
+### 9.6 Infraestrutura
 
-Cada chave deve ter **duas linhas**: uma `draft` e uma `published`.
-
-> ⚠️ Para bancos **novos**, use `migration-master.sql` diretamente — ele já inclui tudo.
-
----
-
-## 7. Rollback Simples
-
-Se a nova versão apresentar problemas:
-
-### 7.1 Identificar o commit anterior
-
-```bash
-cd agis-digital-lp
-git log --oneline -5
-```
-
-### 7.2 Voltar para o commit desejado
-
-```bash
-git checkout e4f5g6h
-```
-
-### 7.3 Rebuildar e subir
-
-```bash
-cd deploy
-docker compose build --no-cache
-docker compose up -d
-```
-
-### 7.4 Retornar para a branch principal
-
-```bash
-git checkout main
-git pull origin main
-cd deploy
-docker compose build --no-cache
-docker compose up -d
-```
+- [ ] `docker service ls` ou `docker compose ps` — serviço healthy
+- [ ] Logs sem erros críticos
+- [ ] `curl -I https://seudominio.com.br` → 200 OK
+- [ ] HTTPS ativo com certificado válido
 
 ---
 
-## 8. Configurar Domínio + HTTPS
+## 10. Domínio e HTTPS
 
 ### Opção A: Nginx Reverse Proxy + Certbot
 
@@ -273,181 +468,37 @@ sudo certbot --nginx -d seudominio.com.br -d www.seudominio.com.br
 ### Opção B: Nginx Proxy Manager
 
 1. Aponte o domínio para o IP da VPS
-2. No NPM, crie um Proxy Host apontando para `http://IP_INTERNO:3000`
-3. Ative SSL via Let's Encrypt no NPM
+2. No NPM, crie Proxy Host → `http://IP_INTERNO:3000`
+3. Ative SSL via Let's Encrypt
 
-### Opção C: Traefik (Docker Swarm)
-
-Edite o `deploy/docker-stack.yml`:
-1. Remova a seção `ports`
-2. Descomente as labels do Traefik e a rede `traefik-public`
-3. Substitua `seudominio.com.br` pelo seu domínio
-4. Suba com `docker stack deploy -c deploy/docker-stack.yml agis`
-
----
-
-## 9. Configurar Supabase para Produção
-
-Acesse o [Dashboard do Supabase](https://supabase.com/dashboard):
-
-### 9.1 URL do Site
-- **Authentication → URL Configuration → Site URL**
-- Defina: `https://seudominio.com.br`
-
-### 9.2 Redirect URLs
-- **Authentication → URL Configuration → Redirect URLs**
-- Adicione: `https://seudominio.com.br/**`
-
-### 9.3 Leaked Password Protection
-- **Authentication → Attack Protection → Enable Leaked Password Protection**
-- Ative para impedir uso de senhas conhecidamente vazadas
-
-### 9.4 Rate Limiting
-- **Authentication → Rate Limits**
-- Configure limites adequados (ex: 5 tentativas/minuto)
-
-### 9.5 Autenticação — Observações de Produção
-
-O painel `/admin` usa Supabase Auth com email/senha e `localStorage` para persistência de sessão.
-
-**Configurações obrigatórias:**
-- O domínio final **deve** ser cadastrado como Site URL e Redirect URL no Supabase
-- Sessões são renovadas automaticamente via `autoRefreshToken: true`
-- Use **HTTPS obrigatoriamente** — cookies e tokens trafegam pela rede
-
----
-
-## 10. Deploy via Docker Swarm / Portainer
-
-O projeto inclui `deploy/docker-stack.yml` otimizado para Swarm.
-
-### 10.1 Build da Imagem (uma única vez)
-
-Docker Swarm **não suporta `build` inline**. Construa a imagem:
-
-```bash
-docker build -f deploy/Dockerfile -t agis-lp:latest .
-```
-
-> **A imagem é genérica** — não contém credenciais. A mesma imagem serve para todos os clientes.
-
-Em clusters multi-node, publique num registry:
-
-```bash
-docker tag agis-lp:latest registry.exemplo.com/agis-lp:latest
-docker push registry.exemplo.com/agis-lp:latest
-```
-
-### 10.2 Deploy via CLI
-
-```bash
-SUPABASE_URL="https://xxx.supabase.co" \
-SUPABASE_PUBLISHABLE_KEY="eyJ..." \
-docker stack deploy -c deploy/docker-stack.yml agis
-```
-
-### 10.3 Deploy via Portainer
-
-1. Acesse **Stacks → Add stack**
-2. Cole o conteúdo de `deploy/docker-stack.yml` ou faça upload
-3. Em **Environment variables**, defina:
-   - `SUPABASE_URL` — URL do Supabase do cliente
-   - `SUPABASE_PUBLISHABLE_KEY` — Chave anon do cliente
-   - `APP_PORT` — porta de publicação (padrão: `3000`)
-4. Clique em **Deploy the stack**
-
-### 10.4 Multi-tenant: Uma Imagem, Vários Clientes
-
-```
-┌─────────────────────────────────────────────────┐
-│               agis-lp:latest                    │
-│          (imagem Docker genérica)                │
-└──────────┬──────────────┬───────────────┬───────┘
-           │              │               │
-    ┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼──────┐
-    │ Stack: A    │ │ Stack: B   │ │ Stack: C    │
-    │ SUPABASE_URL│ │ SUPABASE_  │ │ SUPABASE_   │
-    │ =cliente-a  │ │ URL=cli-b  │ │ URL=cli-c   │
-    │ PORT=3001   │ │ PORT=3002  │ │ PORT=3003   │
-    └─────────────┘ └────────────┘ └─────────────┘
-```
-
-### 10.5 Verificar
-
-```bash
-docker service ls
-docker service logs agis_agis-lp --tail 50
-curl -I http://localhost:3000
-```
-
-### 10.6 Trocar Supabase sem Rebuild
-
-Para apontar para outro projeto Supabase:
-
-**Via Portainer:** Stacks → agis → Environment → editar variáveis → Update
-
-**Via CLI:**
-```bash
-SUPABASE_URL="https://novo-projeto.supabase.co" \
-SUPABASE_PUBLISHABLE_KEY="eyJ_nova_chave..." \
-docker stack deploy -c deploy/docker-stack.yml agis
-```
-
-O container reinicia e gera novo `runtime-config.js` automaticamente.
-
-### 10.7 Atualizar a Stack (código novo)
-
-Após rebuild da imagem:
-
-```bash
-docker service update --image agis-lp:latest agis_agis-lp
-```
-
-Ou via Portainer: **Stacks → agis → Update the stack** (com `Re-pull image` marcado).
-
-### 10.8 Rollback
-
-```bash
-docker service rollback agis_agis-lp
-```
-
-Ou via Portainer: **Services → agis_agis-lp → Rollback**.
-
-### 10.9 Usar com Traefik no Swarm
+### Opção C: Traefik (Swarm)
 
 No `docker-stack.yml`:
 1. Remova a seção `ports`
-2. Descomente as labels do Traefik no bloco `deploy`
-3. Descomente a rede `traefik-public`
-4. Substitua `seudominio.com.br` pelo seu domínio
-5. Deploy: `docker stack deploy -c deploy/docker-stack.yml agis`
-
-### 10.10 Diferenças: Compose vs Swarm
-
-| Aspecto | `docker-compose.yml` | `docker-stack.yml` |
-|---------|---------------------|--------------------|
-| Modo | `docker compose up -d` | `docker stack deploy` |
-| Build | Suporta `build:` inline | Requer imagem pré-construída |
-| Config | Runtime via `environment:` | Runtime via `environment:` |
-| Restart | `restart: unless-stopped` | `deploy.restart_policy` |
-| Update | Rebuild + recreate | Rolling update com rollback |
-| Rede | `bridge` | `overlay` |
+2. Descomente as labels do Traefik e a rede `traefik-public`
+3. Substitua `seudominio.com.br` pelo seu domínio
+4. Deploy: `docker stack deploy -c deploy/docker-stack.yml agis`
 
 ---
 
-## 11. Banco de Dados (Primeira Instalação)
+## 11. Configurar Supabase para Produção
 
-Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar tabelas, RLS e dados iniciais.
+No [Dashboard do Supabase](https://supabase.com/dashboard):
 
-> **Pré-requisito:** A função `public.has_role()` e a tabela `user_roles` devem existir antes de executar a migration. Elas são necessárias para as policies de governança (audit log e versionamento).
+| Configuração | Caminho | Valor |
+|-------------|---------|-------|
+| Site URL | Auth → URL Configuration | `https://seudominio.com.br` |
+| Redirect URLs | Auth → URL Configuration | `https://seudominio.com.br/**` |
+| Leaked Password Protection | Auth → Attack Protection | Ativar |
+| Rate Limiting | Auth → Rate Limits | 5 tentativas/minuto |
 
 ---
 
-## 12. Governança — Histórico, Versionamento e Publicação
+## 12. Governança
 
-### 12.1 Rascunho / Publicação (Draft/Publish)
+### 12.1 Draft / Publish
 
-A tabela `site_settings` possui uma coluna `environment` (`'draft'` ou `'published'`):
+A tabela `site_settings` usa coluna `environment` (`'draft'` ou `'published'`):
 
 | Ambiente | Quem lê | Quem escreve |
 |----------|---------|--------------|
@@ -455,190 +506,195 @@ A tabela `site_settings` possui uma coluna `environment` (`'draft'` ou `'publish
 | `published` | Landing page pública | Admin (publicar) |
 
 **Fluxo:**
-1. Admin edita → salva no **rascunho** (não afeta a página pública)
-2. Admin clica **Previsualizar** → abre a landing page em nova aba com `?preview=draft` mostrando o rascunho
-3. Admin valida visualmente → clica **Publicar** → rascunho é copiado para publicado → página pública atualiza
+1. Admin edita → salva no **rascunho**
+2. Admin clica **Previsualizar** → `/?preview=draft` em nova aba (admin-only)
+3. Admin valida → clica **Publicar** → rascunho copiado para publicado
 4. Admin pode **Descartar Rascunho** → rascunho volta ao estado publicado
 
-**Prévia (Preview):**
-- O botão **Previsualizar** abre `/?preview=draft` em nova aba
-- A página verifica se o visitante é um admin autenticado via Supabase Auth
-- Se não autenticado, o param é ignorado e mostra o conteúdo publicado (seguro)
-- Um banner amarelo no topo indica "MODO PRÉVIA" para o admin
-- Visitantes comuns nunca veem conteúdo de rascunho
-
-**RLS:** Visitantes anônimos só leem `environment = 'published'`. Admins autenticados leem/escrevem ambos.
+**Segurança:** Visitantes anônimos só leem `published`. Preview requer autenticação.
 
 ### 12.2 Histórico e Versionamento
 
-O projeto inclui duas tabelas de governança protegidas por RLS (somente admins):
+| Tabela | Finalidade |
+|--------|-----------|
+| `admin_audit_log` | Log de todas as alterações (quem, quando, o quê) |
+| `page_versions` | Snapshots restauráveis do conteúdo publicado |
+
+| Recurso | Aba Admin | Descrição |
+|---------|-----------|-----------|
+| Histórico | 20. Histórico | Log completo com filtro e limpeza |
+| Versões | 19. Versões | Salvar, restaurar, limpar snapshots |
+| Publicação | Topo do admin | Barra com status, Publicar, Descartar, Previsualizar |
+
+**Retenção recomendada:** Limpar histórico > 90 dias. Manter máx. 10 versões.
+
+---
+
+## 13. Experimentos A/B/C
 
 | Tabela | Finalidade |
 |--------|-----------|
-| `admin_audit_log` | Registra todas as alterações feitas no painel admin |
-| `page_versions` | Snapshots completos da configuração para restauração |
+| `experiments` | Cadastro (nome, seção, status, distribuição) |
+| `experiment_variants` | Variantes com config JSON |
+| `experiment_events` | Impressões e cliques por variante |
 
-### Funcionalidades no Admin
-
-| Recurso | Aba | Descrição |
-|---------|-----|-----------|
-| Barra de publicação | Topo do admin | Indicador de rascunho, botão Publicar, Descartar |
-| Histórico de alterações | 18. Histórico | Log de quem alterou, quando, o quê, valor anterior/novo |
-| Excluir registro individual | 18. Histórico | Botão 🗑️ com confirmação |
-| Limpar histórico por período | 18. Histórico | Escolha 30/60/90/180 dias, remove registros anteriores |
-| Limpar todo o histórico | 18. Histórico | Botão destructive com confirmação forte |
-| Salvar versão | 17. Versões | Snapshot do conteúdo **publicado** |
-| Restaurar versão | 17. Versões | Restaura para o **rascunho** (precisa publicar depois) |
-| Excluir versão individual | 17. Versões | Botão 🗑️ com confirmação (bloqueia exclusão da última) |
-| Limpeza inteligente de versões | 17. Versões | Manter últimas 3/5/10/20, remover o restante |
-
-### 12.3 Experimentos A/B/C
-
-O sistema permite criar testes de conteúdo para otimizar conversão.
-
-| Tabela | Finalidade |
-|--------|-----------|
-| `experiments` | Cadastro de experimentos (nome, seção, status, distribuição) |
-| `experiment_variants` | Variantes de cada experimento com config JSON |
-| `experiment_events` | Impressões e cliques por variante, sessão e dispositivo |
-
-**Fluxo:**
-1. Admin cria experimento → define variantes → configura JSON de cada variante
-2. Admin ativa o experimento → visitantes são distribuídos entre A/B/C
-3. Cada impressão e clique é registrado com sessão, device, cidade
-4. Admin acompanha CTR por variante no painel → identifica vencedor
-5. Admin encerra o experimento → aplica a variante vencedora como padrão
+**Fluxo:** Criar → Definir variantes → Ativar → Acompanhar CTR → Encerrar → Aplicar vencedor
 
 **Seções suportadas:** Hero, CTA Hero, CTA Header, CTA Ofertas
 
-**Tipos de experimento:**
-- `content` — troca a variante da Hero (ex: `{"hero_active_variant": "2"}`)
-- `cta_text` — troca o texto do botão CTA (ex: `{"cta_text": "Começar agora"}`)
-- `cta_message` — troca a mensagem do WhatsApp (ex: `{"cta_message": "Olá!"}`)
+**Segurança:** Anon só vê ativos. Criar/editar exige admin.
 
-**Segurança:** Anon só vê experimentos ativos. Criar/editar/excluir exige `has_role('admin')`. Eventos são insert-only para público, leitura apenas autenticada.
+---
 
-**Integração com Draft/Publish:** Experimentos operam independente do draft/publish. Ativar = ao ar. O conteúdo de `site_settings` continua com draft/publish separadamente.
-
-### 12.4 Personalização por UTM
-
-O sistema permite personalizar conteúdo da landing page por campanha UTM sem duplicar a página.
+## 14. Personalização por UTM
 
 | Tabela | Finalidade |
 |--------|-----------|
-| `utm_rules` | Regras de personalização (critérios UTM, campos sobrescritos, prioridade) |
-| `utm_events` | Tracking de impressões e cliques por regra UTM |
+| `utm_rules` | Regras (critérios UTM, campos sobrescritos, prioridade) |
+| `utm_events` | Tracking de impressões e cliques por regra |
 
-**Fluxo:**
-1. Admin cria regra UTM → define critérios (source, medium, campaign...) → define campos personalizados
-2. Admin ativa a regra → visitantes com UTMs correspondentes veem conteúdo personalizado
-3. Impressões e cliques são registrados com todos os UTMs da visita
-4. Admin acompanha CTR por regra no painel → identifica campanhas que convertem melhor
+**Campos personalizáveis:** `hero_badge`, `hero_headline_line1/2`, `hero_subheadline`, `hero_cta_primary/secondary`, `cta_hero_message`, `hero_dynamic_line/fallback_line`, `pricing_highlight`
 
-**Campos personalizáveis:**
-- `hero_badge` — Badge da Hero
-- `hero_headline_line1` / `hero_headline_line2` — Headlines
-- `hero_subheadline` — Subheadline
-- `hero_cta_primary` / `hero_cta_secondary` — Texto dos CTAs
-- `cta_hero_message` — Mensagem WhatsApp do CTA Hero
-- `hero_dynamic_line` / `hero_fallback_line` — Linha dinâmica
-- `pricing_highlight` — Destaque comercial
+**Prioridade:** Maior `priority` → mais específica → primeira encontrada
 
-**Prioridade e resolução de conflitos:**
-1. Regra com maior `priority` vence
-2. Em empate, a regra mais específica (mais campos UTM combinando) vence
-3. Se ainda empatar, a primeira encontrada prevalece
+**Precedência geral:** UTM > Experimento A/B/C > Conteúdo publicado
 
-**Fallback:** Se nenhuma regra UTM combinar (sem UTM, regra pausada, sem match), a página usa o conteúdo publicado padrão normalmente.
-
-**Precedência geral:** UTM override > Experimento A/B/C > Conteúdo publicado
-
-**Segurança:** Anon só vê regras ativas. Criar/editar/excluir exige `has_role('admin')`. Eventos são insert-only para público.
-
-### Retenção recomendada
-
-- **Histórico:** limpar registros acima de 90 dias periodicamente
-- **Versões:** manter no máximo 10 versões ativas
-
-### Validação pós-instalação
-
-```sql
--- Verificar que site_settings tem coluna environment
-SELECT column_name FROM information_schema.columns WHERE table_name = 'site_settings' AND column_name = 'environment';
-
--- Verificar tabelas de governança existem
-SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('admin_audit_log', 'page_versions');
-
--- Verificar RLS está ativo
-SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('site_settings', 'admin_audit_log', 'page_versions');
-
--- Verificar que anon só vê published
--- (teste como anon role no SQL Editor)
-```
-
-### Testar permissões
-
-1. Faça login como admin → edite um campo → salve → confirme que a página pública **não** mudou
-2. Clique **Publicar** → confirme que a página pública agora reflete a mudança
-3. Edite novamente → clique **Descartar Rascunho** → confirme que o admin voltou ao estado publicado
-4. Vá em **17. Versões** → salve uma versão → restaure → confirme que voltou para o rascunho
-5. Vá em **18. Histórico** → verifique que publicações aparecem no log
+**Fallback:** Sem UTM ou sem match → conteúdo publicado padrão.
 
 ---
 
-## Comandos Rápidos
+## 15. Atualização e Rollback
 
-| Ação | Comando |
-|------|---------|
-| Subir | `docker compose up -d` |
-| Parar | `docker compose down` |
-| Reiniciar | `docker compose restart` |
-| Rebuild | `docker compose build --no-cache && docker compose up -d` |
-| Logs | `docker compose logs -f` |
-| Status | `docker compose ps` |
-| Trocar Supabase | Editar `.env` → `docker compose restart` |
-
----
-
-## Checklist Final para Publicar
-
-- [ ] `.env` criado com `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`
-- [ ] `docker compose build` executou sem erros
-- [ ] Container saudável (`healthy` no healthcheck)
-- [ ] Logs mostram `runtime-config.js generated successfully`
-- [ ] `curl http://localhost:3000` retorna 200
-- [ ] Domínio apontado para o IP da VPS
-- [ ] HTTPS configurado (Certbot, NPM ou Traefik)
-- [ ] Site URL configurada no Supabase Dashboard
-- [ ] Redirect URLs configuradas no Supabase Dashboard
-- [ ] Leaked Password Protection ativada
-- [ ] Migration SQL executada no Supabase (`migration-master.sql`)
-- [ ] Coluna `environment` existe em `site_settings` com dados em `draft` e `published`
-- [ ] Função `has_role()` e tabela `user_roles` existem
-- [ ] Tabelas `admin_audit_log` e `page_versions` criadas com RLS
-- [ ] Tabelas `experiments`, `experiment_variants` e `experiment_events` criadas com RLS
-- [ ] Tabelas `utm_rules` e `utm_events` criadas com RLS
-- [ ] Bootstrap do primeiro admin concluído
-- [ ] Login em `/admin/login` funcionando
-- [ ] Publicação e rascunho funcionando no admin
-- [ ] Histórico e versionamento funcionando no admin
-- [ ] Experimentos A/B/C acessíveis na aba 17 do admin
-- [ ] Personalização UTM acessível na aba 18 do admin
-
----
-
-## 6.2 Upgrade de Banco Existente (Personalização UTM)
-
-Se o banco já existia **antes** da feature de personalização por UTM:
-
-### Correção
-
-Execute o script de upgrade no **SQL Editor do Supabase**:
+### Atualizar (código novo)
 
 ```bash
-# O arquivo está em: deploy/upgrade-add-utm-rules.sql
+cd /caminho/do/projeto
+git pull origin main
+docker build -f deploy/Dockerfile -t agis-lp:latest --no-cache .
+
+# Compose
+cd deploy && docker compose up -d
+
+# Swarm
+docker tag agis-lp:latest seuusuario/agis-lp:latest
+docker push seuusuario/agis-lp:latest
+docker service update --image seuusuario/agis-lp:latest agis_agis-lp --force
 ```
 
-O script cria as tabelas `utm_rules` e `utm_events` com RLS e índices.
+### Rollback rápido (Swarm)
 
-> ⚠️ Para bancos **novos**, use `migration-master.sql` diretamente — ele já inclui tudo.
+```bash
+docker service rollback agis_agis-lp
+```
+
+### Rollback por commit
+
+```bash
+git log --oneline -5
+git checkout <COMMIT_HASH>
+docker build -f deploy/Dockerfile -t agis-lp:latest --no-cache .
+# Deploy normalmente
+```
+
+---
+
+## 16. Checklist Final de Produção
+
+### Banco / Migrations
+
+- [ ] `migration-master.sql` executado (banco novo) OU scripts de upgrade executados
+- [ ] Função `has_role()` e tabela `user_roles` existem
+- [ ] Todas as 14 tabelas criadas com RLS ativo
+- [ ] `site_settings` tem dados em `draft` e `published`
+- [ ] RPC `admin_exists` e `bootstrap_first_admin` criadas
+- [ ] Bootstrap do primeiro admin concluído
+
+### Admin
+
+- [ ] Login em `/admin/login` funciona
+- [ ] 20 abas carregam corretamente
+- [ ] Salvar rascunho funciona
+- [ ] Publicar funciona (inclusive múltiplas vezes seguidas)
+- [ ] Previsualizar abre draft em nova aba
+- [ ] Descartar rascunho funciona
+- [ ] Histórico registra alterações
+- [ ] Versionamento (salvar/restaurar) funciona
+
+### Landing Page
+
+- [ ] Página pública carrega com conteúdo publicado
+- [ ] Hero, preços, diferenciais, depoimentos, FAQ exibem corretamente
+- [ ] CTAs do WhatsApp funcionam (número correto)
+- [ ] Geolocalização detecta cidade
+- [ ] Favicon e logo corretos
+- [ ] SEO: title, description, og:image configurados
+
+### Tracking / Inteligência
+
+- [ ] Cliques em CTAs registrados em `access_logs`
+- [ ] Dashboard de inteligência carrega
+- [ ] UTMs capturadas e exibidas no tracking
+- [ ] Experimentos (se ativos) distribuem variantes
+
+### Infra / Deploy
+
+- [ ] `.env` configurado com `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`
+- [ ] Container healthy (healthcheck passando)
+- [ ] Logs mostram `runtime-config.js generated successfully`
+- [ ] `curl -I https://seudominio.com.br` → 200 OK
+- [ ] HTTPS ativo com certificado válido
+- [ ] Site URL configurada no Supabase Dashboard
+- [ ] Redirect URLs configuradas
+- [ ] Leaked Password Protection ativada
+
+---
+
+## 17. Comandos Rápidos
+
+| Ação | Compose | Swarm |
+|------|---------|-------|
+| Subir | `docker compose up -d` | `docker stack deploy -c docker-stack.yml agis` |
+| Parar | `docker compose down` | `docker stack rm agis` |
+| Status | `docker compose ps` | `docker service ls` |
+| Logs | `docker compose logs -f` | `docker service logs agis_agis-lp -f` |
+| Rebuild | `docker compose build --no-cache` | `docker build -f deploy/Dockerfile -t agis-lp:latest --no-cache .` |
+| Atualizar | `docker compose up -d` | `docker service update --image agis-lp:latest agis_agis-lp --force` |
+| Rollback | `git checkout <hash>` + rebuild | `docker service rollback agis_agis-lp` |
+| Trocar Supabase | Editar `.env` → `docker compose restart` | Editar variáveis na stack → Update |
+
+---
+
+## 18. Troubleshooting
+
+### `runtime-config.js` não gerado
+
+Verifique que `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` estão definidas:
+```bash
+docker exec <container> cat /usr/share/nginx/html/runtime-config.js
+```
+
+### `Could not find 'environment' column`
+
+Execute `deploy/upgrade-add-environment.sql` no SQL Editor do Supabase.
+
+### `ON CONFLICT DO UPDATE cannot affect row a second time`
+
+Isso foi corrigido na versão atual. Atualize o código e faça rebuild.
+
+### Healthcheck falhando
+
+```bash
+# Verificar manualmente
+docker exec <container> wget -qO- http://127.0.0.1:80/
+
+# Desativar temporariamente (substituir no docker-stack.yml)
+healthcheck:
+  test: ["NONE"]
+```
+
+### Container reiniciando em loop
+
+```bash
+docker service logs agis_agis-lp --tail 100
+# Verificar se as variáveis de ambiente estão corretas
+```
