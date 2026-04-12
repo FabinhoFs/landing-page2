@@ -512,6 +512,41 @@ O sistema permite criar testes de conteúdo para otimizar conversão.
 
 **Integração com Draft/Publish:** Experimentos operam independente do draft/publish. Ativar = ao ar. O conteúdo de `site_settings` continua com draft/publish separadamente.
 
+### 12.4 Personalização por UTM
+
+O sistema permite personalizar conteúdo da landing page por campanha UTM sem duplicar a página.
+
+| Tabela | Finalidade |
+|--------|-----------|
+| `utm_rules` | Regras de personalização (critérios UTM, campos sobrescritos, prioridade) |
+| `utm_events` | Tracking de impressões e cliques por regra UTM |
+
+**Fluxo:**
+1. Admin cria regra UTM → define critérios (source, medium, campaign...) → define campos personalizados
+2. Admin ativa a regra → visitantes com UTMs correspondentes veem conteúdo personalizado
+3. Impressões e cliques são registrados com todos os UTMs da visita
+4. Admin acompanha CTR por regra no painel → identifica campanhas que convertem melhor
+
+**Campos personalizáveis:**
+- `hero_badge` — Badge da Hero
+- `hero_headline_line1` / `hero_headline_line2` — Headlines
+- `hero_subheadline` — Subheadline
+- `hero_cta_primary` / `hero_cta_secondary` — Texto dos CTAs
+- `cta_hero_message` — Mensagem WhatsApp do CTA Hero
+- `hero_dynamic_line` / `hero_fallback_line` — Linha dinâmica
+- `pricing_highlight` — Destaque comercial
+
+**Prioridade e resolução de conflitos:**
+1. Regra com maior `priority` vence
+2. Em empate, a regra mais específica (mais campos UTM combinando) vence
+3. Se ainda empatar, a primeira encontrada prevalece
+
+**Fallback:** Se nenhuma regra UTM combinar (sem UTM, regra pausada, sem match), a página usa o conteúdo publicado padrão normalmente.
+
+**Precedência geral:** UTM override > Experimento A/B/C > Conteúdo publicado
+
+**Segurança:** Anon só vê regras ativas. Criar/editar/excluir exige `has_role('admin')`. Eventos são insert-only para público.
+
 ### Retenção recomendada
 
 - **Histórico:** limpar registros acima de 90 dias periodicamente
@@ -574,8 +609,28 @@ SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tab
 - [ ] Função `has_role()` e tabela `user_roles` existem
 - [ ] Tabelas `admin_audit_log` e `page_versions` criadas com RLS
 - [ ] Tabelas `experiments`, `experiment_variants` e `experiment_events` criadas com RLS
+- [ ] Tabelas `utm_rules` e `utm_events` criadas com RLS
 - [ ] Bootstrap do primeiro admin concluído
 - [ ] Login em `/admin/login` funcionando
 - [ ] Publicação e rascunho funcionando no admin
 - [ ] Histórico e versionamento funcionando no admin
 - [ ] Experimentos A/B/C acessíveis na aba 17 do admin
+- [ ] Personalização UTM acessível na aba 18 do admin
+
+---
+
+## 6.2 Upgrade de Banco Existente (Personalização UTM)
+
+Se o banco já existia **antes** da feature de personalização por UTM:
+
+### Correção
+
+Execute o script de upgrade no **SQL Editor do Supabase**:
+
+```bash
+# O arquivo está em: deploy/upgrade-add-utm-rules.sql
+```
+
+O script cria as tabelas `utm_rules` e `utm_events` com RLS e índices.
+
+> ⚠️ Para bancos **novos**, use `migration-master.sql` diretamente — ele já inclui tudo.

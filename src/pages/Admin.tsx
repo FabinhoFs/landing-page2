@@ -28,6 +28,7 @@ import { AdminAuditLog } from "@/components/admin/AdminAuditLog";
 import { AdminVersions } from "@/components/admin/AdminVersions";
 import { AdminPublishBar } from "@/components/admin/AdminPublishBar";
 import { AdminExperiments } from "@/components/admin/AdminExperiments";
+import { AdminUtmRules } from "@/components/admin/AdminUtmRules";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -97,8 +98,9 @@ const Admin = () => {
             <TabsTrigger value="dashboard">15. Inteligência</TabsTrigger>
             <TabsTrigger value="users">16. Administradores</TabsTrigger>
             <TabsTrigger value="experiments">17. Experimentos</TabsTrigger>
-            <TabsTrigger value="versions">18. Versões</TabsTrigger>
-            <TabsTrigger value="audit">19. Histórico</TabsTrigger>
+            <TabsTrigger value="utm">18. UTM</TabsTrigger>
+            <TabsTrigger value="versions">19. Versões</TabsTrigger>
+            <TabsTrigger value="audit">20. Histórico</TabsTrigger>
           </TabsList>
           <TabsContent value="header"><AdminHeader /></TabsContent>
           <TabsContent value="hero"><AdminHero /></TabsContent>
@@ -118,6 +120,7 @@ const Admin = () => {
           <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
           <TabsContent value="users"><AdminUsers /></TabsContent>
           <TabsContent value="experiments"><AdminExperiments /></TabsContent>
+          <TabsContent value="utm"><AdminUtmRules /></TabsContent>
           <TabsContent value="versions"><AdminVersions /></TabsContent>
           <TabsContent value="audit"><AdminAuditLog /></TabsContent>
         </Tabs>

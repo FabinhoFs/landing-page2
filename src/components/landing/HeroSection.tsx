@@ -2,6 +2,7 @@ import { ShieldCheck, Zap, MessageCircle } from "lucide-react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
 import { useExperiment } from "@/hooks/useExperiment";
+import { useUtmPersonalization } from "@/hooks/useUtmPersonalization";
 import { getIconComponent } from "@/components/admin/IconPicker";
 
 interface HeroSectionProps {
@@ -55,6 +56,7 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
   const { settings, getMessage } = useCtaMessages();
   const { isExperimentActive, variantConfig, trackClick } = useExperiment("hero");
   const { isExperimentActive: isCtaExp, variantConfig: ctaConfig, trackClick: trackCtaClick } = useExperiment("cta_hero");
+  const { getOverride, trackClick: trackUtmClick, isPersonalized } = useUtmPersonalization();
 
   const heroMsg = getMessage("cta_hero", city);
 
@@ -67,22 +69,26 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
   const get = (field: string) =>
     settings[`hero_v${activeVariant}_${field}`] || defaults[field] || "";
 
-  const badge = get("badge");
-  const line1 = get("headline_line1");
-  const line2 = get("headline_line2");
+  // UTM overrides take precedence over everything
+  const badge = getOverride("hero_badge") || get("badge");
+  const line1 = getOverride("hero_headline_line1") || get("headline_line1");
+  const line2 = getOverride("hero_headline_line2") || get("headline_line2");
   const line1Color = get("line1_color") || DEFAULT_LINE1_COLOR;
   const line2Color = get("line2_color") || DEFAULT_LINE2_COLOR;
-  const subheadline = get("subheadline");
+  const subheadline = getOverride("hero_subheadline") || get("subheadline");
 
-  // CTA text: experiment can override
-  const ctaPrimary = (isCtaExp && ctaConfig.cta_text) ? ctaConfig.cta_text : get("cta_primary");
-  const ctaSecondary = get("cta_secondary");
+  // CTA text: UTM > experiment > default
+  const ctaPrimary = getOverride("hero_cta_primary") || ((isCtaExp && ctaConfig.cta_text) ? ctaConfig.cta_text : get("cta_primary"));
+  const ctaSecondary = getOverride("hero_cta_secondary") || get("cta_secondary");
 
-  // CTA message: experiment can override
-  const ctaMessage = (isCtaExp && ctaConfig.cta_message) ? ctaConfig.cta_message.replace(/\{cidade\}/g, city || "Brasil") : heroMsg;
+  // CTA message: UTM > experiment > default
+  const utmCtaMsg = getOverride("cta_hero_message");
+  const ctaMessage = utmCtaMsg
+    ? utmCtaMsg.replace(/\{cidade\}/g, city || "Brasil")
+    : (isCtaExp && ctaConfig.cta_message) ? ctaConfig.cta_message.replace(/\{cidade\}/g, city || "Brasil") : heroMsg;
 
-  const dynamicLineTemplate = get("dynamic_line");
-  const fallbackLine = get("fallback_line");
+  const dynamicLineTemplate = getOverride("hero_dynamic_line") || get("dynamic_line");
+  const fallbackLine = getOverride("hero_fallback_line") || get("fallback_line");
 
   const dynamicLine = detected && city
     ? dynamicLineTemplate.replace(/\{\{cidade\}\}/g, city)
@@ -108,11 +114,13 @@ export const HeroSection = ({ city, detected }: HeroSectionProps) => {
   const handlePrimaryClick = () => {
     if (isExperimentActive) trackClick("cta_hero_primary");
     if (isCtaExp) trackCtaClick("cta_hero_primary");
+    if (isPersonalized) trackUtmClick("cta_hero_primary");
   };
 
   const handleSecondaryClick = () => {
     if (isExperimentActive) trackClick("cta_hero_secondary");
     if (isCtaExp) trackCtaClick("cta_hero_secondary");
+    if (isPersonalized) trackUtmClick("cta_hero_secondary");
   };
 
   return (
