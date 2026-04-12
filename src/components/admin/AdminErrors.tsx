@@ -16,6 +16,8 @@ interface SystemError {
   resolved_at: string | null;
 }
 
+const db = supabase as any;
+
 export const AdminErrors = () => {
   const [errors, setErrors] = useState<SystemError[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,13 +25,13 @@ export const AdminErrors = () => {
 
   const fetchErrors = async () => {
     setLoading(true);
-    const query = (supabase.from("system_errors") as any)
+    const { data, error } = await db
+      .from("system_errors")
       .select("*")
       .eq("resolved", filter === "resolved")
       .order("created_at", { ascending: false })
       .limit(100);
 
-    const { data, error } = await query;
     if (error) {
       toast.error("Erro ao carregar diagnósticos");
     } else {
@@ -43,7 +45,8 @@ export const AdminErrors = () => {
   }, [filter]);
 
   const handleResolve = async (id: string) => {
-    const { error } = await (supabase.from("system_errors") as any)
+    const { error } = await db
+      .from("system_errors")
       .update({ resolved: true, resolved_at: new Date().toISOString() })
       .eq("id", id);
 
@@ -56,7 +59,8 @@ export const AdminErrors = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await (supabase.from("system_errors") as any)
+    const { error } = await db
+      .from("system_errors")
       .delete()
       .eq("id", id);
 

@@ -7,10 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 export async function logError(
   source: string,
   message: string,
-  payload?: any
+  payload?: unknown
 ): Promise<void> {
   try {
-    await (supabase.from("system_errors") as any).insert({
+    const client = supabase as any;
+    await client.from("system_errors").insert({
       source,
       message,
       payload: payload ? JSON.stringify(payload) : null,
