@@ -404,8 +404,8 @@ export const AdminDashboard = () => {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <MousePointerClick className="h-6 w-6 text-primary" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 hover:scale-110 hover:rotate-3">
+                <MousePointerClick className="h-6 w-6 text-primary animate-[bounce_2s_ease-in-out_infinite]" />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-3xl font-bold text-foreground leading-none">{totalClicks}</p>
@@ -417,8 +417,8 @@ export const AdminDashboard = () => {
 
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(142, 70%, 40%, 0.1)" }}>
-                <Trophy className="h-6 w-6" style={{ color: "hsl(142, 70%, 40%)" }} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:-rotate-3" style={{ backgroundColor: "hsla(142, 70%, 40%, 0.1)" }}>
+                <Trophy className="h-6 w-6 animate-[pulse_3s_ease-in-out_infinite]" style={{ color: "hsl(142, 70%, 40%)" }} />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-base font-bold text-foreground leading-snug">
@@ -432,8 +432,8 @@ export const AdminDashboard = () => {
 
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(200, 60%, 50%, 0.1)" }}>
-                <MapPin className="h-6 w-6" style={{ color: "hsl(200, 60%, 50%)" }} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:rotate-3" style={{ backgroundColor: "hsla(200, 60%, 50%, 0.1)" }}>
+                <MapPin className="h-6 w-6 animate-[bounce_2.5s_ease-in-out_infinite_0.5s]" style={{ color: "hsl(200, 60%, 50%)" }} />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-base font-bold text-foreground leading-snug">
@@ -450,8 +450,8 @@ export const AdminDashboard = () => {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(30, 80%, 55%, 0.1)" }}>
-                <Smartphone className="h-6 w-6" style={{ color: "hsl(30, 80%, 55%)" }} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:-rotate-3" style={{ backgroundColor: "hsla(30, 80%, 55%, 0.1)" }}>
+                <Smartphone className="h-6 w-6 animate-[pulse_2.5s_ease-in-out_infinite_0.3s]" style={{ color: "hsl(30, 80%, 55%)" }} />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-3xl font-bold text-foreground leading-none">
@@ -465,8 +465,8 @@ export const AdminDashboard = () => {
 
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(280, 54%, 33%, 0.1)" }}>
-                <Clock className="h-6 w-6" style={{ color: "hsl(280, 54%, 33%)" }} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:rotate-6" style={{ backgroundColor: "hsla(280, 54%, 33%, 0.1)" }}>
+                <Clock className="h-6 w-6 animate-[spin_8s_linear_infinite]" style={{ color: "hsl(280, 54%, 33%)" }} />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-3xl font-bold text-foreground leading-none">{bestHour ? bestHour.hour : "—"}</p>
@@ -478,8 +478,8 @@ export const AdminDashboard = () => {
 
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: "hsla(350, 65%, 50%, 0.1)" }}>
-                <CalendarDays className="h-6 w-6" style={{ color: "hsl(350, 65%, 50%)" }} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110 hover:-rotate-6" style={{ backgroundColor: "hsla(350, 65%, 50%, 0.1)" }}>
+                <CalendarDays className="h-6 w-6 animate-[pulse_3s_ease-in-out_infinite_0.8s]" style={{ color: "hsl(350, 65%, 50%)" }} />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-3xl font-bold text-foreground leading-none">{bestDay ? bestDay.name : "—"}</p>
