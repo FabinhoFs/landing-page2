@@ -349,7 +349,7 @@ export const AdminDashboard = () => {
   const [ctaMessages, setCtaMessages] = useState<Record<string, string>>({});
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("site_settings" as any).select("key, value");
+      const { data } = await supabase.from("site_settings" as any).select("key, value").eq("environment", "draft");
       if (data) {
         const map: Record<string, string> = {};
         (data as any[]).forEach((r: any) => { map[r.key] = r.value; });

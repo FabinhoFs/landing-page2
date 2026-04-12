@@ -160,6 +160,7 @@ export const AdminIntegrations = () => {
       const { data } = await supabase
         .from("site_settings")
         .select("key, value")
+        .eq("environment", "draft")
         .in("key", [...KEYS]);
 
       const loaded: Partial<Record<ConfigKeys, string>> = {};
@@ -183,11 +184,12 @@ export const AdminIntegrations = () => {
       const rows = KEYS.map((key) => ({
         key,
         value: values[key],
+        environment: "draft",
         updated_at: new Date().toISOString(),
       }));
       const { error } = await supabase
         .from("site_settings")
-        .upsert(rows, { onConflict: "key" });
+        .upsert(rows, { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
