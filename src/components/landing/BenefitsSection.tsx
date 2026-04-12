@@ -1,6 +1,6 @@
 import { Zap, Headphones, Video, ShieldCheck } from "lucide-react";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
-import { getIconComponent } from "@/components/admin/IconPicker";
+import { getLandingIcon } from "@/lib/iconMap";
 
 const DEFAULT_BENEFITS = [
   { title: "Atendimento imediato", desc: "Você fala com uma equipe preparada para orientar seu processo com mais agilidade.", icon: "FastForward" },
@@ -39,7 +39,7 @@ export const BenefitsSection = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
           {benefits.map((b: any, i: number) => {
-            const Icon = (b.icon && getIconComponent(b.icon)) || FALLBACK_ICONS[i % FALLBACK_ICONS.length];
+            const Icon = (b.icon && getLandingIcon(b.icon)) || FALLBACK_ICONS[i % FALLBACK_ICONS.length];
             return (
               <div
                 key={i}
