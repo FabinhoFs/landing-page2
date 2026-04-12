@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Download, Trash2, BarChart3, MapPin, MousePointerClick, TrendingUp,
   Trophy, Target, Filter, FileText, Smartphone, Monitor, Layers,
-  Clock, CalendarDays, Activity, Zap,
+  Clock, CalendarDays, Activity, Zap, Globe, MessageSquare, Flame,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
