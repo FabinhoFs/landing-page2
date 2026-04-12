@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface AlertItem {
@@ -9,20 +9,24 @@ interface AlertItem {
   level: "error" | "warn" | "info";
 }
 
-const CHECKS: { key: string; label: string; level: "error" | "warn" }[] = [
+const SETTING_CHECKS: { key: string; label: string; level: "error" | "warn" }[] = [
   { key: "whatsapp_number", label: "Telefone global do WhatsApp não configurado", level: "error" },
+  { key: "logo_url", label: "Logo do site não configurada", level: "warn" },
+  { key: "favicon_url", label: "Favicon do site não configurado", level: "warn" },
+  { key: "seo_title", label: "Título SEO (title tag) não configurado", level: "warn" },
+  { key: "seo_description", label: "Meta description não configurada", level: "warn" },
+  { key: "seo_og_image", label: "Imagem de compartilhamento (OG Image) não configurada", level: "warn" },
+  { key: "seo_og_title", label: "Título de compartilhamento (og:title) não configurado", level: "warn" },
   { key: "g_tag_id", label: "Google Tag (gtag) não configurado", level: "warn" },
   { key: "meta_pixel_id", label: "Meta Pixel não configurado", level: "warn" },
   { key: "g_tag_manager_id", label: "Google Tag Manager não configurado", level: "warn" },
-  { key: "favicon_url", label: "Favicon do site não configurado", level: "warn" },
-  { key: "seo_og_image", label: "Imagem de compartilhamento (OG Image) não configurada", level: "warn" },
-  { key: "seo_description", label: "Meta description não configurada", level: "warn" },
 ];
+
+const CTA_KEYS = ["cta_hero", "cta_header", "cta_bottom", "cta_ecpf", "cta_ecnpj", "cta_floating"];
 
 export const AdminAlerts = () => {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [recentEvents, setRecentEvents] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -31,13 +35,25 @@ export const AdminAlerts = () => {
       if (data) (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
 
       const found: AlertItem[] = [];
-      CHECKS.forEach((c) => {
+
+      // Check missing settings
+      SETTING_CHECKS.forEach((c) => {
         if (!map[c.key] || map[c.key].trim() === "") {
           found.push({ key: c.key, label: c.label, level: c.level });
         }
       });
 
-      // Check for recent tracking events
+      // Check CTA messages
+      const missingCtas = CTA_KEYS.filter((k) => !map[k] || map[k].trim() === "");
+      if (missingCtas.length > 0) {
+        found.push({
+          key: "cta_messages",
+          label: `${missingCtas.length} CTA(s) sem mensagem personalizada configurada`,
+          level: "warn",
+        });
+      }
+
+      // Check recent tracking events
       const threeDaysAgo = new Date();
       threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
       const { count } = await supabase
@@ -46,7 +62,6 @@ export const AdminAlerts = () => {
         .gte("created_at", threeDaysAgo.toISOString());
       if (count === 0) {
         found.push({ key: "no_events", label: "Nenhum evento de tracking nos últimos 3 dias", level: "info" });
-        setRecentEvents(false);
       }
 
       setAlerts(found);
