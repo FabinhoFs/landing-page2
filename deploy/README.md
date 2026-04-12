@@ -456,8 +456,16 @@ A tabela `site_settings` possui uma coluna `environment` (`'draft'` ou `'publish
 
 **Fluxo:**
 1. Admin edita → salva no **rascunho** (não afeta a página pública)
-2. Admin clica **Publicar** → rascunho é copiado para publicado → página pública atualiza
-3. Admin pode **Descartar Rascunho** → rascunho volta ao estado publicado
+2. Admin clica **Previsualizar** → abre a landing page em nova aba com `?preview=draft` mostrando o rascunho
+3. Admin valida visualmente → clica **Publicar** → rascunho é copiado para publicado → página pública atualiza
+4. Admin pode **Descartar Rascunho** → rascunho volta ao estado publicado
+
+**Prévia (Preview):**
+- O botão **Previsualizar** abre `/?preview=draft` em nova aba
+- A página verifica se o visitante é um admin autenticado via Supabase Auth
+- Se não autenticado, o param é ignorado e mostra o conteúdo publicado (seguro)
+- Um banner amarelo no topo indica "MODO PRÉVIA" para o admin
+- Visitantes comuns nunca veem conteúdo de rascunho
 
 **RLS:** Visitantes anônimos só leem `environment = 'published'`. Admins autenticados leem/escrevem ambos.
 
