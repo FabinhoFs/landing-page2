@@ -18,13 +18,13 @@ import { ExitIntentPopup } from "@/components/landing/ExitIntentPopup";
 import { useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { useCtaMessages } from "@/hooks/useCtaMessages";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
+import { captureUtmParams } from "@/lib/logAccess";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PageSkeleton = () => (
   <div className="min-h-screen bg-background flex flex-col">
-    {/* Header skeleton */}
     <div className="h-16 bg-deep" />
-    {/* Hero skeleton */}
     <div className="bg-deep py-16 md:py-28 flex-1">
       <div className="max-w-3xl mx-auto px-4 space-y-6 text-center">
         <Skeleton className="h-6 w-40 mx-auto bg-deep-foreground/10" />
@@ -44,23 +44,41 @@ const PageSkeleton = () => (
 const Index = () => {
   const { city, detected } = useGeolocation();
   const { trackPurchase } = useTracking();
-  const { isLoading } = useCtaMessages();
+  const { settings, isLoading } = useCtaMessages();
   const cityDisplay = city || "Brasil";
 
+  // Capture UTM params on page load
   useEffect(() => {
-    document.title = detected
-      ? `Certificado Digital em ${city} - Agis Digital`
-      : "Certificado Digital Online - Agis Digital";
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute(
-        "content",
-        detected
-          ? `Emita seu Certificado Digital em ${city}. Validação rápida, 100% online, com suporte especializado.`
-          : "Emita seu Certificado Digital 100% online. Validação rápida com suporte especializado. Certificação ICP-Brasil."
-      );
+    captureUtmParams();
+  }, []);
+
+  // Apply SEO settings
+  useSeoSettings();
+
+  useEffect(() => {
+    // Use SEO title from admin if available, otherwise dynamic city-based
+    const seoTitle = settings["seo_title"];
+    if (seoTitle) {
+      document.title = seoTitle;
+    } else {
+      document.title = detected
+        ? `Certificado Digital em ${city} - Agis Digital`
+        : "Certificado Digital Online - Agis Digital";
     }
-  }, [city, detected]);
+
+    // Only set description if not already managed by useSeoSettings
+    if (!settings["seo_description"]) {
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute(
+          "content",
+          detected
+            ? `Emita seu Certificado Digital em ${city}. Validação rápida, 100% online, com suporte especializado.`
+            : "Emita seu Certificado Digital 100% online. Validação rápida com suporte especializado. Certificação ICP-Brasil."
+        );
+      }
+    }
+  }, [city, detected, settings]);
 
   if (isLoading) {
     return <PageSkeleton />;
@@ -68,46 +86,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* 00 — Header */}
       <StickyHeader city={cityDisplay} />
-
-      {/* 01 — Hero */}
       <HeroSection city={city} detected={detected} />
-
-      {/* Barra de Prova Social */}
       <SocialProofBar />
-
-      {/* 02 — Dores */}
       <PainSection />
-
-      {/* 03 — Como Funciona */}
       <HowItWorksSection />
-
-      {/* 04 — Ofertas */}
       <PricingSection city={cityDisplay} detected={detected} onTrackPurchase={trackPurchase} />
-
-      {/* 05 — Diferenciais */}
       <BenefitsSection />
-
-      {/* 06 — Depoimentos */}
       <TestimonialsSection />
-
-      {/* 07 — Segurança */}
       <GuaranteeSection city={cityDisplay} />
-
-      {/* 08 — Institucional */}
       <AuthoritySection />
-
-      {/* 09 — FAQ */}
       <FAQSection city={cityDisplay} />
-
-      {/* 11 — CTA Final */}
       <CTASection city={cityDisplay} />
-
-      {/* 12 — Rodapé */}
       <Footer />
-
-      {/* 13 — WhatsApp Flutuante */}
       <FloatingWhatsApp />
       <StickyMobileCTA city={cityDisplay} />
       <ExitIntentPopup city={cityDisplay} />

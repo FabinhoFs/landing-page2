@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Download, Trash2, BarChart3, MapPin, MousePointerClick, TrendingUp,
   Trophy, Target, Filter, FileText, Smartphone, Monitor, Layers,
-  Clock, CalendarDays, Activity, Zap,
+  Clock, CalendarDays, Activity, Zap, Globe, MessageSquare, Flame,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -157,6 +157,14 @@ export const AdminDashboard = () => {
   const logs = useMemo(() => filterByProduct(allLogs, product), [allLogs, product]);
   const totalClicks = logs.length;
 
+  // ─── UTM PARSING ─────────────────────────────────
+  const parseUtm = (ua: string | null): Record<string, string> | null => {
+    if (!ua) return null;
+    const idx = ua.indexOf("|||");
+    if (idx === -1) return null;
+    try { return JSON.parse(ua.substring(idx + 3)); } catch { return null; }
+  };
+
   // ─── DERIVED DATA ──────────────────────────────────
   const topCta = useMemo(() => {
     const map: Record<string, number> = {};
@@ -280,6 +288,77 @@ export const AdminDashboard = () => {
       { name: "Outros CTAs", value: other, fill: "hsl(280, 54%, 33%)" },
     ].filter((d) => d.value > 0);
   }, [logs]);
+
+  // ─── UTM ANALYTICS ─────────────────────────────────
+  const utmData = useMemo(() => {
+    const sources: Record<string, number> = {};
+    const campaigns: Record<string, number> = {};
+    const mediums: Record<string, number> = {};
+    let utmCount = 0;
+    logs.forEach((l) => {
+      const utm = parseUtm(l.user_agent);
+      if (!utm) return;
+      utmCount++;
+      if (utm.utm_source) sources[utm.utm_source] = (sources[utm.utm_source] || 0) + 1;
+      if (utm.utm_campaign) campaigns[utm.utm_campaign] = (campaigns[utm.utm_campaign] || 0) + 1;
+      if (utm.utm_medium) mediums[utm.utm_medium] = (mediums[utm.utm_medium] || 0) + 1;
+    });
+    return {
+      utmCount,
+      sources: Object.entries(sources).sort((a, b) => b[1] - a[1]).slice(0, 10),
+      campaigns: Object.entries(campaigns).sort((a, b) => b[1] - a[1]).slice(0, 10),
+      mediums: Object.entries(mediums).sort((a, b) => b[1] - a[1]).slice(0, 10),
+    };
+  }, [logs]);
+
+  // ─── CTA MESSAGE RANKING ──────────────────────────
+  const [ctaMessages, setCtaMessages] = useState<Record<string, string>>({});
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("site_settings" as any).select("key, value");
+      if (data) {
+        const map: Record<string, string> = {};
+        (data as any[]).forEach((r: any) => { map[r.key] = r.value; });
+        setCtaMessages(map);
+      }
+    })();
+  }, []);
+
+  const ctaMessageRanking = useMemo(() => {
+    const map: Record<string, number> = {};
+    logs.forEach((l) => { map[l.button_id] = (map[l.button_id] || 0) + 1; });
+    const CTA_KEY_MAP: Record<string, string> = {
+      cta_hero_primary: "cta_hero", cta_hero_secondary: "cta_hero",
+      cta_header: "cta_header", cta_pain: "cta_pain",
+      "cta_pricing_e-cpfa1": "cta_ecpf", "cta_pricing_e-cnpja1": "cta_ecnpj",
+      cta_guarantee: "cta_guarantee", cta_faq: "cta_faq",
+      cta_bottom: "cta_bottom", cta_floating: "cta_floating",
+      cta_sticky_mobile: "cta_sticky_mobile", cta_exit_popup: "cta_exit_popup",
+    };
+    const msgList: { message: string; clicks: number; section: string; ctaLabel: string }[] = [];
+    Object.entries(map).forEach(([btnId, clicks]) => {
+      const msgKey = CTA_KEY_MAP[btnId] || btnId;
+      const message = ctaMessages[msgKey] || "Mensagem padrão";
+      msgList.push({
+        message: message.replace(/\{cidade\}/g, "…"),
+        clicks, section: getCtaSection(btnId), ctaLabel: getCtaLabel(btnId),
+      });
+    });
+    return msgList.sort((a, b) => b.clicks - a.clicks);
+  }, [logs, ctaMessages]);
+
+  // ─── HEATMAP DATA ──────────────────────────────────
+  const heatmapData = useMemo(() => {
+    const sectionOrder = ["Header", "Hero", "Dores", "Ofertas", "Segurança", "FAQ", "CTA Final", "Flutuante", "Mobile", "Pop-up"];
+    const map: Record<string, number> = {};
+    logs.forEach((l) => { const s = getCtaSection(l.button_id); map[s] = (map[s] || 0) + 1; });
+    const maxClicks = Math.max(...Object.values(map), 1);
+    return sectionOrder.map((name) => ({
+      name, clicks: map[name] || 0,
+      pct: totalClicks > 0 ? ((map[name] || 0) / totalClicks * 100) : 0,
+      intensity: (map[name] || 0) / maxClicks,
+    }));
+  }, [logs, totalClicks]);
 
   const tooltipStyle = {
     backgroundColor: "hsl(var(--card))",
@@ -819,6 +898,161 @@ export const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* ─── HEATMAP VISUAL ────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Flame className="h-4 w-4" />
+            Mapa de Calor por Seção
+          </CardTitle>
+          <CardDescription>Intensidade de cliques em cada área da landing page. Quanto mais quente, mais cliques.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {heatmapData.map((s) => {
+              const r = Math.round(255 * s.intensity);
+              const g = Math.round(100 * (1 - s.intensity));
+              const b = Math.round(50 * (1 - s.intensity));
+              const bgColor = s.clicks > 0
+                ? `rgba(${r}, ${g}, ${b}, ${0.15 + s.intensity * 0.6})`
+                : "hsl(var(--muted))";
+              const textColor = s.intensity > 0.5 ? `rgb(${r}, ${g}, ${b})` : "hsl(var(--foreground))";
+              return (
+                <div
+                  key={s.name}
+                  className="rounded-lg p-4 text-center transition-all hover:scale-105"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <p className="text-2xl font-bold" style={{ color: textColor }}>{s.pct.toFixed(0)}%</p>
+                  <p className="text-xs font-medium text-muted-foreground mt-1">{s.name}</p>
+                  <p className="text-xs text-muted-foreground/60">{s.clicks} cliques</p>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ─── CTA MESSAGE RANKING ──────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MessageSquare className="h-4 w-4" />
+            Ranking de Mensagens de CTA
+          </CardTitle>
+          <CardDescription>Qual mensagem de WhatsApp mais gera ação? Compare abordagens comerciais.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {ctaMessageRanking.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left">
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground">#</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground">CTA</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground">Mensagem</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Cliques</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ctaMessageRanking.map((row, i) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 pr-3 font-mono text-xs text-muted-foreground">{i + 1}</td>
+                      <td className="py-2.5 pr-3">
+                        <p className="font-medium text-foreground text-xs">{row.ctaLabel}</p>
+                        <Badge variant="outline" className="text-[10px] mt-0.5">{row.section}</Badge>
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <p className="text-xs text-muted-foreground max-w-xs truncate" title={row.message}>
+                          "{row.message}"
+                        </p>
+                      </td>
+                      <td className="py-2.5 pr-3 text-right font-bold text-foreground">{row.clicks}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="py-6 text-center text-muted-foreground">Sem dados no período.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ─── UTM ANALYTICS ────────────────────────── */}
+      {utmData.utmCount > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Globe className="h-4 w-4" />
+              Análise de UTMs — Origem do Tráfego
+            </CardTitle>
+            <CardDescription>
+              {utmData.utmCount} cliques com UTM detectados. Entenda de onde vem o tráfego pago.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Sources */}
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Origens (utm_source)</h4>
+                {utmData.sources.length > 0 ? (
+                  <div className="space-y-2">
+                    {utmData.sources.map(([name, count]) => (
+                      <div key={name} className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground">{name}</span>
+                        <Badge variant="secondary" className="text-xs">{count}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
+              </div>
+              {/* Mediums */}
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Mídia (utm_medium)</h4>
+                {utmData.mediums.length > 0 ? (
+                  <div className="space-y-2">
+                    {utmData.mediums.map(([name, count]) => (
+                      <div key={name} className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground">{name}</span>
+                        <Badge variant="secondary" className="text-xs">{count}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
+              </div>
+              {/* Campaigns */}
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Campanhas (utm_campaign)</h4>
+                {utmData.campaigns.length > 0 ? (
+                  <div className="space-y-2">
+                    {utmData.campaigns.map(([name, count]) => (
+                      <div key={name} className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground truncate max-w-[150px]" title={name}>{name}</span>
+                        <Badge variant="secondary" className="text-xs">{count}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-xs text-muted-foreground">Sem dados</p>}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {utmData.utmCount === 0 && (
+        <Card className="border-dashed">
+          <CardContent className="flex items-center gap-3 py-4">
+            <Globe className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium text-foreground">UTM não detectado</p>
+              <p className="text-xs text-muted-foreground">
+                Adicione ?utm_source=google&utm_medium=cpc&utm_campaign=nome nos links das campanhas para rastrear origens.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ─── ACTIONS ──────────────────────────────── */}
       <div className="flex flex-wrap gap-3 border-t border-border pt-4">

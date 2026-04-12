@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Save, Loader2, Settings, Globe, Trash2, ExternalLink } from "lucide-react";
+import { Save, Loader2, Settings, Globe, Trash2, ExternalLink, Search, Image, Link2 } from "lucide-react";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 export const AdminSettings = () => {
@@ -19,6 +20,12 @@ export const AdminSettings = () => {
 
   const handleRemoveFavicon = () => {
     updateField("favicon_url", "");
+  };
+
+  const seoKeys = ["seo_title", "seo_description", "seo_og_image", "seo_og_title", "seo_canonical"];
+
+  const handleSaveSeo = async () => {
+    await saveKeys(seoKeys, "Configurações de SEO salvas com sucesso!");
   };
 
   return (
@@ -82,6 +89,119 @@ export const AdminSettings = () => {
               </Button>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* SEO & Compartilhamento */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Search className="h-5 w-5 text-primary" />
+            SEO e Compartilhamento
+          </CardTitle>
+          <CardDescription>
+            Configure como sua página aparece no Google, WhatsApp e redes sociais.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* SEO Title */}
+          <div className="space-y-2">
+            <Label htmlFor="seo_title">Título da Página (title tag)</Label>
+            <Input
+              id="seo_title"
+              placeholder="Certificado Digital Online - Agis Digital"
+              value={settings["seo_title"] || ""}
+              onChange={(e) => updateField("seo_title", e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Aparece na aba do navegador e nos resultados do Google. Ideal: 50-60 caracteres.
+            </p>
+          </div>
+
+          {/* Meta Description */}
+          <div className="space-y-2">
+            <Label htmlFor="seo_description">Meta Description</Label>
+            <Textarea
+              id="seo_description"
+              placeholder="Emita seu Certificado Digital 100% online com a Agis Digital..."
+              value={settings["seo_description"] || ""}
+              onChange={(e) => updateField("seo_description", e.target.value)}
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground">
+              Texto que aparece abaixo do título no Google. Ideal: 120-160 caracteres.
+              {settings["seo_description"] && (
+                <span className="ml-1 font-medium">
+                  ({settings["seo_description"].length} caracteres)
+                </span>
+              )}
+            </p>
+          </div>
+
+          {/* OG Title */}
+          <div className="space-y-2">
+            <Label htmlFor="seo_og_title" className="flex items-center gap-2">
+              <span>Título de Compartilhamento</span>
+            </Label>
+            <Input
+              id="seo_og_title"
+              placeholder="Certificado Digital rápido e seguro — Agis Digital"
+              value={settings["seo_og_title"] || ""}
+              onChange={(e) => updateField("seo_og_title", e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Título exibido ao compartilhar no WhatsApp, Facebook e LinkedIn.
+            </p>
+          </div>
+
+          {/* OG Image */}
+          <div className="space-y-2">
+            <Label htmlFor="seo_og_image" className="flex items-center gap-2">
+              <Image className="h-4 w-4 text-muted-foreground" />
+              <span>Imagem de Compartilhamento (OG Image)</span>
+            </Label>
+            <Input
+              id="seo_og_image"
+              placeholder="https://exemplo.com/imagem-compartilhamento.png"
+              value={settings["seo_og_image"] || ""}
+              onChange={(e) => updateField("seo_og_image", e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Imagem exibida ao compartilhar o link. Tamanho ideal: 1200×630px.
+            </p>
+            {settings["seo_og_image"] && (
+              <div className="rounded-md border border-border bg-muted/30 p-3">
+                <img
+                  src={settings["seo_og_image"]}
+                  alt="Preview OG Image"
+                  className="max-h-40 rounded object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Canonical */}
+          <div className="space-y-2">
+            <Label htmlFor="seo_canonical" className="flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-muted-foreground" />
+              <span>URL Canônica</span>
+            </Label>
+            <Input
+              id="seo_canonical"
+              placeholder="https://www.agisdigital.com"
+              value={settings["seo_canonical"] || ""}
+              onChange={(e) => updateField("seo_canonical", e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              URL principal do site. Evita conteúdo duplicado no Google.
+            </p>
+          </div>
+
+          <Button onClick={handleSaveSeo} disabled={saving} size="sm">
+            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Salvar SEO
+          </Button>
         </CardContent>
       </Card>
 

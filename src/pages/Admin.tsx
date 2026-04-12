@@ -23,6 +23,7 @@ import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminIntegrations } from "@/components/admin/AdminIntegrations";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminAlerts } from "@/components/admin/AdminAlerts";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,7 @@ const Admin = () => {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-8">
+        <AdminAlerts />
         <Tabs defaultValue="hero">
           <TabsList className="mb-6 flex-wrap h-auto gap-1 justify-start">
             <TabsTrigger value="header">00. Header</TabsTrigger>
