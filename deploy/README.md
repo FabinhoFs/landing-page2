@@ -408,7 +408,25 @@ Execute `deploy/migration-master.sql` no **SQL Editor** do Supabase para criar t
 
 ---
 
-## 12. Governança — Histórico e Versionamento
+## 12. Governança — Histórico, Versionamento e Publicação
+
+### 12.1 Rascunho / Publicação (Draft/Publish)
+
+A tabela `site_settings` possui uma coluna `environment` (`'draft'` ou `'published'`):
+
+| Ambiente | Quem lê | Quem escreve |
+|----------|---------|--------------|
+| `draft` | Admin (edição) | Admin (salvar) |
+| `published` | Landing page pública | Admin (publicar) |
+
+**Fluxo:**
+1. Admin edita → salva no **rascunho** (não afeta a página pública)
+2. Admin clica **Publicar** → rascunho é copiado para publicado → página pública atualiza
+3. Admin pode **Descartar Rascunho** → rascunho volta ao estado publicado
+
+**RLS:** Visitantes anônimos só leem `environment = 'published'`. Admins autenticados leem/escrevem ambos.
+
+### 12.2 Histórico e Versionamento
 
 O projeto inclui duas tabelas de governança protegidas por RLS (somente admins):
 
@@ -421,12 +439,13 @@ O projeto inclui duas tabelas de governança protegidas por RLS (somente admins)
 
 | Recurso | Aba | Descrição |
 |---------|-----|-----------|
+| Barra de publicação | Topo do admin | Indicador de rascunho, botão Publicar, Descartar |
 | Histórico de alterações | 18. Histórico | Log de quem alterou, quando, o quê, valor anterior/novo |
 | Excluir registro individual | 18. Histórico | Botão 🗑️ com confirmação |
 | Limpar histórico por período | 18. Histórico | Escolha 30/60/90/180 dias, remove registros anteriores |
 | Limpar todo o histórico | 18. Histórico | Botão destructive com confirmação forte |
-| Salvar versão | 17. Versões | Snapshot de todas as `site_settings` |
-| Restaurar versão | 17. Versões | Upsert do snapshot + reload automático |
+| Salvar versão | 17. Versões | Snapshot do conteúdo **publicado** |
+| Restaurar versão | 17. Versões | Restaura para o **rascunho** (precisa publicar depois) |
 | Excluir versão individual | 17. Versões | Botão 🗑️ com confirmação (bloqueia exclusão da última) |
 | Limpeza inteligente de versões | 17. Versões | Manter últimas 3/5/10/20, remover o restante |
 
@@ -438,21 +457,26 @@ O projeto inclui duas tabelas de governança protegidas por RLS (somente admins)
 ### Validação pós-instalação
 
 ```sql
--- Verificar tabelas existem
+-- Verificar que site_settings tem coluna environment
+SELECT column_name FROM information_schema.columns WHERE table_name = 'site_settings' AND column_name = 'environment';
+
+-- Verificar tabelas de governança existem
 SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('admin_audit_log', 'page_versions');
 
 -- Verificar RLS está ativo
-SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('admin_audit_log', 'page_versions');
+SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('site_settings', 'admin_audit_log', 'page_versions');
 
--- Verificar policies existem (deve retornar 3 para audit_log, 4 para page_versions)
-SELECT tablename, count(*) FROM pg_policies WHERE tablename IN ('admin_audit_log', 'page_versions') GROUP BY tablename;
+-- Verificar que anon só vê published
+-- (teste como anon role no SQL Editor)
 ```
 
 ### Testar permissões
 
-1. Faça login como admin → vá em **17. Versões** → salve uma versão → restaure → exclua
-2. Vá em **18. Histórico** → verifique que as ações aparecem → exclua um registro → limpe por período
-3. Abra o site em aba anônima → confirme que não há acesso às tabelas de governança
+1. Faça login como admin → edite um campo → salve → confirme que a página pública **não** mudou
+2. Clique **Publicar** → confirme que a página pública agora reflete a mudança
+3. Edite novamente → clique **Descartar Rascunho** → confirme que o admin voltou ao estado publicado
+4. Vá em **17. Versões** → salve uma versão → restaure → confirme que voltou para o rascunho
+5. Vá em **18. Histórico** → verifique que publicações aparecem no log
 
 ---
 
@@ -483,8 +507,10 @@ SELECT tablename, count(*) FROM pg_policies WHERE tablename IN ('admin_audit_log
 - [ ] Redirect URLs configuradas no Supabase Dashboard
 - [ ] Leaked Password Protection ativada
 - [ ] Migration SQL executada no Supabase (`migration-master.sql`)
+- [ ] Coluna `environment` existe em `site_settings` com dados em `draft` e `published`
 - [ ] Função `has_role()` e tabela `user_roles` existem
 - [ ] Tabelas `admin_audit_log` e `page_versions` criadas com RLS
 - [ ] Bootstrap do primeiro admin concluído
 - [ ] Login em `/admin/login` funcionando
+- [ ] Publicação e rascunho funcionando no admin
 - [ ] Histórico e versionamento funcionando no admin
