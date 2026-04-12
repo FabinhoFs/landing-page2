@@ -157,6 +157,14 @@ export const AdminDashboard = () => {
   const logs = useMemo(() => filterByProduct(allLogs, product), [allLogs, product]);
   const totalClicks = logs.length;
 
+  // ─── UTM PARSING ─────────────────────────────────
+  const parseUtm = (ua: string | null): Record<string, string> | null => {
+    if (!ua) return null;
+    const idx = ua.indexOf("|||");
+    if (idx === -1) return null;
+    try { return JSON.parse(ua.substring(idx + 3)); } catch { return null; }
+  };
+
   // ─── DERIVED DATA ──────────────────────────────────
   const topCta = useMemo(() => {
     const map: Record<string, number> = {};
