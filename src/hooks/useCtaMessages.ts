@@ -16,7 +16,7 @@ const DEFAULT_CTA_MESSAGES: Record<string, string> = {
 };
 
 export function useCtaMessages() {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["site_settings", "all"],
     queryFn: async () => {
       const { data } = await supabase
@@ -40,6 +40,6 @@ export function useCtaMessages() {
     return template.replace(/\{cidade\}/g, city || "Brasil");
   };
 
-  return { settings: data || {}, getMessage };
+  return { settings: data || {}, getMessage, isLoading };
 }
 
