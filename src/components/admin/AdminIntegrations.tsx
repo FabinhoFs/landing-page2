@@ -8,9 +8,17 @@ import { toast } from "sonner";
 import {
   Save, Globe, ShoppingCart, Facebook, ShieldAlert, CheckCircle2,
   AlertCircle, XCircle, HelpCircle, ExternalLink, ClipboardCopy,
-  Zap, Info,
+  Zap, Info, MapPin,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +32,9 @@ const KEYS = [
   "meta_pixel_id",
   "g_tag_manager_id",
 ] as const;
+
+const GEO_KEYS = ["geo_provider", "geo_api_key", "geo_fallback"] as const;
+type GeoKeys = (typeof GEO_KEYS)[number];
 
 type ConfigKeys = (typeof KEYS)[number];
 
@@ -148,6 +159,11 @@ export const AdminIntegrations = () => {
     meta_pixel_id: "",
     g_tag_manager_id: "",
   });
+  const [geoValues, setGeoValues] = useState<Record<GeoKeys, string>>({
+    geo_provider: "ipapi",
+    geo_api_key: "",
+    geo_fallback: "true",
+  });
   const [saving, setSaving] = useState(false);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -157,22 +173,27 @@ export const AdminIntegrations = () => {
       if (!session) { setAuthorized(false); return; }
       setAuthorized(true);
 
+      const allKeys = [...KEYS, ...GEO_KEYS];
       const { data } = await (supabase
         .from("site_settings") as any)
         .select("key, value")
         .eq("environment", "draft")
-        .in("key", [...KEYS]);
+        .in("key", allKeys);
 
-      const loaded: Partial<Record<ConfigKeys, string>> = {};
-      data?.forEach((r) => {
-        if (KEYS.includes(r.key as ConfigKeys)) loaded[r.key as ConfigKeys] = r.value;
-      });
+      const loaded: Partial<Record<string, string>> = {};
+      data?.forEach((r: any) => { loaded[r.key] = r.value; });
 
       setValues((prev) => ({
         g_tag_id: loaded.g_tag_id ?? prev.g_tag_id ?? "",
         g_ads_purchase_label: loaded.g_ads_purchase_label ?? prev.g_ads_purchase_label ?? "",
         meta_pixel_id: loaded.meta_pixel_id ?? prev.meta_pixel_id ?? "",
         g_tag_manager_id: loaded.g_tag_manager_id ?? prev.g_tag_manager_id ?? "",
+      }));
+
+      setGeoValues((prev) => ({
+        geo_provider: (loaded.geo_provider as GeoKeys) ?? prev.geo_provider,
+        geo_api_key: loaded.geo_api_key ?? prev.geo_api_key,
+        geo_fallback: loaded.geo_fallback ?? prev.geo_fallback,
       }));
     };
     load();
@@ -181,15 +202,21 @@ export const AdminIntegrations = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const rows = KEYS.map((key) => ({
+      const trackingRows = KEYS.map((key) => ({
         key,
         value: values[key],
         environment: "draft",
         updated_at: new Date().toISOString(),
       }));
+      const geoRows = GEO_KEYS.map((key) => ({
+        key,
+        value: geoValues[key],
+        environment: "draft",
+        updated_at: new Date().toISOString(),
+      }));
       const { error } = await (supabase
         .from("site_settings") as any)
-        .upsert(rows, { onConflict: "key,environment" });
+        .upsert([...trackingRows, ...geoRows], { onConflict: "key,environment" });
       if (error) throw error;
       toast.success("Integrações salvas com sucesso!");
     } catch {
@@ -401,6 +428,69 @@ export const AdminIntegrations = () => {
             </Card>
           );
         })}
+
+        {/* Geolocation Settings Card */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <CardTitle className="text-base">Geolocalização</CardTitle>
+                <CardDescription>
+                  Provedor de IP para detecção de cidade. Suporta fallback automático contra erro 429.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Provedor</Label>
+              <Select
+                value={geoValues.geo_provider}
+                onValueChange={(v) => setGeoValues((prev) => ({ ...prev, geo_provider: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ipapi">ipapi.co (padrão)</SelectItem>
+                  <SelectItem value="ip-api">ip-api.com (gratuito)</SelectItem>
+                  <SelectItem value="cloudflare">Cloudflare Headers (requer CF)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                O provedor principal para detectar a cidade do visitante.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Chave PRO (opcional)</Label>
+              <Input
+                placeholder="Sua chave de API PRO"
+                value={geoValues.geo_api_key}
+                onChange={(e) => setGeoValues((prev) => ({ ...prev, geo_api_key: e.target.value.trim() }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Chave PRO do ipapi.co para evitar limites de requisição. Deixe vazio para plano gratuito.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <Label className="text-sm font-semibold">Fallback multi-provedor</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Se o provedor principal falhar (erro 429), tenta os outros automaticamente.
+                </p>
+              </div>
+              <Switch
+                checked={geoValues.geo_fallback === "true"}
+                onCheckedChange={(checked) =>
+                  setGeoValues((prev) => ({ ...prev, geo_fallback: checked ? "true" : "false" }))
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
           <Save className="mr-2 h-4 w-4" />

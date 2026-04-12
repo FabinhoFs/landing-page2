@@ -63,7 +63,7 @@ Consulte **[deploy/README.md](deploy/README.md)** para o guia completo de:
 | **Experimentos A/B/C** | Testes de variantes com tracking por sessão |
 | **Personalização UTM** | Conteúdo personalizado por campanha |
 | **Tracking / Inteligência** | Dashboard de CTAs, dispositivos, cidades, conversão |
-| **Geolocalização** | Cidade detectada automaticamente para personalização |
+| **Geolocalização** | Multi-provedor (ipapi, ip-api, Cloudflare) com fallback automático contra 429 |
 | **WhatsApp dinâmico** | Número e mensagens configuráveis por CTA |
 | **SEO / Open Graph** | Meta tags gerenciáveis pelo admin |
 | **Multi-tenant** | Uma imagem Docker serve vários clientes (runtime config) |
@@ -76,3 +76,32 @@ Consulte **[deploy/README.md](deploy/README.md)** para o guia completo de:
 - Input validation com Zod
 - Anon só lê dados públicos/publicados/ativos
 - Admin protegido por Supabase Auth + role check
+
+## Geolocalização
+
+O sistema detecta a cidade do visitante para personalização de textos (Dynamic Text Replacement). Configurável pelo admin em **Integrações → Geolocalização**.
+
+### Provedores suportados
+
+| Provedor | Endpoint | Observações |
+|----------|----------|-------------|
+| `ipapi` (padrão) | `ipapi.co/json/` | Suporta chave PRO para evitar limite 429 |
+| `ip-api` | `ip-api.com/json/` | Gratuito, sem chave |
+| `cloudflare` | `/api/geo` (Nginx) | Requer Cloudflare como proxy (usa headers CF) |
+
+### Configuração
+
+1. No admin, aba **Integrações**, seção **Geolocalização**
+2. Escolha o provedor, insira a chave PRO (se aplicável)
+3. Ative **Fallback multi-provedor** para redundância automática
+4. Publique as alterações
+
+### Fallback
+
+Com fallback ativo, se o provedor principal retornar erro 429 ou falhar, o sistema tenta automaticamente os outros provedores na ordem: `ipapi → ip-api → cloudflare`. Se todos falharem, exibe "sua região" como texto seguro.
+
+### Upgrade de banco existente
+
+```bash
+psql -f deploy/upgrade-add-geo-settings.sql
+```

@@ -46,10 +46,10 @@ const PageSkeleton = () => (
 const SectionFallback = () => null;
 
 const Index = () => {
-  const { city, detected } = useGeolocation();
+  const { city, detected, safeFallback } = useGeolocation();
   const { trackPurchase } = useTracking();
   const { settings, isLoading } = useCtaMessages();
-  const cityDisplay = city || "Brasil";
+  const cityDisplay = city || safeFallback;
 
   useEffect(() => {
     captureUtmParams();
