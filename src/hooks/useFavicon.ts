@@ -14,8 +14,7 @@ export function useFavicon() {
         .eq("environment", "published")
         .maybeSingle();
 
-      const url = (data as any)?.value;
-      if (!url) return;
+      const url = (data as any)?.value || "/favicon.png";
 
       let type = "image/x-icon";
       if (url.endsWith(".png")) type = "image/png";
