@@ -9,7 +9,7 @@ import {
   Download, Trash2, BarChart3, MapPin, MousePointerClick, TrendingUp,
   Trophy, Target, Filter, FileText, Smartphone, Monitor, Layers,
   Clock, CalendarDays, Activity, Zap, Globe, MessageSquare, Flame,
-  Award, Medal,
+  Award, Medal, HelpCircle, Eye, Package,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -85,7 +85,6 @@ const SECTION_COLORS: Record<string, string> = {
   Outros: "hsl(0, 0%, 60%)",
 };
 
-const MEDAL_COLORS = ["hsl(45, 100%, 50%)", "hsl(0, 0%, 75%)", "hsl(25, 60%, 45%)"];
 const MEDAL_ICONS = ["🥇", "🥈", "🥉"];
 
 const periodLabel: Record<Period, string> = {
@@ -157,8 +156,16 @@ export const AdminDashboard = () => {
 
   useEffect(() => { fetchLogs(); }, [period]);
 
-  const logs = useMemo(() => filterByProduct(allLogs, product), [allLogs, product]);
+  // Separate CTA logs from FAQ/section-view logs
+  const allCtaLogs = useMemo(() => allLogs.filter((l) => !l.button_id.startsWith("faq_open_") && !l.button_id.startsWith("section_view_")), [allLogs]);
+  const logs = useMemo(() => filterByProduct(allCtaLogs, product), [allCtaLogs, product]);
   const totalClicks = logs.length;
+
+  // FAQ open logs
+  const faqLogs = useMemo(() => allLogs.filter((l) => l.button_id.startsWith("faq_open_")), [allLogs]);
+
+  // Section view logs
+  const sectionViewLogs = useMemo(() => allLogs.filter((l) => l.button_id.startsWith("section_view_")), [allLogs]);
 
   // ─── UTM PARSING ─────────────────────────────────
   const parseUtm = (ua: string | null): Record<string, string> | null => {
@@ -225,7 +232,6 @@ export const AdminDashboard = () => {
       .sort((a, b) => b.value - a.value);
   }, [logs]);
 
-  // Top section
   const topSection = useMemo(() => {
     return sectionData.length > 0 ? sectionData[0] : null;
   }, [sectionData]);
@@ -297,14 +303,21 @@ export const AdminDashboard = () => {
     ].filter((d) => d.value > 0);
   }, [logs]);
 
-  // ─── UTM ANALYTICS (expanded with content + term) ──
+  // Product leader
+  const productLeader = useMemo(() => {
+    const cpf = logs.filter((l) => l.button_id.toLowerCase().includes("cpf")).length;
+    const cnpj = logs.filter((l) => l.button_id.toLowerCase().includes("cnpj")).length;
+    if (cpf === 0 && cnpj === 0) return null;
+    return cpf >= cnpj ? { name: "e-CPF", count: cpf } : { name: "e-CNPJ", count: cnpj };
+  }, [logs]);
+
+  // ─── UTM ANALYTICS ──
   const utmData = useMemo(() => {
     const sources: Record<string, number> = {};
     const campaigns: Record<string, number> = {};
     const mediums: Record<string, number> = {};
     const contents: Record<string, number> = {};
     const terms: Record<string, number> = {};
-    // Full combination table
     const combos: Record<string, { source: string; medium: string; campaign: string; content: string; term: string; count: number }> = {};
     let utmCount = 0;
     logs.forEach((l) => {
@@ -316,7 +329,6 @@ export const AdminDashboard = () => {
       if (utm.utm_medium) mediums[utm.utm_medium] = (mediums[utm.utm_medium] || 0) + 1;
       if (utm.utm_content) contents[utm.utm_content] = (contents[utm.utm_content] || 0) + 1;
       if (utm.utm_term) terms[utm.utm_term] = (terms[utm.utm_term] || 0) + 1;
-      // Combo key
       const key = [utm.utm_source || "—", utm.utm_medium || "—", utm.utm_campaign || "—"].join(" / ");
       if (!combos[key]) combos[key] = { source: utm.utm_source || "—", medium: utm.utm_medium || "—", campaign: utm.utm_campaign || "—", content: utm.utm_content || "", term: utm.utm_term || "", count: 0 };
       combos[key].count++;
@@ -389,17 +401,69 @@ export const AdminDashboard = () => {
     color: "hsl(var(--foreground))",
   };
 
-  // Best hour
   const bestHour = useMemo(() => {
     const best = hourlyData.reduce((a, b) => a.total > b.total ? a : b, hourlyData[0]);
     return best.total > 0 ? best : null;
   }, [hourlyData]);
 
-  // Best day
   const bestDay = useMemo(() => {
     const best = dayOfWeekData.reduce((a, b) => a.total > b.total ? a : b, dayOfWeekData[0]);
     return best.total > 0 ? best : null;
   }, [dayOfWeekData]);
+
+  // ─── FAQ ANALYTICS ─────────────────────────────────
+  const [faqQuestions, setFaqQuestions] = useState<Record<string, string>>({});
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("faqs").select("id, question").eq("is_active", true);
+      if (data) {
+        const map: Record<string, string> = {};
+        (data as any[]).forEach((f: any) => { map[f.id] = f.question; });
+        setFaqQuestions(map);
+      }
+    })();
+  }, []);
+
+  const faqAnalytics = useMemo(() => {
+    const map: Record<string, number> = {};
+    faqLogs.forEach((l) => {
+      const id = l.button_id.replace("faq_open_", "");
+      map[id] = (map[id] || 0) + 1;
+    });
+    const totalOpens = Object.values(map).reduce((s, v) => s + v, 0);
+    // Check if there was a CTA click within 60s after FAQ open by the same user
+    const faqToCta: Record<string, number> = {};
+    faqLogs.forEach((fLog) => {
+      const faqId = fLog.button_id.replace("faq_open_", "");
+      const fTime = new Date(fLog.created_at).getTime();
+      // Find any CTA click from same IP within 120s
+      const hasCta = allCtaLogs.some((cLog) => {
+        const cTime = new Date(cLog.created_at).getTime();
+        return cTime > fTime && cTime - fTime < 120000 && cLog.ip === fLog.ip;
+      });
+      if (hasCta) {
+        faqToCta[faqId] = (faqToCta[faqId] || 0) + 1;
+      }
+    });
+
+    return Object.entries(map)
+      .map(([id, opens]) => ({
+        id,
+        question: faqQuestions[id] || `Pergunta #${id}`,
+        opens,
+        pct: totalOpens > 0 ? (opens / totalOpens * 100) : 0,
+        ctaAfter: faqToCta[id] || 0,
+        conversionRate: opens > 0 ? ((faqToCta[id] || 0) / opens * 100) : 0,
+      }))
+      .sort((a, b) => b.opens - a.opens);
+  }, [faqLogs, faqQuestions, allCtaLogs]);
+
+  const totalFaqOpens = faqLogs.length;
+
+  // Testimonial section views
+  const testimonialViews = useMemo(() => {
+    return sectionViewLogs.filter((l) => l.button_id === "section_view_testimonials").length;
+  }, [sectionViewLogs]);
 
   // ─── Export CSV ─────────────
   const exportCSV = () => {
@@ -503,52 +567,101 @@ export const AdminDashboard = () => {
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          BLOCO 1 — CAMPEÕES (Seção + CTA + Total)
+          BLOCO 1 — RESUMO EXECUTIVO (6 cards)
           ═══════════════════════════════════════════════════ */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="border-2 border-primary/20 bg-primary/5">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/15">
-              <Trophy className="h-7 w-7 text-primary animate-[pulse_3s_ease-in-out_infinite]" />
-            </div>
-            <div className="min-w-0 space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary/70">Seção Campeã</p>
-              <p className="text-xl font-bold text-foreground leading-tight">
-                {topSection?.name || "—"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {topSection ? `${topSection.value} cliques (${totalClicks > 0 ? (topSection.value / totalClicks * 100).toFixed(1) : 0}%)` : "Sem dados"}
-              </p>
-            </div>
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+        <Card className="border-2 border-primary/20 bg-primary/5 col-span-2 sm:col-span-1 lg:col-span-1">
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <MousePointerClick className="h-6 w-6 text-primary mb-1" />
+            <p className="text-2xl font-bold text-foreground">{totalClicks}</p>
+            <p className="text-[11px] text-muted-foreground font-medium">Total de Cliques</p>
           </CardContent>
         </Card>
 
         <Card className="border-2 border-primary/20 bg-primary/5">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/15">
-              <Award className="h-7 w-7 text-primary animate-[bounce_2s_ease-in-out_infinite]" />
-            </div>
-            <div className="min-w-0 space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary/70">CTA Campeão</p>
-              <p className="text-base font-bold text-foreground leading-snug">
-                <TruncatedText text={topCta?.name || "—"} maxLen={28} />
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {topCta ? `${topCta.count} cliques no período` : "Sem dados"}
-              </p>
-            </div>
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <Trophy className="h-6 w-6 text-primary mb-1" />
+            <p className="text-sm font-bold text-foreground leading-tight">
+              <TruncatedText text={topSection?.name || "—"} maxLen={12} />
+            </p>
+            <p className="text-[11px] text-muted-foreground font-medium">Seção Campeã</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2 border-primary/20 bg-primary/5">
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <Award className="h-6 w-6 text-primary mb-1" />
+            <p className="text-xs font-bold text-foreground leading-tight">
+              <TruncatedText text={topCta?.name || "—"} maxLen={18} />
+            </p>
+            <p className="text-[11px] text-muted-foreground font-medium">CTA Campeão</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <MousePointerClick className="h-7 w-7 text-primary animate-[bounce_2s_ease-in-out_infinite]" />
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <MapPin className="h-6 w-6 text-primary mb-1" />
+            <p className="text-xs font-bold text-foreground leading-tight">
+              <TruncatedText text={topCity?.name || "—"} maxLen={16} />
+            </p>
+            <p className="text-[11px] text-muted-foreground font-medium">Cidade Líder</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <Package className="h-6 w-6 text-primary mb-1" />
+            <p className="text-sm font-bold text-foreground">{productLeader?.name || "—"}</p>
+            <p className="text-[11px] text-muted-foreground font-medium">Produto Líder</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <Smartphone className="h-6 w-6 text-primary mb-1" />
+            <p className="text-sm font-bold text-foreground">
+              {deviceStats.total ? (deviceStats.mobile > deviceStats.desktop ? "Mobile" : "Desktop") : "—"}
+            </p>
+            <p className="text-[11px] text-muted-foreground font-medium">Dispositivo Líder</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 2: Timing + FAQ + Testimonials */}
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <Clock className="h-5 w-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{bestHour ? bestHour.hour : "—"}</p>
+              <p className="text-[11px] text-muted-foreground">Melhor Horário</p>
             </div>
-            <div className="min-w-0 space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total de Cliques</p>
-              <p className="text-3xl font-bold text-foreground leading-none">{totalClicks}</p>
-              <p className="text-sm text-muted-foreground">Todos os CTAs no período</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <CalendarDays className="h-5 w-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{bestDay ? bestDay.name : "—"}</p>
+              <p className="text-[11px] text-muted-foreground">Melhor Dia</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <HelpCircle className="h-5 w-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{totalFaqOpens}</p>
+              <p className="text-[11px] text-muted-foreground">FAQs Abertas</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <Eye className="h-5 w-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{testimonialViews}</p>
+              <p className="text-[11px] text-muted-foreground">Visualizações Depoimentos</p>
             </div>
           </CardContent>
         </Card>
@@ -839,7 +952,7 @@ export const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* ─── CTA MESSAGE RANKING (enhanced) ────────── */}
+      {/* ─── CTA MESSAGE RANKING ────────── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -901,55 +1014,66 @@ export const AdminDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* ─── SUMMARY CARDS — Row 2 ──────────── */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <MapPin className="h-5 w-5 text-primary" />
+      {/* ═══════════════════════════════════════════════════
+          BLOCO FAQ — Ranking de Perguntas Mais Abertas
+          ═══════════════════════════════════════════════════ */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <HelpCircle className="h-4 w-4" />
+            FAQ — Ranking de Perguntas Mais Abertas
+          </CardTitle>
+          <CardDescription>
+            Entenda quais dúvidas mais interessam os visitantes. A coluna "Conversão" mostra quantas vezes o visitante clicou em um CTA logo após abrir a pergunta.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {faqAnalytics.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left">
+                    <th className="py-2 pr-2 font-semibold text-muted-foreground w-10">#</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground">Pergunta</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Aberturas</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">% do Total</th>
+                    <th className="py-2 pr-3 font-semibold text-muted-foreground text-right">Cliques após FAQ</th>
+                    <th className="py-2 font-semibold text-muted-foreground text-right">Taxa de Conversão</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {faqAnalytics.map((row, i) => (
+                    <tr key={row.id} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i < 3 ? "bg-primary/5" : ""}`}>
+                      <td className="py-2.5 pr-2 text-center">
+                        {i < 3 ? <span className="text-base">{MEDAL_ICONS[i]}</span> : <span className="text-xs font-mono text-muted-foreground">{i + 1}</span>}
+                      </td>
+                      <td className="py-2.5 pr-3 max-w-[320px]">
+                        <p className="text-sm text-foreground font-medium truncate" title={row.question}>
+                          {row.question}
+                        </p>
+                      </td>
+                      <td className="py-2.5 pr-3 text-right font-bold text-foreground">{row.opens}</td>
+                      <td className="py-2.5 pr-3 text-right text-muted-foreground">{row.pct.toFixed(1)}%</td>
+                      <td className="py-2.5 pr-3 text-right font-medium text-foreground">{row.ctaAfter}</td>
+                      <td className="py-2.5 text-right">
+                        <Badge variant={row.conversionRate > 30 ? "default" : "outline"} className="text-[11px]">
+                          {row.conversionRate.toFixed(0)}%
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-foreground leading-snug">
-                <TruncatedText text={topCity?.name || "—"} maxLen={20} />
-              </p>
-              <p className="text-xs text-muted-foreground">Cidade líder</p>
+          ) : (
+            <div className="py-8 text-center">
+              <HelpCircle className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhuma interação com FAQ registrada neste período.</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Os dados aparecerão conforme visitantes abrirem perguntas na landing page.</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Smartphone className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-foreground">{deviceStats.total ? Math.round(deviceStats.mobile / deviceStats.total * 100) : 0}% Mobile</p>
-              <p className="text-xs text-muted-foreground">{deviceStats.mobile} mob · {deviceStats.desktop} desk</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Clock className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-foreground">{bestHour ? bestHour.hour : "—"}</p>
-              <p className="text-xs text-muted-foreground">Melhor horário</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <CalendarDays className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-foreground">{bestDay ? bestDay.name : "—"}</p>
-              <p className="text-xs text-muted-foreground">Melhor dia</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ─── GEOGRAPHIC ──────────────────────── */}
       <Card>
@@ -1104,7 +1228,7 @@ export const AdminDashboard = () => {
             </Card>
           </div>
 
-          {/* UTM Rankings — source, medium, campaign with bars */}
+          {/* UTM Rankings */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
