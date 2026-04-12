@@ -29,7 +29,14 @@ export const AdminDores = () => {
       const val = settings[`pain_item_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    return items.length > 0 ? items : DEFAULT_PAINS;
+    if (items.length > 0) return items;
+
+    // Seed defaults into settings so edits don't lose other items
+    DEFAULT_PAINS.forEach((p, idx) => {
+      const key = `pain_item_${idx + 1}`;
+      if (settings[key] === undefined) settings[key] = p;
+    });
+    return DEFAULT_PAINS;
   };
 
   const items = getItems();

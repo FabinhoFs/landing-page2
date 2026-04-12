@@ -23,7 +23,14 @@ export const AdminCTAFinal = () => {
       const val = settings[`cta_bullet_${i}`];
       if (val !== undefined && val !== "") items.push(val);
     }
-    return items.length > 0 ? items : DEFAULT_BULLETS;
+    if (items.length > 0) return items;
+
+    // Seed defaults into settings so edits don't lose other items
+    DEFAULT_BULLETS.forEach((b, idx) => {
+      const key = `cta_bullet_${idx + 1}`;
+      if (settings[key] === undefined) settings[key] = b;
+    });
+    return DEFAULT_BULLETS;
   };
   const items = getItems();
 

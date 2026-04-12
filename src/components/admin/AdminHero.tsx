@@ -86,7 +86,7 @@ export const AdminHero = () => {
     updateField(`hero_v${variant}_${field}`, value);
   };
 
-  // Bullets as individual fields
+  // Bullets as individual fields — seed defaults into state on first render
   const getBullets = (): { icon: string; label: string }[] => {
     const items: { icon: string; label: string }[] = [];
     for (let i = 1; i <= 6; i++) {
@@ -96,6 +96,16 @@ export const AdminHero = () => {
       }
     }
     if (items.length > 0) return items;
+
+    // Seed defaults into settings so edits don't lose other items
+    DEFAULT_BULLETS.forEach((b, idx) => {
+      const key_l = `hero_bullet_${idx + 1}_label`;
+      const key_i = `hero_bullet_${idx + 1}_icon`;
+      if (settings[key_l] === undefined) {
+        settings[key_l] = b.label;
+        settings[key_i] = b.icon;
+      }
+    });
     return DEFAULT_BULLETS;
   };
   const bullets = getBullets();
