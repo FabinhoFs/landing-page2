@@ -112,6 +112,51 @@ CREATE TABLE IF NOT EXISTS public.page_versions (
 ALTER TABLE public.page_versions ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_page_versions_created ON public.page_versions(created_at DESC);
 
+-- Experimentos A/B/C
+CREATE TABLE IF NOT EXISTS public.experiments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  section text NOT NULL,
+  experiment_type text NOT NULL DEFAULT 'content',
+  status text NOT NULL DEFAULT 'draft',
+  traffic_split jsonb NOT NULL DEFAULT '{"A": 34, "B": 33, "C": 33}',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  ended_at timestamptz
+);
+ALTER TABLE public.experiments ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.experiment_variants (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  experiment_id uuid NOT NULL REFERENCES public.experiments(id) ON DELETE CASCADE,
+  variant_key text NOT NULL,
+  label text NOT NULL DEFAULT '',
+  config jsonb NOT NULL DEFAULT '{}',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_experiment_variant UNIQUE (experiment_id, variant_key)
+);
+ALTER TABLE public.experiment_variants ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.experiment_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  experiment_id uuid NOT NULL REFERENCES public.experiments(id) ON DELETE CASCADE,
+  variant_key text NOT NULL,
+  event_type text NOT NULL,
+  button_id text,
+  session_id text,
+  ip text,
+  city text,
+  region text,
+  device text,
+  user_agent text,
+  metadata jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.experiment_events ENABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_exp_events_experiment ON public.experiment_events(experiment_id, variant_key);
+CREATE INDEX IF NOT EXISTS idx_exp_events_created ON public.experiment_events(created_at DESC);
+
 -- 2. RLS POLICIES ─────────────────────────────
 
 -- site_settings
