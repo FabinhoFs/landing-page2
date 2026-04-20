@@ -16,6 +16,7 @@ import {
   PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
 import { jsPDF } from "jspdf";
+import { AdminResetIntelligence } from "./AdminResetIntelligence";
 
 type Period = "today" | "7d" | "30d";
 type ProductFilter = "all" | "cpf" | "cnpj";
@@ -1450,6 +1451,9 @@ export const AdminDashboard = () => {
         <Button variant="outline" onClick={clearOldLogs} className="gap-2">
           <Trash2 className="h-4 w-4" /> Limpar logs &gt; 30 dias
         </Button>
+        <div className="ml-auto">
+          <AdminResetIntelligence onComplete={fetchLogs} />
+        </div>
       </div>
     </div>
   );
